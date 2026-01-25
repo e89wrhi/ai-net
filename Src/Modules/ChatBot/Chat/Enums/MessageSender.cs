@@ -1,4 +1,4 @@
-﻿namespace ChatBot.Chat.Enums;
+﻿namespace ChatBot.Enums;
 
     public class MessageSender
     {User

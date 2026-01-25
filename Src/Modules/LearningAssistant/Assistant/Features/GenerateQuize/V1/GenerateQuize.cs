@@ -1,4 +1,4 @@
-﻿namespace LearningAssistant.Assistant.Features.GenerateQuize.V1;
+﻿namespace LearningAssistant.Features.GenerateQuize.V1;
 
 public class GenerateQuize
 {

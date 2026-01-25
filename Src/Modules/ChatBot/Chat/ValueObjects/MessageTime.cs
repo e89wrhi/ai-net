@@ -1,4 +1,4 @@
-﻿namespace ChatBot.Chat.ValueObjects;
+﻿namespace ChatBot.ValueObjects;
 
 public class MessageTime
 {

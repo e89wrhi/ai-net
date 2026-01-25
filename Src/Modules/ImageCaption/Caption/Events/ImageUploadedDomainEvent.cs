@@ -1,4 +1,4 @@
-﻿namespace ImageCaption.Caption.Events;
+﻿namespace ImageCaption.Events;
 
 public class ImageUploadedDomainEvent
 {

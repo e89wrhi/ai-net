@@ -1,4 +1,4 @@
-﻿namespace Resume.Resume.ValueObjects;
+﻿namespace Resume.ValueObjects;
 
 public class ResumeId
 {

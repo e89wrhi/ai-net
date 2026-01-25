@@ -1,4 +1,4 @@
-﻿namespace LearningAssistant.Assistant.Models;
+﻿namespace LearningAssistant.Models;
 
 public class QuizeModel
     {

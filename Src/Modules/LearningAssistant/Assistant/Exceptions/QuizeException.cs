@@ -1,4 +1,4 @@
-﻿namespace LearningAssistant.Assistant.Exceptions;
+﻿namespace LearningAssistant.Exceptions;
 
 public class QuizeException
 {

@@ -1,4 +1,4 @@
-﻿namespace Resume.Resume.Features.AnalyzeResume.V1;
+﻿namespace Resume.Features.AnalyzeResume.V1;
 
 public class AnalyzeResumeMongo
 {

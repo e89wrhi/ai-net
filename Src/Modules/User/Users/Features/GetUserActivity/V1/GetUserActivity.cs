@@ -1,4 +1,4 @@
-﻿namespace User.Users.Features.GetUserActivity.V1;
+﻿namespace User.Features.GetUserActivity.V1;
 
 public class GetUserActivity
 {

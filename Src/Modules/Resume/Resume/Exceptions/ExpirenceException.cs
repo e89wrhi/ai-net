@@ -1,4 +1,4 @@
-﻿namespace Resume.Resume.Exceptions;
+﻿namespace Resume.Exceptions;
 
 public class ExpirenceException
 {

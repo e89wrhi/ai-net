@@ -1,4 +1,4 @@
-﻿namespace Meeting.Meeting.Features.GetMeetingSummary.V1;
+﻿namespace Meeting.Features.GetMeetingSummary.V1;
 
 public class GetMeetingSummary
 {

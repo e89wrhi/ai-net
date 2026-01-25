@@ -1,4 +1,4 @@
-﻿namespace User.Users.Enums;
+﻿namespace User.Enums;
 
 public class TrackedModule
     {

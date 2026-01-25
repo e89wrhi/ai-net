@@ -1,4 +1,4 @@
-﻿namespace Payment.Payment.Events;
+﻿namespace Payment.Events;
 
 public class SubscriptionCreatedDomainEvent
 {

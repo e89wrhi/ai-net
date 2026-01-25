@@ -1,4 +1,4 @@
-﻿namespace ChatBot.Chat.Features.SendMessage.V1;
+﻿namespace ChatBot.Features.SendMessage.V1;
 
 public class SendMessageMongo
 {

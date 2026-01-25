@@ -1,4 +1,4 @@
-﻿namespace Payment.Payment.Features.GetInvoices.V1;
+﻿namespace Payment.Features.GetInvoices.V1;
 
 public class GetInvoices
 {

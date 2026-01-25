@@ -1,4 +1,4 @@
-﻿namespace LearningAssistant.Assistant.Events;
+﻿namespace LearningAssistant.Events;
 
 public class ProgressUpdatedDomainEvent
 {

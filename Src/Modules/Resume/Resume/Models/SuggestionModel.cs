@@ -1,4 +1,4 @@
-﻿namespace Resume.Resume.Models;
+﻿namespace Resume.Models;
 
 public class SuggestionModel
     {

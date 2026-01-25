@@ -1,4 +1,4 @@
-﻿namespace User.Users.Models;
+﻿namespace User.Models;
 
 public class UserModel
 {

@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Payment.Payment.Models;
+namespace Payment.Models;
 
 public class UsageCharge
     {

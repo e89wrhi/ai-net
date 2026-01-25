@@ -1,4 +1,4 @@
-﻿namespace ChatBot.Chat.Features.GetChatHistory.V1;
+﻿namespace ChatBot.Features.GetChatHistory.V1;
 
 public class GetChatHistory
 {

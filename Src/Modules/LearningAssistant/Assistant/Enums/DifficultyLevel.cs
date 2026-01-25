@@ -1,4 +1,4 @@
-﻿namespace LearningAssistant.Assistant.Enums;
+﻿namespace LearningAssistant.Enums;
 
 public class DifficultyLevel
     {

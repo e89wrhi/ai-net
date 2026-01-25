@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace User.Users.Models;
+namespace User.Models;
 
 public class UserActivity
     {

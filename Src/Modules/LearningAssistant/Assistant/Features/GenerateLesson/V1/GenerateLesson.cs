@@ -1,4 +1,4 @@
-﻿namespace LearningAssistant.Assistant.Features.GenerateLesson.V1;
+﻿namespace LearningAssistant.Features.GenerateLesson.V1;
 
 public class GenerateLesson
 {

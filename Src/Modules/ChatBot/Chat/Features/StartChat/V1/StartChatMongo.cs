@@ -1,4 +1,4 @@
-﻿namespace ChatBot.Chat.Features.StartChat.V1;
+﻿namespace ChatBot.Features.StartChat.V1;
 
 public class StartChatMongo
 {

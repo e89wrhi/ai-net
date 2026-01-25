@@ -1,4 +1,4 @@
-﻿namespace User.Users.Features.GetUserUsageSummary.V1;
+﻿namespace User.Features.GetUserUsageSummary.V1;
 
 public class GetUserUsageSummary
 {

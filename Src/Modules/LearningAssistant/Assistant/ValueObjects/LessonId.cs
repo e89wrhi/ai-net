@@ -1,4 +1,4 @@
-﻿namespace LearningAssistant.Assistant.ValueObjects;
+﻿namespace LearningAssistant.ValueObjects;
 
 public class LessonId
 {

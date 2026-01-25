@@ -1,4 +1,4 @@
-﻿namespace ImageCaption.Caption.Enums;
+﻿namespace ImageCaption.Enums;
 
 public class ImageProcessingStatus
     {

@@ -1,4 +1,4 @@
-﻿namespace Meeting.Meeting.Enums;
+﻿namespace Meeting.Enums;
 
 public class TranscriptLanguage
     {

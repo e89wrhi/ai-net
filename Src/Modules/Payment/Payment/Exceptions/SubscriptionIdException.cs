@@ -1,4 +1,4 @@
-﻿namespace Payment.Payment.Exceptions;
+﻿namespace Payment.Exceptions;
 
 public class SubscriptionIdException
 {

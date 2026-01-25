@@ -1,4 +1,4 @@
-﻿namespace ImageCaption.Caption.ValueObjects;
+﻿namespace ImageCaption.ValueObjects;
 
 public class ImageId
 {

@@ -1,4 +1,4 @@
-﻿namespace ChatBot.Chat.Models;
+﻿namespace ChatBot.Models;
 
 public class MessageModel
 {

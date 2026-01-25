@@ -1,4 +1,4 @@
-﻿namespace Payment.Payment.Features.GenerateInvoice.V1;
+﻿namespace Payment.Features.GenerateInvoice.V1;
 
 public class GenerateInvoice
 {

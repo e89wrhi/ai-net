@@ -1,4 +1,4 @@
-﻿namespace Payment.Payment.Features.CancelSubscription.V1;
+﻿namespace Payment.Features.CancelSubscription.V1;
 
 public class CancelSubscription
 {

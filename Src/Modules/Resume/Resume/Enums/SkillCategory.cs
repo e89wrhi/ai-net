@@ -1,4 +1,4 @@
-﻿namespace Resume.Resume.Enums;
+﻿namespace Resume.Enums;
 
 public class SkillCategory
     {

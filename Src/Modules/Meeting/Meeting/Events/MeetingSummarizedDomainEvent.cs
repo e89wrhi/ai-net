@@ -1,4 +1,4 @@
-﻿namespace Meeting.Meeting.Events;
+﻿namespace Meeting.Events;
 
 public class MeetingSummarizedDomainEvent
 {

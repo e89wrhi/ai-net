@@ -1,4 +1,4 @@
-﻿namespace ChatBot.Chat.Exceptions;
+﻿namespace ChatBot.Exceptions;
 
 public class MessageSenderException
 {

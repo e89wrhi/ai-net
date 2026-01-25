@@ -1,4 +1,4 @@
-﻿namespace Payment.Payment.Enums;
+﻿namespace Payment.Enums;
 
 public class SubscriptionStatus
     {

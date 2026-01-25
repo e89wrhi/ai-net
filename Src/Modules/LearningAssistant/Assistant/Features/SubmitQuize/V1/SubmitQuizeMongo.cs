@@ -1,4 +1,4 @@
-﻿namespace LearningAssistant.Assistant.Features.SubmitQuize.V1;
+﻿namespace LearningAssistant.Features.SubmitQuize.V1;
 
 public class SubmitQuizeMongo
 {

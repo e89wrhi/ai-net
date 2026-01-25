@@ -1,4 +1,4 @@
-﻿namespace User.Users.Features.TrackActivity.V1;
+﻿namespace User.Features.TrackActivity.V1;
 
 public class TrackActivityMongo
 {

@@ -1,4 +1,4 @@
-﻿namespace Meeting.Meeting.Exceptions;
+﻿namespace Meeting.Exceptions;
 
 public class AudioSourceException
 {

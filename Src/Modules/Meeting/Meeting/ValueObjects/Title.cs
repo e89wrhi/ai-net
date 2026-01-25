@@ -1,4 +1,4 @@
-﻿namespace Meeting.Meeting.ValueObjects;
+﻿namespace Meeting.ValueObjects;
 
 public class Title
 {

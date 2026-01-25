@@ -1,4 +1,4 @@
-﻿namespace Payment.Payment.ValueObjects;
+﻿namespace Payment.ValueObjects;
 
 public class InvoiceId
 {

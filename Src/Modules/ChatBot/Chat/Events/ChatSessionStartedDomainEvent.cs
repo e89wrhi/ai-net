@@ -1,4 +1,4 @@
-﻿namespace ChatBot.Chat.Events;
+﻿namespace ChatBot.Events;
 
 public class ChatSessionStartedDomainEvent
 {

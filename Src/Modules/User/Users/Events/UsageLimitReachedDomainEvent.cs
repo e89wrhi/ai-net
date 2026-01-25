@@ -1,4 +1,4 @@
-﻿namespace User.Users.Events;
+﻿namespace User.Events;
 
 public class UsageLimitReachedDomainEvent
 {

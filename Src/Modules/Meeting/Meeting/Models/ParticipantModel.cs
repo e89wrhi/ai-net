@@ -1,4 +1,4 @@
-﻿namespace Meeting.Meeting.Models;
+﻿namespace Meeting.Models;
 
 public class ParticipantModel
 {

@@ -1,4 +1,4 @@
-﻿namespace ImageCaption.Caption.Models;
+﻿namespace ImageCaption.Models;
 
 public class DetectedObject
     {

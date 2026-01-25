@@ -1,4 +1,4 @@
-﻿namespace Payment.Payment.Models;
+﻿namespace Payment.Models;
 
 public class InvoiceModel
     {

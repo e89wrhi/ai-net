@@ -1,4 +1,4 @@
-﻿namespace ImageCaption.Caption.Exceptions;
+﻿namespace ImageCaption.Exceptions;
 
 public class CaptionIdException
 {

@@ -1,4 +1,4 @@
-﻿namespace ImageCaption.Caption.Features.GenerateCaption.V1;
+﻿namespace ImageCaption.Features.GenerateCaption.V1;
 
 public class GenerateCaption
 {

@@ -1,4 +1,4 @@
-﻿namespace Resume.Resume.Events;
+﻿namespace Resume.Events;
 
 public class ResumeParsedDomainEvent
 {

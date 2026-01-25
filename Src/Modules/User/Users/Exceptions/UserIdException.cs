@@ -1,4 +1,4 @@
-﻿namespace User.Users.Exceptions;
+﻿namespace User.Exceptions;
 
 public class UserIdException
 {

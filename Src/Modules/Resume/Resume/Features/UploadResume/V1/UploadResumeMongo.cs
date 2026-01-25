@@ -1,4 +1,4 @@
-﻿namespace Resume.Resume.Features.UploadResume.V1;
+﻿namespace Resume.Features.UploadResume.V1;
 
 public class UploadResumeMongo
 {
