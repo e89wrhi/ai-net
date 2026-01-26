@@ -1,5 +1,8 @@
-﻿namespace User.Models;
+﻿using AI.Common.Core;
+using User.ValueObjects;
 
-public class UserModel
+namespace User.Models;
+
+public record UserModel : Aggregate<UserId>
 {
 }

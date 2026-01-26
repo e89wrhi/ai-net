@@ -1,5 +1,8 @@
-﻿namespace ChatBot.Models;
+﻿using AI.Common.Core;
+using ChatBot.ValueObjects;
 
-public class ChatModel
+namespace ChatBot.Models;
+
+public record ChatModel : Aggregate<SessionId>
 {
 }

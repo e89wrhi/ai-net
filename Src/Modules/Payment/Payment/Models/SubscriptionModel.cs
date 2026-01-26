@@ -1,7 +1,10 @@
-﻿namespace Payment.Models;
+﻿using AI.Common.Core;
+using Payment.ValueObjects;
 
-public class SubscriptionModel
-    {
+namespace Payment.Models;
+
+public record SubscriptionModel : Aggregate<SubscriptionId>
+{
         SubscriptionId
    UserId
   Plan

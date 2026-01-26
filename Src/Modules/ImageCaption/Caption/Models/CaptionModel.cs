@@ -1,7 +1,11 @@
-﻿namespace ImageCaption.Models;
+﻿using AI.Common.Core;
+using ImageCaption.ValueObjects;
 
-public class CaptionModel
-    {
+
+namespace ImageCaption.Models;
+
+public record CaptionModel : Entity<CaptionId>
+{
         // text
         // confidence score
         // language

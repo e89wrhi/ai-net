@@ -1,7 +1,11 @@
-﻿namespace LearningAssistant.Models;
+﻿using AI.Common.Core;
+using LearningAssistant.ValueObjects;
 
-public class QuizeModel
-    {
+
+namespace LearningAssistant.Models;
+
+public record QuizeModel : Entity<QuizeId>
+{
         // questons
         // score
     }

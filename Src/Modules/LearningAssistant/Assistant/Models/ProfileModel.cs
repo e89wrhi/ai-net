@@ -1,7 +1,11 @@
-﻿namespace LearningAssistant.Models;
+﻿using AI.Common.Core;
+using LearningAssistant.ValueObjects;
 
-public class ProfileModel
-    {
+
+namespace LearningAssistant.Models;
+
+public record ProfileModel : Entity<ProfileId>
+{
         // complition rate
         // last accessed
     }

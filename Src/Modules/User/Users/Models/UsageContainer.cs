@@ -1,7 +1,10 @@
-﻿namespace User.Models;
+﻿using AI.Common.Core;
+using User.ValueObjects;
 
-public class UsageContainer
-    {
+namespace User.Models;
+
+public record UsageContainer : Entity<UsageContainerId>
+{
         Period(Daily / Monthly)
 TokensUsed
 RequestsCount

@@ -1,7 +1,10 @@
-﻿namespace Payment.Models;
+﻿using AI.Common.Core;
+using Payment.ValueObjects;
 
-public class InvoiceModel
-    {
+namespace Payment.Models;
+
+public record InvoiceModel : Entity<InvoiceId>
+{
         InvoiceId
 Period
 TotalAmount

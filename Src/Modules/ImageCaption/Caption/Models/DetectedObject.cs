@@ -1,7 +1,10 @@
-﻿namespace ImageCaption.Models;
+﻿using AI.Common.Core;
+using ImageCaption.ValueObjects;
 
-public class DetectedObject
-    {
+namespace ImageCaption.Models;
+
+public record DetectedObject : Entity<DetectedObjectId>
+{
         // label
         // bounding box
         // probability

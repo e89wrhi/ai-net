@@ -1,7 +1,11 @@
-﻿namespace Meeting.Models;
+﻿using AI.Common.Core;
+using Meeting.ValueObjects;
 
-public class MeetingModel
-    {
+
+namespace Meeting.Models;
+
+public record MeetingModel : Aggregate<MeetingId>
+{
         // keypoints
         // action items
 

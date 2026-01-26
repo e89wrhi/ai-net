@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+﻿using AI.Common.Core;
+using Payment.ValueObjects;
 
 namespace Payment.Models;
 
-public class UsageCharge
-    {
+public record UsageCharge : Entity<UsageChargeId>
+{
         Module
 TokensUsed
 Cost

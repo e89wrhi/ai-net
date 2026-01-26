@@ -1,7 +1,10 @@
-﻿namespace Resume.Models;
+﻿using AI.Common.Core;
+using Resume.ValueObjects;
 
-public class SuggestionModel
-    {
+namespace Resume.Models;
+
+public record SuggestionModel : Entity<SuggestionId>
+{
         // type
         // description
         // priority

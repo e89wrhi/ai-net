@@ -1,5 +1,8 @@
-﻿namespace ChatBot.Models;
+﻿using AI.Common.Core;
+using ChatBot.ValueObjects;
 
-public class MessageModel
+namespace ChatBot.Models;
+
+public record MessageModel : Entity<MessageId>
 {
 }

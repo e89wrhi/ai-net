@@ -1,7 +1,10 @@
-﻿namespace Resume.Models;
+﻿using AI.Common.Core;
+using Resume.ValueObjects;
 
-public class ExpirenceModel
-    {
+namespace Resume.Models;
+
+public record ExpirenceModel : Entity<ExpirenceId>
+{
         // company
         // role
         // start at

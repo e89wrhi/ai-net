@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+﻿using AI.Common.Core;
+using User.ValueObjects;
 
 namespace User.Models;
 
-public class UserActivity
-    {
+public record UserActivity : Entity<UserActivityId>
+{
         ActivityId
 UserId
 Module

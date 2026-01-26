@@ -1,7 +1,10 @@
-﻿namespace Resume.Models;
+﻿using AI.Common.Core;
+using Resume.ValueObjects;
 
-public class SkillModel
-    {
+namespace Resume.Models;
+
+public record SkillModel : Entity<SkillId>
+{
         // name
         // category
         // confidence score

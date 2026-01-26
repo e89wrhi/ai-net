@@ -1,6 +1,9 @@
-﻿namespace Resume.Models;
+﻿using AI.Common.Core;
+using Resume.ValueObjects;
 
-public class ResumeModel
-    {
+namespace Resume.Models;
+
+public record ResumeModel : Aggregate<ResumeId>
+{
         // alayzed at
     }

@@ -1,5 +1,9 @@
-﻿namespace ImageCaption.Models;
+﻿using AI.Common.Core;
+using ImageCaption.ValueObjects;
 
-public class ImageModel
+
+namespace ImageCaption.Models;
+
+public record ImageModel : Aggregate<ImageId>
 {
 }

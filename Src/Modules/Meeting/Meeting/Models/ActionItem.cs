@@ -1,7 +1,11 @@
-﻿namespace Meeting.Models;
+﻿using AI.Common.Core;
+using Meeting.ValueObjects;
 
-public class ActionItem
-    {
+
+namespace Meeting.Models;
+
+public record ActionItem : Entity<ActionItemId>
+{
         // description
         // owner
         // due date

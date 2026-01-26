@@ -1,5 +1,8 @@
-﻿namespace Meeting.Models;
+﻿using AI.Common.Core;
+using Meeting.ValueObjects;
 
-public class ParticipantModel
+namespace Meeting.Models;
+
+public record ParticipantModel : Entity<ParticipantId>
 {
 }
