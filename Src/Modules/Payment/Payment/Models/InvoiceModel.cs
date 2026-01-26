@@ -1,13 +1,18 @@
 ﻿using AI.Common.Core;
+using Payment.Enums;
 using Payment.ValueObjects;
 
 namespace Payment.Models;
 
 public record InvoiceModel : Entity<InvoiceId>
 {
-        InvoiceId
-Period
-TotalAmount
-LineItems
-Status
-    }
+    public SubscriptionId SubscriptionId { get; private set; } = default!;
+    public UserId UserId { get; private set; } = default!;
+    public BillingPeriod Period { get; private set; } = default!;
+
+    public Money TotalAmount { get; private set; } = default!;
+
+    public string LineItems { get; private set; } = default!;
+
+    public InvoiceStatus Status { get; private set; } = default!;
+}

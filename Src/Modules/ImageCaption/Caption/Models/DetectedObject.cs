@@ -5,7 +5,9 @@ namespace ImageCaption.Models;
 
 public record DetectedObject : Entity<DetectedObjectId>
 {
-        // label
-        // bounding box
-        // probability
-    }
+    public ImageId ImageId { get; private set; } = default!;
+    public string Label { get; private set; } = default!;
+    public string BoundingBox { get; private set; } = default!;
+    public string Probability { get; private set; } = default!;
+
+}

@@ -1,15 +1,8 @@
 ﻿namespace AiOrchestration.Enums;
 
-public class AIProvider
-    {
-        AIProvider
-OpenAI
-AzureOpenAI
-LocalLLM
-
-ExecutionStatus
-Pending
-Executed
-Failed
-Retried
-    }
+public enum AIProvider
+{
+    OpenAI = 0,
+    AzureOpenAI = 1,
+    LocalLLM = 2,
+}

@@ -6,7 +6,8 @@ namespace Meeting.Models;
 
 public record ActionItem : Entity<ActionItemId>
 {
-        // description
-        // owner
-        // due date
-    }
+    public MeetingId MeetingId { get; private set; } = default!;
+    public string Description { get; private set; } = default!;
+    public string Owner { get; private set; } = default!;
+    public DateTime DueDate { get; private set; } = default!;
+}

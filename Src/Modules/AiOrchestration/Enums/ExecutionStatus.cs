@@ -1,15 +1,9 @@
 ﻿namespace AiOrchestration.Enums;
 
-public class ExecutionStatus
-    {
-        AIProvider
-OpenAI
-AzureOpenAI
-LocalLLM
-
-ExecutionStatus
-Pending
-Executed
-Failed
-Retried
-    }
+public enum ExecutionStatus
+{
+    Pending = 0,
+    Executed = 1,
+    Failed = 2,
+    Retried = 3,
+}
