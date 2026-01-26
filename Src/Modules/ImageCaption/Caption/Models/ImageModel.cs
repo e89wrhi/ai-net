@@ -26,4 +26,42 @@ public record ImageModel : Aggregate<ImageId>
 
     private readonly List<CaptionModel> _captions = new();
     public IReadOnlyCollection<CaptionModel> Captions => _captions.AsReadOnly();
+
+    private ImageModel() { }
+
+    public static ImageModel Create(ImageId id, string userId, FileReference fileReference, int width, int height, long size, string format)
+    {
+        var image = new ImageModel
+        {
+            Id = id,
+            UserId = userId,
+            FileReference = fileReference,
+            Width = width,
+            Height = height,
+            SizeInBytes = size,
+            Format = format,
+            ImageProcessingStatus = ImageProcessingStatus.Pending,
+            UploadedAt = DateTime.UtcNow,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        image.AddDomainEvent(new ImageCaption.Events.ImageUploadedDomainEvent(id, userId, format));
+        return image;
+    }
+
+    public void AddDetectedObject(DetectedObject obj)
+    {
+        _objects.Add(obj);
+        ImageProcessingStatus = ImageProcessingStatus.Processing;
+    }
+
+    public void AddCaption(CaptionModel caption)
+    {
+        _captions.Add(caption);
+        ProcessedAt = DateTime.UtcNow;
+        ImageProcessingStatus = ImageProcessingStatus.Completed;
+
+        AddDomainEvent(new ImageCaption.Events.CaptionGeneratedDomainEvent(Id, caption.Text));
+        AddDomainEvent(new ImageCaption.Events.ImageAnalyzedDomainEvent(Id, _objects.Count));
+    }
 }

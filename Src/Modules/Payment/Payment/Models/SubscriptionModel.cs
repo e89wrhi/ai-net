@@ -30,4 +30,43 @@ public record SubscriptionModel : Aggregate<SubscriptionId>
     private readonly List<UsageCharge> _charges = new();
     public IReadOnlyCollection<UsageCharge> Charges => _charges.AsReadOnly();
 
+    private SubscriptionModel() { }
+
+    public static SubscriptionModel Create(SubscriptionId id, UserId userId, SubscriptionPlan plan, PlanLimits limits)
+    {
+        var subscription = new SubscriptionModel
+        {
+            Id = id,
+            UserId = userId,
+            Plan = plan,
+            PlanLimits = limits,
+            SubscriptionStatus = SubscriptionStatus.Active,
+            StartedAt = DateTime.UtcNow,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        subscription.AddDomainEvent(new Payment.Events.SubscriptionCreatedDomainEvent(id, userId, plan.ToString()));
+        return subscription;
+    }
+
+    public void Renew(DateTime nextExpiry)
+    {
+        RenewedAt = DateTime.UtcNow;
+        ExpiresAt = nextExpiry;
+        LastModified = DateTime.UtcNow;
+
+        AddDomainEvent(new Payment.Events.SubscriptionRenewedDomainEvent(Id, nextExpiry));
+    }
+
+    public void AddInvoice(InvoiceModel invoice)
+    {
+        _invoices.Add(invoice);
+        AddDomainEvent(new Payment.Events.InvoiceGeneratedDomainEvent(invoice.Id, Id, invoice.TotalAmount.Amount));
+    }
+
+    public void AddCharge(UsageCharge charge)
+    {
+        _charges.Add(charge);
+        AddDomainEvent(new Payment.Events.UsageChargedDomainEvent(Id, charge.Description, charge.Amount.Amount));
+    }
 }

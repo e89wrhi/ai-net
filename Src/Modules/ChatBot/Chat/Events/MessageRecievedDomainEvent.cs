@@ -1,5 +1,6 @@
-﻿namespace ChatBot.Events;
+﻿using AI.Common.Core;
+using ChatBot.ValueObjects;
 
-public class MessageRecievedDomainEvent
-{
-}
+namespace ChatBot.Events;
+
+public record MessageRecievedDomainEvent(SessionId SessionId, MessageId MessageId, string Content) : IDomainEvent;

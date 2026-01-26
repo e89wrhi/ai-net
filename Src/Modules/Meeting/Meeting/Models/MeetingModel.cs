@@ -30,4 +30,45 @@ public record MeetingModel : Aggregate<MeetingId>
     public TranscriptLanguage Language { get; private set; } = default!;
     public double ConfidenceScore { get; private set; } = default!;
 
+    private MeetingModel() { }
+
+    public static MeetingModel Create(MeetingId id, string organizerId, Title title, AudioSource audioSource)
+    {
+        var meeting = new MeetingModel
+        {
+            Id = id,
+            OrganizerId = organizerId,
+            Title = title,
+            AudioSource = audioSource,
+            MeetingStatus = MeetingStatus.Pending,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        meeting.AddDomainEvent(new Meeting.Events.MeetingUploadedDomainEvent(id, title.Value));
+        return meeting;
+    }
+
+    public void AddActionItem(ActionItem action)
+    {
+        _actions.Add(action);
+        AddDomainEvent(new Meeting.Events.ActionItemAddedDomainEvent(Id, action.Description));
+    }
+
+    public void AddParticipant(ParticipantModel participant)
+    {
+        _participants.Add(participant);
+    }
+
+    public void CompleteTranscription(string text, TranscriptLanguage language, double score, string summary)
+    {
+        Text = text;
+        Language = language;
+        ConfidenceScore = score;
+        Summary = new Summary(summary);
+        MeetingStatus = MeetingStatus.Completed;
+        LastModified = DateTime.UtcNow;
+
+        AddDomainEvent(new Meeting.Events.MeetingTranscribedDomainEvent(Id, language.Value));
+        AddDomainEvent(new Meeting.Events.MeetingSummarizedDomainEvent(Id, summary));
+    }
 }

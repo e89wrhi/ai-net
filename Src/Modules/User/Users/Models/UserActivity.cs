@@ -14,4 +14,22 @@ public record UserActivity : Entity<UserActivityId>
     public ActivityMetadata Metadata { get; private set; } = default!;
     public string IpAddress { get; private set; } = default!;
     public string UserAgent { get; private set; } = default!;
+
+    private UserActivity() { }
+
+    public static UserActivity Create(UserActivityId id, UserId userId, TrackedModule module, string action, Guid resourceId, string ip, string userAgent)
+    {
+        return new UserActivity
+        {
+            Id = id,
+            UserId = userId,
+            Module = module,
+            Action = action,
+            ResourceId = resourceId,
+            IpAddress = ip,
+            UserAgent = userAgent,
+            TimeStamp = DateTimeOffset.UtcNow,
+            CreatedAt = DateTime.UtcNow
+        };
+    }
 }

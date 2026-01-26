@@ -17,4 +17,31 @@ public record LessonModel : Entity<LessonId>
 
     private readonly List<QuizeModel> _quizes = new();
     public IReadOnlyCollection<QuizeModel> Quizes => _quizes.AsReadOnly();
+
+    private LessonModel() { }
+
+    public static LessonModel Create(LessonId id, ProfileId profileId, string title, string content, DifficultyLevel level)
+    {
+        return new LessonModel
+        {
+            Id = id,
+            ProfileId = profileId,
+            Title = title,
+            Content = content,
+            DifficultyLevel = level,
+            IsCompleted = false,
+            CreatedAt = DateTime.UtcNow
+        };
+    }
+
+    public void Complete()
+    {
+        IsCompleted = true;
+        LastModified = DateTime.UtcNow;
+    }
+
+    public void AddQuize(QuizeModel quize)
+    {
+        _quizes.Add(quize);
+    }
 }

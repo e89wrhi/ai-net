@@ -1,5 +1,6 @@
-﻿namespace User.Events;
+﻿using AI.Common.Core;
+using User.ValueObjects;
 
-public class UsageLimitReachedDomainEvent
-{
-}
+namespace User.Events;
+
+public record UsageLimitReachedDomainEvent(UserId UserId, string Message) : IDomainEvent;

@@ -28,4 +28,44 @@ public record ResumeModel : Aggregate<ResumeId>
     public IReadOnlyCollection<SuggestionModel> Suggestions => _suggestions.AsReadOnly();
 
     public DateTime? AnalyzedAt { get; private set; } = default!;
+
+    private ResumeModel() { }
+
+    public static ResumeModel Create(ResumeId id, string userId, CandidateName name, FileReference file)
+    {
+        var resume = new ResumeModel
+        {
+            Id = id,
+            UserId = userId,
+            CandidateName = name,
+            FileReference = file,
+            ResumeStatus = ResumeStatus.Uploaded,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        resume.AddDomainEvent(new Resume.Events.ResumeUploadedDomainEvent(id, userId, file.Value));
+        return resume;
+    }
+
+    public void AddSkill(SkillModel skill)
+    {
+        _skills.Add(skill);
+    }
+
+    public void AddSuggestion(SuggestionModel suggestion)
+    {
+        _suggestions.Add(suggestion);
+    }
+
+    public void CompleteAnalysis(string summary, ParsedText parsedText)
+    {
+        Summary = summary;
+        ParsedText = parsedText;
+        ResumeStatus = ResumeStatus.Analyzed;
+        AnalyzedAt = DateTime.UtcNow;
+        LastModified = DateTime.UtcNow;
+
+        AddDomainEvent(new Resume.Events.ResumeParsedDomainEvent(Id, parsedText.Value.Length));
+        AddDomainEvent(new Resume.Events.ResumeAnalyzedDomainEvent(Id, _skills.Count, _suggestions.Count));
+    }
 }
