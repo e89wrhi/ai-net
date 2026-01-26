@@ -4,7 +4,7 @@ namespace Resume.Exceptions;
 
 public class ScoreException : DomainException
 {
-    public ScoreException(int score)
+    public ScoreException(double score)
         : base($"score: '{score}' is invalid.")
     {
     }
