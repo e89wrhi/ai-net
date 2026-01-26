@@ -3,6 +3,10 @@ using AiOrchestration.ValueObjects;
 
 public record AiModel : Entity<ModelId>
 {
+    public string Name { get; private set; } = default!;
+    public string Description { get; private set; } = default!;
+    public string Version { get; private set; } = default!;
+    public bool IsActive { get; private set; } = true;
     public Provider Provider { get; private set; } = default!;
     public string Capabilities { get; private set; } = default!;
     public CostEstimate CostEstimate { get; private set; } = default!;

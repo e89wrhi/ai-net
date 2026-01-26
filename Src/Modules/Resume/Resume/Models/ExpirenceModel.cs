@@ -13,4 +13,6 @@ public record ExpirenceModel : Entity<ExpirenceId>
     public DateTime? StartedAt { get; private set; } = default!;
 
     public DateTime? EndedAt { get; private set; } = default!;
+    public string Description { get; private set; } = default!;
+    public string Location { get; private set; } = default!;
 }

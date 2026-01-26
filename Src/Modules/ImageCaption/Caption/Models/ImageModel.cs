@@ -10,6 +10,11 @@ public record ImageModel : Aggregate<ImageId>
 
     public ImageProcessingStatus ImageProcessingStatus { get; private set; } = default!;
 
+    public string UserId { get; private set; } = default!;
+    public int Width { get; private set; } = default!;
+    public int Height { get; private set; } = default!;
+    public long SizeInBytes { get; private set; } = default!;
+    public string Format { get; private set; } = default!;
     public DateTime UploadedAt { get; private set; } = default!;
 
     public DateTime ProcessedAt { get; private set; } = default!;

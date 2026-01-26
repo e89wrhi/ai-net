@@ -12,4 +12,6 @@ public record UserActivity : Entity<UserActivityId>
     public Guid ResourceId { get; private set; } = default!;
     public DateTimeOffset TimeStamp { get; private set; } = default!;
     public ActivityMetadata Metadata { get; private set; } = default!;
+    public string IpAddress { get; private set; } = default!;
+    public string UserAgent { get; private set; } = default!;
 }

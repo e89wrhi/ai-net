@@ -11,6 +11,10 @@ public record MeetingModel : Aggregate<MeetingId>
     public Title Title { get; private set; } = default!;
     public Summary Summary { get; private set; } = default!;
     public AudioSource AudioSource { get; private set; } = default!;
+    public string OrganizerId { get; private set; } = default!;
+    public DateTime? StartTime { get; private set; } = default!;
+    public DateTime? EndTime { get; private set; } = default!;
+    public string RecordingUrl { get; private set; } = default!;
 
     private readonly List<ActionItem> _actions = new();
     public IReadOnlyCollection<ActionItem> Actions => _actions.AsReadOnly();

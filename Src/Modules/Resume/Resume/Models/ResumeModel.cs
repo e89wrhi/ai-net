@@ -11,6 +11,9 @@ public record ResumeModel : Aggregate<ResumeId>
     public ParsedText ParsedText { get; private set; } = default!;
     public SourceFile SourceFile { get; private set; } = default!;
     public ResumeStatus ResumeStatus { get; private set; } = default!;
+    public string UserId { get; private set; } = default!;
+    public string Email { get; private set; } = default!;
+    public string Summary { get; private set; } = default!;
 
 
     private readonly List<ExpirenceModel> _expirences = new();

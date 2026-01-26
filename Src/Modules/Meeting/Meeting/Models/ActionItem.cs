@@ -10,4 +10,6 @@ public record ActionItem : Entity<ActionItemId>
     public string Description { get; private set; } = default!;
     public string Owner { get; private set; } = default!;
     public DateTime DueDate { get; private set; } = default!;
+    public bool IsCompleted { get; private set; } = default!;
+    public string Priority { get; private set; } = default!;
 }

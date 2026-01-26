@@ -15,4 +15,8 @@ public record InvoiceModel : Entity<InvoiceId>
     public string LineItems { get; private set; } = default!;
 
     public InvoiceStatus Status { get; private set; } = default!;
+    public string InvoiceNumber { get; private set; } = default!;
+    public DateTime IssueDate { get; private set; } = default!;
+    public DateTime DueDate { get; private set; } = default!;
+    public DateTime? PaidDate { get; private set; } = default!;
 }

@@ -13,6 +13,9 @@ public record ChatModel : Aggregate<SessionId>
     public DateTime LastSentAt { get; private set; } = default!;
 
     public string Title { get; private set; } = default!;
+    public string Summary { get; private set; } = default!;
+    public string AiModelId { get; private set; } = default!;
+    public int TotalTokens { get; private set; } = default!;
 
 
     private readonly List<MessageModel> _messages = new();

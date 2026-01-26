@@ -12,4 +12,5 @@ public record SuggestionModel : Entity<SuggestionId>
     public string Description { get; private set; } = default!;
 
     public int Priority { get; private set; } = default!;
+    public bool IsImplemented { get; private set; } = default!;
 }

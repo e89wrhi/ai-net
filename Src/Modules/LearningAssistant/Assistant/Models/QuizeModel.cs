@@ -10,5 +10,5 @@ public record QuizeModel : Entity<QuizeId>
     public LessonId LessonId { get; private set; } = default!;
     public QuizeStatus QuizeStatus { get; private set; } = default!;
     public double Score { get; private set; } = default!;
-        // questons
-    }
+    public string Questions { get; private set; } = default!;
+}

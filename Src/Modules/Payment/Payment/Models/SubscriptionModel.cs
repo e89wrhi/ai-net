@@ -13,6 +13,9 @@ public record SubscriptionModel : Aggregate<SubscriptionId>
     public SubscriptionPlan Plan { get; private set; } = default!;
 
     public SubscriptionStatus SubscriptionStatus { get; private set; } = default!;
+    public bool CancelAtPeriodEnd { get; private set; } = default!;
+    public string PaymentMethodId { get; private set; } = default!;
+    public string Currency { get; private set; } = default!;
 
     public DateTime? StartedAt { get; private set; } = default!;
 

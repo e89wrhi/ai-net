@@ -16,6 +16,8 @@ public record MessageModel : Entity<MessageId>
     public TokenUsed TokenUsed { get; private set; } = default!;
 
     public MessageSender SenderType {  get; private set; } = default!;
+    public bool IsEdited { get; private set; } = default!;
+    public string Metadata { get; private set; } = default!;
 
 
 }
