@@ -1,8 +1,9 @@
 ﻿namespace Meeting.Enums;
 
-public class MeetingStatus
-    {Uploaded
-Transcribed
-Summarized
-Failed
-    }
+public enum MeetingStatus
+{
+    Uploaded = 0,
+    Transcribed = 1,
+    Summarized = 2,
+    Failed = 3,
+}

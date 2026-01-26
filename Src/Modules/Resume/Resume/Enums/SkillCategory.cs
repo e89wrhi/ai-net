@@ -1,9 +1,9 @@
 ﻿namespace Resume.Enums;
 
-public class SkillCategory
-    {
-    Technical
-    Soft
-    Language
-    Tooling
-    }
+public enum SkillCategory
+{
+    Technical = 0,
+    Soft = 1,
+    Language = 2,
+    Tooling = 3,
+}

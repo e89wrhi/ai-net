@@ -1,7 +1,7 @@
 ﻿namespace ChatBot.Enums;
 
-public class SessionStatus
-    {
-        Active
-Closed
-    }
+public enum SessionStatus
+{
+    Active = 0,
+    Closed = 1,
+}

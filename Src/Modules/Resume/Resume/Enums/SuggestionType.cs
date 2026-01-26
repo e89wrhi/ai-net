@@ -1,8 +1,8 @@
 ﻿namespace Resume.Enums;
 
-public class SuggestionType
-    {
-Formatting
-SkillGap
-ExperienceGap
-    }
+public enum SuggestionType
+{
+    Formatting = 0,
+    SkillGap = 1,
+    ExperienceGap = 2,
+}

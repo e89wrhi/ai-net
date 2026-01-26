@@ -1,8 +1,8 @@
 ﻿namespace LearningAssistant.Enums;
 
-public class DifficultyLevel
-    {
-Beginner
-Intermediate
-Advanced
-    }
+public enum DifficultyLevel
+{
+    Beginner = 0,
+    Intermediate = 1,
+    Advanced = 2,
+}

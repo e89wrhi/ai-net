@@ -1,9 +1,9 @@
 ﻿namespace ImageCaption.Enums;
 
-public class ImageProcessingStatus
-    {
-        Uploaded
-Analyzed
-Captioned
-Failed
-    }
+public enum ImageProcessingStatus
+{
+    Uploaded = 0,
+    Analyzed = 1,
+    Captioned = 2,
+    Failed = 3,
+}

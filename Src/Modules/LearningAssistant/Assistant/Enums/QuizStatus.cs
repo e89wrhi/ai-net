@@ -1,7 +1,7 @@
 ﻿namespace LearningAssistant.Enums;
 
-public class QuizStatus
-    {
-Pending
-Completed
-    }
+public enum QuizStatus
+{
+    Pending = 0,
+    Completed = 1,
+}

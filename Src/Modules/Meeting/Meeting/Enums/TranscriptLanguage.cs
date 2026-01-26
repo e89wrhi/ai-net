@@ -1,8 +1,8 @@
 ﻿namespace Meeting.Enums;
 
-public class TranscriptLanguage
-    {
-        EN
-DE
-FR
-    }
+public enum TranscriptLanguage
+{
+    EN = 0,
+    DE = 1,
+    FR = 2,
+}

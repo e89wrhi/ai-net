@@ -1,7 +1,8 @@
 ﻿namespace ChatBot.Enums;
 
-    public class MessageSender
-    {User
-Assistant
-System
-    }
+public enum MessageSender
+{ 
+    User = 0,
+    Assistant = 1,
+    System = 2
+}

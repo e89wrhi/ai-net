@@ -1,19 +1,8 @@
 ﻿namespace Payment.Enums;
 
-public class SubscriptionStatus
-    {
-        SubscriptionPlan
-Free
-Pro
-Enterprise
-
-SubscriptionStatus
-Active
-PastDue
-Cancelled
-
-InvoiceStatus
-Draft
-Paid
-Failed
-    }
+public enum SubscriptionStatus
+{
+    Active = 0,
+    PastDue = 1,
+    Cancelled = 2,
+}

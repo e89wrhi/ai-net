@@ -1,9 +1,9 @@
 ﻿namespace Resume.Enums;
 
-public class ResumeStatus
-    {
-Uploaded
-Parsed
-Analyzed
-Failed
-    }
+public enum ResumeStatus
+{
+    Uploaded = 0,
+    Parsed = 1,
+    Analyzed = 2,
+    Failed = 3,
+}
