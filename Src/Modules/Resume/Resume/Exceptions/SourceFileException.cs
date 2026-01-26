@@ -1,5 +1,9 @@
 ﻿namespace Resume.Exceptions;
 
-public class SourceFileException
+public class SourceFileException : DomainException
 {
+    public InvalidTimeException(DateTime time)
+        : base($"time: '{time}' is invalid.")
+    {
+    }
 }

@@ -1,5 +1,9 @@
 ﻿namespace Payment.Exceptions;
 
-public class InvoiceException
+public class InvoiceException : DomainException
 {
+    public InvalidTimeException(DateTime time)
+        : base($"time: '{time}' is invalid.")
+    {
+    }
 }
