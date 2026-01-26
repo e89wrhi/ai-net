@@ -1,9 +1,11 @@
-﻿namespace User.Exceptions;
+﻿using AI.Common.BaseExceptions;
+
+namespace User.Exceptions;
 
 public class MetadataException : DomainException
 {
-    public InvalidTimeException(DateTime time)
-        : base($"time: '{time}' is invalid.")
+    public MetadataException(string metadata)
+        : base($"metadata: '{metadata}' is invalid.")
     {
     }
 }

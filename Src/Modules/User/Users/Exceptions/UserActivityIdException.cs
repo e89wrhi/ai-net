@@ -1,9 +1,11 @@
-﻿namespace User.Exceptions;
+﻿using AI.Common.BaseExceptions;
+
+namespace User.Exceptions;
 
 public class UserActivityIdException : DomainException
 {
-    public InvalidTimeException(DateTime time)
-        : base($"time: '{time}' is invalid.")
+    public UserActivityIdException(Guid user_activity_id)
+        : base($"user_activity_id: '{user_activity_id}' is invalid.")
     {
     }
 }

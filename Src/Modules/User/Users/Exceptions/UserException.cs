@@ -1,9 +1,19 @@
-﻿namespace User.Exceptions;
+﻿using AI.Common.BaseExceptions;
 
-public class UserException : DomainException
+namespace User.Exceptions;
+
+public class UserNotFoundException : DomainException
 {
-    public InvalidTimeException(DateTime time)
-        : base($"time: '{time}' is invalid.")
+    public UserNotFoundException(Guid userId)
+        : base($"user: '{userId}' not found.")
+    {
+    }
+}
+
+public class UserAlreadyExistException : DomainException
+{
+    public UserAlreadyExistException(Guid userId)
+        : base($"user: '{userId}' already exist.")
     {
     }
 }

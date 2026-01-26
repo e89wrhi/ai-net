@@ -1,9 +1,11 @@
-﻿namespace ImageCaption.Exceptions;
+﻿using AI.Common.BaseExceptions;
+
+namespace ImageCaption.Exceptions;
 
 public class ObjectIdException : DomainException
 {
-    public InvalidTimeException(DateTime time)
-        : base($"time: '{time}' is invalid.")
+    public ObjectIdException(Guid object_id)
+        : base($"object_id: '{object_id}' is invalid.")
     {
     }
 }

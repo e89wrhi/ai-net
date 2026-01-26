@@ -1,9 +1,11 @@
-﻿namespace User.Exceptions;
+﻿using AI.Common.BaseExceptions;
+
+namespace User.Exceptions;
 
 public class UsageContainerIdException : DomainException
 {
-    public InvalidTimeException(DateTime time)
-        : base($"time: '{time}' is invalid.")
+    public UsageContainerIdException(Guid usage_container_id)
+        : base($"usage_container_id: '{usage_container_id}' is invalid.")
     {
     }
 }

@@ -1,9 +1,19 @@
-﻿namespace LearningAssistant.Exceptions;
+﻿using AI.Common.BaseExceptions;
 
-public class LessonException : DomainException
+namespace LearningAssistant.Exceptions;
+
+public class LessonNotFoundException : DomainException
 {
-    public InvalidTimeException(DateTime time)
-        : base($"time: '{time}' is invalid.")
+    public LessonNotFoundException(Guid lessonId)
+        : base($"lesson: '{lessonId}' not found.")
+    {
+    }
+}
+
+public class LessonAlreadyExistException : DomainException
+{
+    public LessonAlreadyExistException(Guid lessonId)
+        : base($"lesson: '{lessonId}' already exist.")
     {
     }
 }

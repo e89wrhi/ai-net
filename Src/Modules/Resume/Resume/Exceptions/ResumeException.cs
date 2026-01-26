@@ -1,9 +1,11 @@
-﻿namespace Resume.Exceptions;
+﻿using AI.Common.BaseExceptions;
+
+namespace Resume.Exceptions;
 
 public class ResumeException : DomainException
 {
-    public InvalidTimeException(DateTime time)
-        : base($"time: '{time}' is invalid.")
+    public ResumeException(string resume)
+        : base($"resume: '{resume}' is invalid.")
     {
     }
 }

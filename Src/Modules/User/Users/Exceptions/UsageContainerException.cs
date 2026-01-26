@@ -1,9 +1,11 @@
-﻿namespace User.Exceptions;
+﻿using AI.Common.BaseExceptions;
+
+namespace User.Exceptions;
 
 public class UsageContainerException : DomainException
 {
-    public InvalidTimeException(DateTime time)
-        : base($"time: '{time}' is invalid.")
+    public UsageContainerException(string usage_container)
+        : base($"usage_container: '{usage_container}' is invalid.")
     {
     }
 }

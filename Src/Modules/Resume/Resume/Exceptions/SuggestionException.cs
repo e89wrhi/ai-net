@@ -1,9 +1,11 @@
-﻿namespace Resume.Exceptions;
+﻿using AI.Common.BaseExceptions;
+
+namespace Resume.Exceptions;
 
 public class SuggestionException : DomainException
 {
-    public InvalidTimeException(DateTime time)
-        : base($"time: '{time}' is invalid.")
+    public SuggestionException(string suggestion)
+        : base($"suggestion: '{suggestion}' is invalid.")
     {
     }
 }

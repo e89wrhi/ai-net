@@ -1,9 +1,11 @@
-﻿namespace ChatBot.Exceptions;
+﻿using AI.Common.BaseExceptions;
+
+namespace ChatBot.Exceptions;
 
 public class MessageTimeException : DomainException
 {
-    public InvalidTimeException(DateTime time)
-        : base($"time: '{time}' is invalid.")
+    public MessageTimeException(DateTime msg_session_time)
+        : base($"msg_session_time: '{msg_session_time}' is invalid.")
     {
     }
 }

@@ -1,9 +1,20 @@
-﻿namespace ImageCaption.Exceptions;
+﻿using AI.Common.BaseExceptions;
 
-public class ImageException : DomainException
+namespace ImageCaption.Exceptions;
+
+public class ImageNotFoundException : DomainException
 {
-    public InvalidTimeException(DateTime time)
-        : base($"time: '{time}' is invalid.")
+    public ImageNotFoundException(Guid imageId)
+        : base($"image: '{imageId}' not found.")
     {
     }
 }
+
+public class ImageAlreadyExistException : DomainException
+{
+    public ImageAlreadyExistException(Guid imageId)
+        : base($"image: '{imageId}' already exist.")
+    {
+    }
+}
+

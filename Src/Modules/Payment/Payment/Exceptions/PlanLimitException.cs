@@ -1,9 +1,11 @@
-﻿namespace Payment.Exceptions;
+﻿using AI.Common.BaseExceptions;
+
+namespace Payment.Exceptions;
 
 public class PlanLimitException : DomainException
 {
-    public InvalidTimeException(DateTime time)
-        : base($"time: '{time}' is invalid.")
+    public PlanLimitException(string plan_limit)
+        : base($"plan_limit: '{plan_limit}' is invalid.")
     {
     }
 }

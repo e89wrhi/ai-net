@@ -1,9 +1,11 @@
-﻿namespace Resume.Exceptions;
+﻿using AI.Common.BaseExceptions;
+
+namespace Resume.Exceptions;
 
 public class SkillException : DomainException
 {
-    public InvalidTimeException(DateTime time)
-        : base($"time: '{time}' is invalid.")
+    public SkillException(string skill)
+        : base($"skill: '{skill}' is invalid.")
     {
     }
 }

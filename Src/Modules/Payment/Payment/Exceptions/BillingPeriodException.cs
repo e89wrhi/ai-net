@@ -1,9 +1,11 @@
-﻿namespace Payment.Exceptions;
+﻿using AI.Common.BaseExceptions;
+
+namespace Payment.Exceptions;
 
 public class BillingPeriodException : DomainException
 {
-    public InvalidTimeException(DateTime time)
-        : base($"time: '{time}' is invalid.")
+    public BillingPeriodException(string billing_period)
+        : base($"billing_period: '{billing_period}' is invalid.")
     {
     }
 }

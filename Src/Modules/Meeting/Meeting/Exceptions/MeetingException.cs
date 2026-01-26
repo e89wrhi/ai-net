@@ -1,9 +1,19 @@
-﻿namespace Meeting.Exceptions;
+﻿using AI.Common.BaseExceptions;
 
-public class MeetingException : DomainException
+namespace Meeting.Exceptions;
+
+public class MeetingNotFoundException : DomainException
 {
-    public InvalidTimeException(DateTime time)
-        : base($"time: '{time}' is invalid.")
+    public MeetingNotFoundException(Guid meetingId)
+        : base($"meeting: '{meetingId}' not found.")
+    {
+    }
+}
+
+public class MeetingAlreadyExistException : DomainException
+{
+    public MeetingAlreadyExistException(Guid meetingId)
+        : base($"meeting: '{meetingId}' already exist.")
     {
     }
 }

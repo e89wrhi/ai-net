@@ -1,9 +1,11 @@
-﻿namespace LearningAssistant.Exceptions;
+﻿using AI.Common.BaseExceptions;
+
+namespace LearningAssistant.Exceptions;
 
 public class LessonIdException : DomainException
 {
-    public InvalidTimeException(DateTime time)
-        : base($"time: '{time}' is invalid.")
+    public LessonIdException(Guid lesson_id)
+        : base($"lesson_id: '{lesson_id}' is invalid.")
     {
     }
 }

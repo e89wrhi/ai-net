@@ -1,9 +1,11 @@
-﻿namespace Payment.Exceptions;
+﻿using AI.Common.BaseExceptions;
+
+namespace Payment.Exceptions;
 
 public class UserIdException : DomainException
 {
-    public InvalidTimeException(DateTime time)
-        : base($"time: '{time}' is invalid.")
+    public UserIdException(Guid user_id)
+        : base($"user_id: '{user_id}' is invalid.")
     {
     }
 }

@@ -1,9 +1,11 @@
-﻿namespace ChatBot.Exceptions;
+﻿using AI.Common.BaseExceptions;
+
+namespace ChatBot.Exceptions;
 
 public class MessageSenderException : DomainException
 {
-    public InvalidTimeException(DateTime time)
-        : base($"time: '{time}' is invalid.")
+    public MessageSenderException(string sender)
+        : base($"sender: '{sender}' is invalid.")
     {
     }
 }

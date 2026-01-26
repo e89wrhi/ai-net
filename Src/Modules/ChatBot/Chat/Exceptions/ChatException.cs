@@ -1,9 +1,19 @@
-﻿namespace ChatBot.Exceptions;
+﻿using AI.Common.BaseExceptions;
 
-public class ChatException : DomainException
+namespace ChatBot.Exceptions;
+
+public class ChatNotFoundException : DomainException
 {
-    public InvalidTimeException(DateTime time)
-        : base($"time: '{time}' is invalid.")
+    public ChatNotFoundException(Guid chatId)
+        : base($"chat: '{chatId}' not found.")
+    {
+    }
+}
+
+public class ChatAlreadyExistException : DomainException
+{
+    public ChatAlreadyExistException(Guid chatId)
+        : base($"chat: '{chatId}' already exist.")
     {
     }
 }

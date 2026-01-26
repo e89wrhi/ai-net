@@ -1,9 +1,11 @@
-﻿namespace Resume.Exceptions;
+﻿using AI.Common.BaseExceptions;
+
+namespace Resume.Exceptions;
 
 public class SourceFileException : DomainException
 {
-    public InvalidTimeException(DateTime time)
-        : base($"time: '{time}' is invalid.")
+    public SourceFileException(string source_filee)
+        : base($"source_filee: '{source_filee}' is invalid.")
     {
     }
 }

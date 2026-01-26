@@ -1,9 +1,11 @@
-﻿namespace ChatBot.Exceptions;
+﻿using AI.Common.BaseExceptions;
+
+namespace ChatBot.Exceptions;
 
 public class MessageContentException : DomainException
 {
-    public InvalidTimeException(DateTime time)
-        : base($"time: '{time}' is invalid.")
+    public MessageContentException(string msgcontent)
+        : base($"msgcontent: '{msgcontent}' is invalid.")
     {
     }
 }

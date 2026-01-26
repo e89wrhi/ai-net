@@ -1,9 +1,11 @@
-﻿namespace Meeting.Exceptions;
+﻿using AI.Common.BaseExceptions;
+
+namespace Meeting.Exceptions;
 
 public class MeetingIdException : DomainException
 {
-    public InvalidTimeException(DateTime time)
-        : base($"time: '{time}' is invalid.")
+    public MeetingIdException(Guid meeting_id)
+        : base($"meeting_id: '{meeting_id}' is invalid.")
     {
     }
 }

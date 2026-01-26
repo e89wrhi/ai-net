@@ -1,9 +1,11 @@
-﻿namespace Meeting.Exceptions;
+﻿using AI.Common.BaseExceptions;
+
+namespace Meeting.Exceptions;
 
 public class TranscriptException : DomainException
 {
-    public InvalidTimeException(DateTime time)
-        : base($"time: '{time}' is invalid.")
+    public TranscriptException(string transcript)
+        : base($"transcript: '{transcript}' is invalid.")
     {
     }
 }

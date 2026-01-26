@@ -1,9 +1,11 @@
-﻿namespace User.Exceptions;
+﻿using AI.Common.BaseExceptions;
+
+namespace User.Exceptions;
 
 public class UsagePeriodException : DomainException
 {
-    public InvalidTimeException(DateTime time)
-        : base($"time: '{time}' is invalid.")
+    public UsagePeriodException(string usage_period)
+        : base($"usage_period: '{usage_period}' is invalid.")
     {
     }
 }

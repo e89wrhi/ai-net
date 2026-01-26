@@ -1,9 +1,11 @@
-﻿namespace Meeting.Exceptions;
+﻿using AI.Common.BaseExceptions;
+
+namespace Meeting.Exceptions;
 
 public class ActionException : DomainException
 {
-    public InvalidTimeException(DateTime time)
-        : base($"time: '{time}' is invalid.")
+    public ActionException(string action_)
+        : base($"action_: '{action_}' is invalid.")
     {
     }
 }

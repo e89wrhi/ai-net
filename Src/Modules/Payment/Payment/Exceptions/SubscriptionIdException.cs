@@ -1,9 +1,11 @@
-﻿namespace Payment.Exceptions;
+﻿using AI.Common.BaseExceptions;
+
+namespace Payment.Exceptions;
 
 public class SubscriptionIdException : DomainException
 {
-    public InvalidTimeException(DateTime time)
-        : base($"time: '{time}' is invalid.")
+    public SubscriptionIdException(Guid subscription_id)
+        : base($"subscription_id: '{subscription_id}' is invalid.")
     {
     }
 }
