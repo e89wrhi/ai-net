@@ -40,7 +40,7 @@ public record MeetingModel : Aggregate<MeetingId>
             OrganizerId = organizerId,
             Title = title,
             AudioSource = audioSource,
-            MeetingStatus = MeetingStatus.Pending,
+            MeetingStatus = MeetingStatus.Uploaded,
             CreatedAt = DateTime.UtcNow
         };
 
@@ -64,11 +64,11 @@ public record MeetingModel : Aggregate<MeetingId>
         Text = text;
         Language = language;
         ConfidenceScore = score;
-        Summary = new Summary(summary);
-        MeetingStatus = MeetingStatus.Completed;
+        Summary = Summary.Of(summary);
+        MeetingStatus = MeetingStatus.Transcribed;
         LastModified = DateTime.UtcNow;
 
-        AddDomainEvent(new Meeting.Events.MeetingTranscribedDomainEvent(Id, language.Value));
+        AddDomainEvent(new Meeting.Events.MeetingTranscribedDomainEvent(Id, language.ToString()));
         AddDomainEvent(new Meeting.Events.MeetingSummarizedDomainEvent(Id, summary));
     }
 }

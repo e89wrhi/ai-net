@@ -46,7 +46,7 @@ public record ChatModel : Aggregate<SessionId>
         LastSentAt = DateTime.UtcNow;
         TotalTokens += message.TokenUsed.Value; // Assuming TokenUsed has a Value property or similar
 
-        if (message.Sender == MessageSender.User)
+        if (message.Sender == Enums.MessageSender.User.ToString())
         {
             AddDomainEvent(new ChatBot.Events.MessageRecievedDomainEvent(Id, message.Id, message.Content.Value));
         }

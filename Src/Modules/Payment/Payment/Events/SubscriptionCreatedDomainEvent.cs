@@ -1,5 +1,6 @@
-﻿namespace Payment.Events;
+﻿using AI.Common.Core;
+using Payment.ValueObjects;
 
-public class SubscriptionCreatedDomainEvent
-{
-}
+namespace Payment.Events;
+
+public record SubscriptionCreatedDomainEvent(SubscriptionId SubscriptionId, UserId UserId, string Plan) : IDomainEvent;

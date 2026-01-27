@@ -1,5 +1,6 @@
-﻿namespace Meeting.Events;
+﻿using AI.Common.Core;
+using Meeting.ValueObjects;
 
-public class MeetingUploadedDomainEvent
-{
-}
+namespace Meeting.Events;
+
+public record MeetingUploadedDomainEvent(MeetingId MeetingId, string Title) : IDomainEvent;

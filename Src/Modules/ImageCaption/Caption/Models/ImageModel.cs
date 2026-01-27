@@ -40,7 +40,7 @@ public record ImageModel : Aggregate<ImageId>
             Height = height,
             SizeInBytes = size,
             Format = format,
-            ImageProcessingStatus = ImageProcessingStatus.Pending,
+            ImageProcessingStatus = ImageProcessingStatus.Uploaded,
             UploadedAt = DateTime.UtcNow,
             CreatedAt = DateTime.UtcNow
         };
@@ -52,14 +52,14 @@ public record ImageModel : Aggregate<ImageId>
     public void AddDetectedObject(DetectedObject obj)
     {
         _objects.Add(obj);
-        ImageProcessingStatus = ImageProcessingStatus.Processing;
+        ImageProcessingStatus = ImageProcessingStatus.Analyzed;
     }
 
     public void AddCaption(CaptionModel caption)
     {
         _captions.Add(caption);
         ProcessedAt = DateTime.UtcNow;
-        ImageProcessingStatus = ImageProcessingStatus.Completed;
+        ImageProcessingStatus = ImageProcessingStatus.Captioned;
 
         AddDomainEvent(new ImageCaption.Events.CaptionGeneratedDomainEvent(Id, caption.Text));
         AddDomainEvent(new ImageCaption.Events.ImageAnalyzedDomainEvent(Id, _objects.Count));

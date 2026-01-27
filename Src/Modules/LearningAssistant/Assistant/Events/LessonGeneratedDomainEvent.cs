@@ -1,5 +1,6 @@
-﻿namespace LearningAssistant.Events;
+﻿using AI.Common.Core;
+using LearningAssistant.ValueObjects;
 
-public class LessonGeneratedDomainEvent
-{
-}
+namespace LearningAssistant.Events;
+
+public record LessonGeneratedDomainEvent(ProfileId ProfileId, LessonId LessonId, string Title) : IDomainEvent;

@@ -1,5 +1,6 @@
-﻿namespace LearningAssistant.Events;
+﻿using AI.Common.Core;
+using LearningAssistant.ValueObjects;
 
-public class ProgressUpdatedDomainEvent
-{
-}
+namespace LearningAssistant.Events;
+
+public record ProgressUpdatedDomainEvent(ProfileId ProfileId, double NewCompletionRate) : IDomainEvent;

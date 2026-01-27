@@ -4,16 +4,16 @@ namespace ChatBot.ValueObjects;
 
 public record TokenUsed
 {
-    public string Value { get; }
+    public int Value { get; }
 
-    private TokenUsed(string value)
+    private TokenUsed(int value)
     {
         Value = value;
     }
 
-    public static TokenUsed Of(string value)
+    public static TokenUsed Of(int value)
     {
-        if (string.IsNullOrEmpty(value))
+        if (value < 0)
         {
             throw new TokenUsedException(value);
         }
@@ -21,7 +21,7 @@ public record TokenUsed
         return new TokenUsed(value);
     }
 
-    public static implicit operator string(TokenUsed @value)
+    public static implicit operator int(TokenUsed @value)
     {
         return @value.Value;
     }

@@ -1,5 +1,28 @@
-﻿namespace Meeting.Data;
+﻿using Meeting.Models;
+using Microsoft.EntityFrameworkCore;
+using System.Reflection;
 
-public class MeetingDbContext
+namespace Meeting.Data;
+
+using AI.Common.EFCore;
+using AI.Common.Web;
+using Microsoft.Extensions.Logging;
+
+public sealed class MeetingDbContext : AppDbContextBase
 {
+    public MeetingDbContext(DbContextOptions<MeetingDbContext> options, ICurrentUserProvider? currentUserProvider = null,
+        ILogger<MeetingDbContext>? logger = null) : base(
+        options, currentUserProvider, logger)
+    {
+    }
+
+    public DbSet<MeetingModel> Meetings => Set<MeetingModel>();
+
+    protected override void OnModelCreating(ModelBuilder builder)
+    {
+        base.OnModelCreating(builder);
+        builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+        builder.FilterSoftDeletedProperties();
+        builder.ToSnakeCaseTables();
+    }
 }

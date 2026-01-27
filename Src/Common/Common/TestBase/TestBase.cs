@@ -65,7 +65,7 @@ where TEntryPoint : class
                          {
                              { ClaimTypes.Name, "test@sample.com" },
                              { ClaimTypes.Role, "admin" },
-                             { "scope", "flight-api" }
+                             { "scope", "ai-api" }
                          };
 
             var httpClient = _factory.CreateClient();
@@ -128,7 +128,7 @@ where TEntryPoint : class
                                        {
                                            policy.AddAuthenticationSchemes(FakeJwtBearerDefaults.AuthenticationScheme);
                                            policy.RequireAuthenticatedUser();
-                                           policy.RequireClaim("scope", "flight-api"); // Test-specific scope
+                                           policy.RequireClaim("scope", "ai-api"); // Test-specific scope
                                        });
                                    });
                         });

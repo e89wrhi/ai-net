@@ -1,5 +1,6 @@
-﻿namespace Meeting.Events;
+﻿using AI.Common.Core;
+using Meeting.ValueObjects;
 
-public class MeetingTranscribedDomainEvent
-{
-}
+namespace Meeting.Events;
+
+public record MeetingTranscribedDomainEvent(MeetingId MeetingId, string Language) : IDomainEvent;

@@ -1,5 +1,6 @@
-﻿namespace Meeting.Events;
+﻿using AI.Common.Core;
+using Meeting.ValueObjects;
 
-public class MeetingSummarizedDomainEvent
-{
-}
+namespace Meeting.Events;
+
+public record MeetingSummarizedDomainEvent(MeetingId MeetingId, string Summary) : IDomainEvent;

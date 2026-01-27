@@ -1,5 +1,6 @@
-﻿namespace Resume.Events;
+﻿using AI.Common.Core;
+using Resume.ValueObjects;
 
-public class ResumeParsedDomainEvent
-{
-}
+namespace Resume.Events;
+
+public record ResumeParsedDomainEvent(ResumeId ResumeId, int TextLength) : IDomainEvent;

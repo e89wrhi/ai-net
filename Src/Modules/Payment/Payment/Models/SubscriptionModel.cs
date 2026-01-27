@@ -61,12 +61,12 @@ public record SubscriptionModel : Aggregate<SubscriptionId>
     public void AddInvoice(InvoiceModel invoice)
     {
         _invoices.Add(invoice);
-        AddDomainEvent(new Payment.Events.InvoiceGeneratedDomainEvent(invoice.Id, Id, invoice.TotalAmount.Amount));
+        AddDomainEvent(new Payment.Events.InvoiceGeneratedDomainEvent(invoice.Id, Id, invoice.TotalAmount));
     }
 
     public void AddCharge(UsageCharge charge)
     {
         _charges.Add(charge);
-        AddDomainEvent(new Payment.Events.UsageChargedDomainEvent(Id, charge.Description, charge.Amount.Amount));
+        AddDomainEvent(new Payment.Events.UsageChargedDomainEvent(Id, charge.Description, charge.Cost));
     }
 }

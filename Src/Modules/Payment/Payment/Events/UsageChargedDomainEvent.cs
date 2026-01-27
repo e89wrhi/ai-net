@@ -1,5 +1,6 @@
-﻿namespace Payment.Events;
+﻿using AI.Common.Core;
+using Payment.ValueObjects;
 
-public class UsageChargedDomainEvent
-{
-}
+namespace Payment.Events;
+
+public record UsageChargedDomainEvent(SubscriptionId SubscriptionId, string Reason, decimal Amount) : IDomainEvent;

@@ -1,5 +1,6 @@
-﻿namespace Payment.Events;
+﻿using AI.Common.Core;
+using Payment.ValueObjects;
 
-public class PaymentFailedDomainEvent
-{
-}
+namespace Payment.Events;
+
+public record PaymentFailedDomainEvent(SubscriptionId SubscriptionId, string Reason) : IDomainEvent;

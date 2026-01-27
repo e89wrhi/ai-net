@@ -1,5 +1,39 @@
-﻿namespace ChatBot.Data.Seed;
+﻿using AI.Common.EFCore;
+using ChatBot.Models;
+using MapsterMapper;
+using Microsoft.EntityFrameworkCore;
+using MongoDB.Driver;
+using MongoDB.Driver.Linq;
 
-public class ChatDataSeeder
+namespace ChatBot.Data.Seed;
+
+public class ChatDataSeeder(
+    ChatDbContext eventDbContext,
+    ChatReadDbContext eventReadDbContext,
+    IMapper mapper
+) : IDataSeeder
 {
+    public async Task SeedAllAsync()
+    {
+        var pendingMigrations = await eventDbContext.Database.GetPendingMigrationsAsync();
+
+        if (!pendingMigrations.Any())
+        {
+            await SeedChatAsync();
+        }
+    }
+
+    private async Task SeedChatAsync()
+    {
+        if (!await EntityFrameworkQueryableExtensions.AnyAsync(eventDbContext.Chats))
+        {
+            await eventDbContext.Chats.AddRangeAsync(InitialData.Chats);
+            await eventDbContext.SaveChangesAsync();
+
+            if (!await MongoQueryable.AnyAsync(eventReadDbContext.Chat.AsQueryable()))
+            {
+                await eventReadDbContext.Chat.InsertManyAsync(mapper.Map<List<ChatReadModel>>(InitialData.Chats));
+            }
+        }
+    }
 }

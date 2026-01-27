@@ -1,5 +1,6 @@
-﻿namespace Resume.Events;
+﻿using AI.Common.Core;
+using Resume.ValueObjects;
 
-public class ResumeAnalysisFailedDomainEvent
-{
-}
+namespace Resume.Events;
+
+public record ResumeAnalysisFailedDomainEvent(ResumeId ResumeId, string Reason) : IDomainEvent;

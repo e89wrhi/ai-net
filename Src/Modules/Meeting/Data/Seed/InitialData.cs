@@ -1,5 +1,18 @@
 ﻿namespace Meeting.Data.Seed;
 
-public class InitialData
+using AI.Common.Core;
+using global::Meeting.Models;
+using MassTransit;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+public static class InitialData
 {
+    public static List<MeetingModel> Meetings { get; }
+
+
+    static InitialData()
+    {
+    }
 }

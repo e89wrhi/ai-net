@@ -1,27 +1,27 @@
-﻿using ImageCaption.Models;
+﻿using LearningAssistant.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Image.Data.Configurations;
+namespace Assistant.Data.Configurations;
 
 using AI.Common.Core;
-using ImageCaption.ValueObjects;
-using global::ImageCaption.Enums;
+using LearningAssistant.ValueObjects;
+using global::LearningAssistant.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.Extensions.Logging;
 using System;
 
-public class ImageConfiguration : IEntityTypeConfiguration<ImageModel>
+public class ProfileConfiguration : IEntityTypeConfiguration<ProfileModel>
 {
-    public void Configure(EntityTypeBuilder<ImageModel> builder)
+    public void Configure(EntityTypeBuilder<ProfileModel> builder)
     {
 
-        builder.ToTable(nameof(ImageModel));
+        builder.ToTable(nameof(ProfileModel));
 
         builder.HasKey(r => r.Id);
         builder.Property(r => r.Id).ValueGeneratedNever()
-            .HasConversion<Guid>(itemId => itemId.Value, dbId => ImageId.Of(dbId));
+            .HasConversion<Guid>(itemId => itemId.Value, dbId => ProfileId.Of(dbId));
 
         builder.Property(r => r.Version).IsConcurrencyToken();
 

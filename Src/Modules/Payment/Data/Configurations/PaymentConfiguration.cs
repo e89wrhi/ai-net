@@ -1,27 +1,27 @@
-﻿using ImageCaption.Models;
+﻿using Payment.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Image.Data.Configurations;
+namespace Payment.Data.Configurations;
 
 using AI.Common.Core;
-using ImageCaption.ValueObjects;
-using global::ImageCaption.Enums;
+using Payment.ValueObjects;
+using global::Payment.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.Extensions.Logging;
 using System;
 
-public class ImageConfiguration : IEntityTypeConfiguration<ImageModel>
+public class PaymentConfiguration : IEntityTypeConfiguration<SubscriptionModel>
 {
-    public void Configure(EntityTypeBuilder<ImageModel> builder)
+    public void Configure(EntityTypeBuilder<SubscriptionModel> builder)
     {
 
-        builder.ToTable(nameof(ImageModel));
+        builder.ToTable(nameof(SubscriptionModel));
 
         builder.HasKey(r => r.Id);
         builder.Property(r => r.Id).ValueGeneratedNever()
-            .HasConversion<Guid>(itemId => itemId.Value, dbId => ImageId.Of(dbId));
+            .HasConversion<Guid>(itemId => itemId.Value, dbId => SubscriptionId.Of(dbId));
 
         builder.Property(r => r.Version).IsConcurrencyToken();
 

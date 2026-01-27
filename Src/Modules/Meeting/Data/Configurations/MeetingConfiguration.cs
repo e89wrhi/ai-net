@@ -1,5 +1,29 @@
-﻿namespace Meeting.Data.Configurations;
+﻿using Meeting.Models;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-public class MeetingConfiguration
+namespace Meeting.Data.Configurations;
+
+using AI.Common.Core;
+using Meeting.ValueObjects;
+using global::Meeting.Enums;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.Extensions.Logging;
+using System;
+
+public class MeetingConfiguration : IEntityTypeConfiguration<MeetingModel>
 {
+    public void Configure(EntityTypeBuilder<MeetingModel> builder)
+    {
+
+        builder.ToTable(nameof(MeetingModel));
+
+        builder.HasKey(r => r.Id);
+        builder.Property(r => r.Id).ValueGeneratedNever()
+            .HasConversion<Guid>(itemId => itemId.Value, dbId => MeetingId.Of(dbId));
+
+        builder.Property(r => r.Version).IsConcurrencyToken();
+
+    }
 }

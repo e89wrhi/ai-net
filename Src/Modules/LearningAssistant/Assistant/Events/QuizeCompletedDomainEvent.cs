@@ -1,5 +1,6 @@
-﻿namespace LearningAssistant.Events;
+﻿using AI.Common.Core;
+using LearningAssistant.ValueObjects;
 
-public class QuizeCompletedDomainEvent
-{
-}
+namespace LearningAssistant.Events;
+
+public record QuizeCompletedDomainEvent(LessonId LessonId, QuizeId QuizeId, double Score) : IDomainEvent;
