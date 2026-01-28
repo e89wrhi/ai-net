@@ -19,5 +19,20 @@ public record MessageModel : Entity<MessageId>
     public bool IsEdited { get; private set; } = default!;
     public string Metadata { get; private set; } = default!;
 
-
+    public static MessageModel Create(MessageId id, SessionId sessionId, MessageSender sender, MessageContent content, TokenUsed tokenUsed)
+    {
+        return new MessageModel
+        {
+            Id = id,
+            SessionId = sessionId,
+            Sender = sender,
+            Content = content,
+            TokenUsed = tokenUsed,
+            Time = MessageTime.Of(DateTime.UtcNow),
+            SenderType = sender,
+            IsEdited = false,
+            Metadata = string.Empty
+        };
+    }
 }
+

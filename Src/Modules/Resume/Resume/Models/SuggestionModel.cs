@@ -13,4 +13,17 @@ public record SuggestionModel : Entity<SuggestionId>
 
     public int Priority { get; private set; } = default!;
     public bool IsImplemented { get; private set; } = default!;
+    public static SuggestionModel Create(SuggestionId id, ResumeId resumeId, SuggestionType type, string description, int priority)
+    {
+        return new SuggestionModel
+        {
+            Id = id,
+            ResumeId = resumeId,
+            Type = type,
+            Description = description,
+            Priority = priority,
+            IsImplemented = false
+        };
+    }
 }
+
