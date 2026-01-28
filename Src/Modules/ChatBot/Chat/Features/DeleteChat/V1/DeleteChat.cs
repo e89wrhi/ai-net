@@ -14,42 +14,41 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 
-namespace ChatBot.Features.StartChat.V1;
+namespace ChatBot.Features.DeleteChat.V1;
 
-public record StartChatCommand() : ICommand<StartChatCommandResponse>
+public record DeleteChatCommand(SessionId id) : ICommand<DeleteChatCommandResponse>
 {
-    public Guid Id { get; init; } = NewId.NextGuid();
 }
 
-public record StartChatCommandResponse(Guid Id);
+public record DeleteChatCommandResponse(Guid Id);
 
-public record StartChatRequest();
+public record DeleteChatRequest();
 
-public record StartChatRequestResponse(Guid Id);
+public record DeleteChatRequestResponse(Guid Id);
 
-public class StartChatEndpoint : IMinimalEndpoint
+public class DeleteChatEndpoint : IMinimalEndpoint
 {
     public IEndpointRouteBuilder MapEndpoint(IEndpointRouteBuilder builder)
     {
-        builder.MapPost($"{EndpointConfig.BaseApiPath}/chat", async (StartChatRequest request,
+        builder.MapPost($"{EndpointConfig.BaseApiPath}/chat", async (DeleteChatRequest request,
                 IMediator mediator, IMapper mapper,
                 CancellationToken cancellationToken) =>
         {
-            var command = mapper.Map<StartChatCommand>(request);
+            var command = mapper.Map<DeleteChatCommand>(request);
 
             var result = await mediator.Send(command, cancellationToken);
 
-            var response = result.Adapt<StartChatRequestResponse>();
+            var response = result.Adapt<DeleteChatRequestResponse>();
 
             return Results.Ok(response);
         })
             .RequireAuthorization(nameof(ApiScope))
-            .WithName("StartChat")
+            .WithName("DeleteChat")
             .WithApiVersionSet(builder.NewApiVersionSet("Chat").Build())
-            .Produces<StartChatRequestResponse>()
+            .Produces<DeleteChatRequestResponse>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
-            .WithSummary("Start Chat")
-            .WithDescription("Start Chat")
+            .WithSummary("Delete Chat")
+            .WithDescription("Delete Chat")
             .WithOpenApi()
             .HasApiVersion(1.0);
 
@@ -57,27 +56,27 @@ public class StartChatEndpoint : IMinimalEndpoint
     }
 }
 
-public class StartChatCommandValidator : AbstractValidator<StartChatCommand>
+public class DeleteChatCommandValidator : AbstractValidator<DeleteChatCommand>
 {
-    public StartChatCommandValidator()
+    public DeleteChatCommandValidator()
     {
     }
 }
 
-internal class StartChatHandler : IRequestHandler<StartChatCommand, StartChatCommandResponse>
+internal class DeleteChatHandler : IRequestHandler<DeleteChatCommand, DeleteChatCommandResponse>
 {
     private readonly ChatDbContext _dbContext;
 
-    public StartChatHandler(ChatDbContext dbContext)
+    public DeleteChatHandler(ChatDbContext dbContext)
     {
         _dbContext = dbContext;
     }
 
-    public async Task<StartChatCommandResponse> Handle(StartChatCommand request, CancellationToken cancellationToken)
+    public async Task<DeleteChatCommandResponse> Handle(DeleteChatCommand request, CancellationToken cancellationToken)
     {
         Guard.Against.Null(request, nameof(request));
-
+         
         await _dbContext.SaveChangesAsync(cancellationToken);
-        return new StartChatCommandResponse(item.Id);
+        return new DeleteChatCommandResponse(item.Id);
     }
 }

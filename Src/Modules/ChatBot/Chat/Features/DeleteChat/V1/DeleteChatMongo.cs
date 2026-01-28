@@ -1,5 +1,4 @@
-﻿namespace ChatBot.Features.StartChat.V1;
-
+﻿namespace ChatBot.Features.DeleteChat.V1;
 
 using Ardalis.GuardClauses;
 using ChatBot.Data;
@@ -12,14 +11,14 @@ using AI.Common.Core;
 using ChatBot.Exceptions;
 using System;
 
-public record StartChatMongo() : InternalCommand;
+public record DeleteChatMongo() : InternalCommand;
 
-public class StartChatMongoHandler : ICommandHandler<StartChatMongo>
+public class DeleteChatMongoHandler : ICommandHandler<DeleteChatMongo>
 {
     private readonly ChatReadDbContext _readDbContext;
     private readonly IMapper _mapper;
 
-    public StartChatMongoHandler(
+    public DeleteChatMongoHandler(
         ChatReadDbContext readDbContext,
         IMapper mapper)
     {
@@ -27,7 +26,7 @@ public class StartChatMongoHandler : ICommandHandler<StartChatMongo>
         _mapper = mapper;
     }
 
-    public async Task<Unit> Handle(StartChatMongo request, CancellationToken cancellationToken)
+    public async Task<Unit> Handle(DeleteChatMongo request, CancellationToken cancellationToken)
     {
         Guard.Against.Null(request, nameof(request));
 

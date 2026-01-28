@@ -10,8 +10,4 @@
     <ProjectReference Include="..\..\Common\Common\Common.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Users\Dtos\" />
-  </ItemGroup>
-
 </Project>
