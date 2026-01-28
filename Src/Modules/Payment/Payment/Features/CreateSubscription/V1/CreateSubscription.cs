@@ -17,14 +17,14 @@ using Microsoft.AspNetCore.Routing;
 namespace Payment.Features.CreateSubscription.V1;
 
 
-public record CreateSubscriptionCommand() : ICommand<CreateSubscriptionCommandResponse>
+public record CreateSubscriptionCommand(Guid UserId, SubscriptionPlan Plan, int MaxRequestsPerDay, int MaxTokensPerMonth) : ICommand<CreateSubscriptionCommandResponse>
 {
     public Guid Id { get; init; } = NewId.NextGuid();
 }
 
 public record CreateSubscriptionCommandResponse(Guid Id);
 
-public record CreateSubscriptionRequest();
+public record CreateSubscriptionRequest(Guid UserId, SubscriptionPlan Plan, int MaxRequestsPerDay, int MaxTokensPerMonth);
 
 public record CreateSubscriptionRequestResponse(Guid Id);
 
@@ -32,7 +32,7 @@ public class CreateSubscriptionEndpoint : IMinimalEndpoint
 {
     public IEndpointRouteBuilder MapEndpoint(IEndpointRouteBuilder builder)
     {
-        builder.MapPost($"{EndpointConfig.BaseApiPath}/payment", async (CreateSubscriptionRequest request,
+        builder.MapPost($"{EndpointConfig.BaseApiPath}/subscription/create", async (CreateSubscriptionRequest request,
                 IMediator mediator, IMapper mapper,
                 CancellationToken cancellationToken) =>
         {
@@ -62,6 +62,7 @@ public class CreateSubscriptionCommandValidator : AbstractValidator<CreateSubscr
 {
     public CreateSubscriptionCommandValidator()
     {
+        RuleFor(x => x.UserId).NotEmpty();
     }
 }
 
@@ -78,7 +79,16 @@ internal class CreateSubscriptionHandler : IRequestHandler<CreateSubscriptionCom
     {
         Guard.Against.Null(request, nameof(request));
 
+        var subscription = SubscriptionModel.Create(
+            SubscriptionId.Of(NewId.NextGuid()),
+            UserId.Of(request.UserId),
+            request.Plan,
+            PlanLimits.Of(request.MaxRequestsPerDay, request.MaxTokensPerMonth));
+
+        await _dbContext.Subscriptions.AddAsync(subscription, cancellationToken);
         await _dbContext.SaveChangesAsync(cancellationToken);
-        return new CreateSubscriptionCommandResponse(newPayment.Id);
+        
+        return new CreateSubscriptionCommandResponse(subscription.Id.Value);
     }
 }
+

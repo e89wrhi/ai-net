@@ -16,13 +16,11 @@ using Microsoft.AspNetCore.Routing;
 
 namespace ChatBot.Features.DeleteChat.V1;
 
-public record DeleteChatCommand(SessionId id) : ICommand<DeleteChatCommandResponse>
-{
-}
+public record DeleteChatCommand(Guid SessionId) : ICommand<DeleteChatCommandResponse>;
 
 public record DeleteChatCommandResponse(Guid Id);
 
-public record DeleteChatRequest();
+public record DeleteChatRequest(Guid SessionId);
 
 public record DeleteChatRequestResponse(Guid Id);
 
@@ -30,13 +28,11 @@ public class DeleteChatEndpoint : IMinimalEndpoint
 {
     public IEndpointRouteBuilder MapEndpoint(IEndpointRouteBuilder builder)
     {
-        builder.MapPost($"{EndpointConfig.BaseApiPath}/chat", async (DeleteChatRequest request,
-                IMediator mediator, IMapper mapper,
+        builder.MapDelete($"{EndpointConfig.BaseApiPath}/chat/{{sessionId}}", async (Guid sessionId,
+                IMediator mediator, MapsterMapper.IMapper mapper,
                 CancellationToken cancellationToken) =>
         {
-            var command = mapper.Map<DeleteChatCommand>(request);
-
-            var result = await mediator.Send(command, cancellationToken);
+            var result = await mediator.Send(new DeleteChatCommand(sessionId), cancellationToken);
 
             var response = result.Adapt<DeleteChatRequestResponse>();
 
@@ -60,6 +56,7 @@ public class DeleteChatCommandValidator : AbstractValidator<DeleteChatCommand>
 {
     public DeleteChatCommandValidator()
     {
+        RuleFor(x => x.SessionId).NotEmpty();
     }
 }
 
@@ -75,8 +72,18 @@ internal class DeleteChatHandler : IRequestHandler<DeleteChatCommand, DeleteChat
     public async Task<DeleteChatCommandResponse> Handle(DeleteChatCommand request, CancellationToken cancellationToken)
     {
         Guard.Against.Null(request, nameof(request));
-         
+
+        var chat = await _dbContext.Chats.FindAsync(new object[] { SessionId.Of(request.SessionId) }, cancellationToken);
+
+        if (chat == null)
+        {
+            throw new ChatNotFoundException(request.SessionId);
+        }
+
+        _dbContext.Chats.Remove(chat);
         await _dbContext.SaveChangesAsync(cancellationToken);
-        return new DeleteChatCommandResponse(item.Id);
+        
+        return new DeleteChatCommandResponse(chat.Id.Value);
     }
 }
+

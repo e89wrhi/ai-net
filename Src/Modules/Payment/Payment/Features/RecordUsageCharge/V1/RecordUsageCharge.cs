@@ -17,14 +17,14 @@ using Microsoft.AspNetCore.Routing;
 namespace Payment.Features.RecordUsageCharge.V1;
 
 
-public record RecordUsageChargeCommand() : ICommand<RecordUsageChargeCommandResponse>
+public record RecordUsageChargeCommand(Guid SubscriptionId, string TokenUsed, string Description, decimal Cost, string Currency, string Module) : ICommand<RecordUsageChargeCommandResponse>
 {
     public Guid Id { get; init; } = NewId.NextGuid();
 }
 
 public record RecordUsageChargeCommandResponse(Guid Id);
 
-public record RecordUsageChargeRequest();
+public record RecordUsageChargeRequest(Guid SubscriptionId, string TokenUsed, string Description, decimal Cost, string Currency, string Module);
 
 public record RecordUsageChargeRequestResponse(Guid Id);
 
@@ -32,7 +32,7 @@ public class RecordUsageChargeEndpoint : IMinimalEndpoint
 {
     public IEndpointRouteBuilder MapEndpoint(IEndpointRouteBuilder builder)
     {
-        builder.MapPost($"{EndpointConfig.BaseApiPath}/payment", async (RecordUsageChargeRequest request,
+        builder.MapPost($"{EndpointConfig.BaseApiPath}/subscription/charge/record", async (RecordUsageChargeRequest request,
                 IMediator mediator, IMapper mapper,
                 CancellationToken cancellationToken) =>
         {
@@ -62,6 +62,8 @@ public class RecordUsageChargeCommandValidator : AbstractValidator<RecordUsageCh
 {
     public RecordUsageChargeCommandValidator()
     {
+        RuleFor(x => x.SubscriptionId).NotEmpty();
+        RuleFor(x => x.Cost).GreaterThanOrEqualTo(0);
     }
 }
 
@@ -78,7 +80,27 @@ internal class RecordUsageChargeHandler : IRequestHandler<RecordUsageChargeComma
     {
         Guard.Against.Null(request, nameof(request));
 
+        var subscription = await _dbContext.Subscriptions.FindAsync(new object[] { SubscriptionId.Of(request.SubscriptionId) }, cancellationToken);
+
+        if (subscription == null)
+        {
+            throw new SubscriptionNotFoundException(request.SubscriptionId);
+        }
+
+        var charge = UsageCharge.Create(
+            UsageChargeId.Of(NewId.NextGuid()),
+            subscription.Id,
+            subscription.UserId,
+            request.TokenUsed,
+            request.Description,
+            Money.Of(request.Cost, request.Currency),
+            request.Module);
+
+        subscription.AddCharge(charge);
+
         await _dbContext.SaveChangesAsync(cancellationToken);
-        return new RecordUsageChargeCommandResponse(newPayment.Id);
+        
+        return new RecordUsageChargeCommandResponse(charge.Id.Value);
     }
 }
+

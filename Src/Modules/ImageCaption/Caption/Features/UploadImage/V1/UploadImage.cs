@@ -16,14 +16,14 @@ using Microsoft.AspNetCore.Routing;
 
 namespace ImageCaption.Features.UploadImage.V1;
 
-public record UploadImageCommand() : ICommand<UploadImageCommandResponse>
+public record UploadImageCommand(string UserId, string ImageUrl, string FileName, int Width, int Height, long SizeInBytes, string Format) : ICommand<UploadImageCommandResponse>
 {
     public Guid Id { get; init; } = NewId.NextGuid();
 }
 
 public record UploadImageCommandResponse(Guid Id);
 
-public record UploadImageRequest();
+public record UploadImageRequest(string UserId, string ImageUrl, string FileName, int Width, int Height, long SizeInBytes, string Format);
 
 public record UploadImageRequestResponse(Guid Id);
 
@@ -31,7 +31,7 @@ public class UploadImageEndpoint : IMinimalEndpoint
 {
     public IEndpointRouteBuilder MapEndpoint(IEndpointRouteBuilder builder)
     {
-        builder.MapPost($"{EndpointConfig.BaseApiPath}/image", async (UploadImageRequest request,
+        builder.MapPost($"{EndpointConfig.BaseApiPath}/image/upload", async (UploadImageRequest request,
                 IMediator mediator, IMapper mapper,
                 CancellationToken cancellationToken) =>
         {
@@ -61,6 +61,8 @@ public class UploadImageCommandValidator : AbstractValidator<UploadImageCommand>
 {
     public UploadImageCommandValidator()
     {
+        RuleFor(x => x.UserId).NotEmpty();
+        RuleFor(x => x.ImageUrl).NotEmpty();
     }
 }
 
@@ -77,7 +79,19 @@ internal class UploadImageHandler : IRequestHandler<UploadImageCommand, UploadIm
     {
         Guard.Against.Null(request, nameof(request));
 
+        var image = ImageModel.Create(
+            ImageId.Of(NewId.NextGuid()),
+            request.UserId,
+            FileReference.Of(request.ImageUrl, request.FileName),
+            request.Width,
+            request.Height,
+            request.SizeInBytes,
+            request.Format);
+
+        await _dbContext.Images.AddAsync(image, cancellationToken);
         await _dbContext.SaveChangesAsync(cancellationToken);
-        return new UploadImageCommandResponse(newImage.Id);
+        
+        return new UploadImageCommandResponse(image.Id.Value);
     }
 }
+

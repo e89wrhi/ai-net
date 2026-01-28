@@ -12,28 +12,36 @@ using AI.Common.Core;
 using User.Exceptions;
 using System;
 
-public record TrackActivityMongo() : InternalCommand;
+public record TrackActivityMongo(Guid Id, Guid UserId, string Module, string Action, Guid ResourceId, DateTimeOffset TimeStamp) : InternalCommand;
 
 public class TrackActivityMongoHandler : ICommandHandler<TrackActivityMongo>
 {
     private readonly UserReadDbContext _readDbContext;
-    private readonly IMapper _mapper;
 
-    public TrackActivityMongoHandler(
-        UserReadDbContext readDbContext,
-        IMapper mapper)
+    public TrackActivityMongoHandler(UserReadDbContext readDbContext)
     {
         _readDbContext = readDbContext;
-        _mapper = mapper;
     }
 
     public async Task<Unit> Handle(TrackActivityMongo request, CancellationToken cancellationToken)
     {
         Guard.Against.Null(request, nameof(request));
 
-        var eventReadModel = _mapper.Map<UserReadModel>(request);
+        var filter = Builders<UserReadModel>.Filter.Eq(x => x.Id, request.UserId);
+        var activity = new UserActivityReadModel
+        {
+            Id = request.Id,
+            Module = request.Module,
+            Action = request.Action,
+            ResourceId = request.ResourceId,
+            TimeStamp = request.TimeStamp
+        };
 
+        var update = Builders<UserReadModel>.Update.Push(x => x.Activities, activity);
+
+        await _readDbContext.User.UpdateOneAsync(filter, update, cancellationToken: cancellationToken);
 
         return Unit.Value;
     }
 }
+

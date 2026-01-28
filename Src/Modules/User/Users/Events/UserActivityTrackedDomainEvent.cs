@@ -4,4 +4,4 @@ using User.Enums;
 
 namespace User.Events;
 
-public record UserActivityTrackedDomainEvent(UserId UserId, UserActivityId ActivityId, TrackedModule Module, string Action) : IDomainEvent;
+public record UserActivityTrackedDomainEvent(UserId UserId, UserActivityId ActivityId, TrackedModule Module, string Action, Guid ResourceId, DateTimeOffset TimeStamp) : IDomainEvent;

@@ -16,14 +16,14 @@ using Microsoft.AspNetCore.Routing;
 
 namespace ChatBot.Features.StartChat.V1;
 
-public record StartChatCommand() : ICommand<StartChatCommandResponse>
+public record StartChatCommand(Guid UserId, string Title, string AiModelId) : ICommand<StartChatCommandResponse>
 {
     public Guid Id { get; init; } = NewId.NextGuid();
 }
 
 public record StartChatCommandResponse(Guid Id);
 
-public record StartChatRequest();
+public record StartChatRequest(Guid UserId, string Title, string AiModelId);
 
 public record StartChatRequestResponse(Guid Id);
 
@@ -61,6 +61,9 @@ public class StartChatCommandValidator : AbstractValidator<StartChatCommand>
 {
     public StartChatCommandValidator()
     {
+        RuleFor(x => x.UserId).NotEmpty();
+        RuleFor(x => x.Title).NotEmpty();
+        RuleFor(x => x.AiModelId).NotEmpty();
     }
 }
 
@@ -77,7 +80,16 @@ internal class StartChatHandler : IRequestHandler<StartChatCommand, StartChatCom
     {
         Guard.Against.Null(request, nameof(request));
 
+        var chat = ChatModel.Create(
+            SessionId.Of(NewId.NextGuid()),
+            UserId.Of(request.UserId),
+            request.Title,
+            request.AiModelId);
+
+        await _dbContext.Chats.AddAsync(chat, cancellationToken);
         await _dbContext.SaveChangesAsync(cancellationToken);
-        return new StartChatCommandResponse(item.Id);
+        
+        return new StartChatCommandResponse(chat.Id.Value);
     }
 }
+

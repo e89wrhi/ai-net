@@ -16,14 +16,14 @@ using Microsoft.AspNetCore.Routing;
 
 namespace ChatBot.Features.SendMessage.V1;
 
-public record SendMessageCommand() : ICommand<SendMessageCommandResponse>
+public record SendMessageCommand(Guid SessionId, string Content, string Sender, int TokenUsed) : ICommand<SendMessageCommandResponse>
 {
     public Guid Id { get; init; } = NewId.NextGuid();
 }
 
 public record SendMessageCommandResponse(Guid Id);
 
-public record SendMessageRequest();
+public record SendMessageRequest(Guid SessionId, string Content, string Sender, int TokenUsed);
 
 public record SendMessageRequestResponse(Guid Id);
 
@@ -31,7 +31,7 @@ public class SendMessageEndpoint : IMinimalEndpoint
 {
     public IEndpointRouteBuilder MapEndpoint(IEndpointRouteBuilder builder)
     {
-        builder.MapPost($"{EndpointConfig.BaseApiPath}/chat", async (SendMessageRequest request,
+        builder.MapPost($"{EndpointConfig.BaseApiPath}/chat/send-message", async (SendMessageRequest request,
                 IMediator mediator, IMapper mapper,
                 CancellationToken cancellationToken) =>
         {
@@ -61,6 +61,8 @@ public class SendMessageCommandValidator : AbstractValidator<SendMessageCommand>
 {
     public SendMessageCommandValidator()
     {
+        RuleFor(x => x.SessionId).NotEmpty();
+        RuleFor(x => x.Content).NotEmpty();
     }
 }
 
@@ -77,7 +79,26 @@ internal class SendMessageHandler : IRequestHandler<SendMessageCommand, SendMess
     {
         Guard.Against.Null(request, nameof(request));
 
+        var chat = await _dbContext.Chats.FindAsync(new object[] { SessionId.Of(request.SessionId) }, cancellationToken);
+
+        if (chat == null)
+        {
+            throw new ChatNotFoundException(request.SessionId);
+        }
+
+        var message = MessageModel.Create(
+            MessageId.Of(NewId.NextGuid()),
+            chat.Id,
+            MessageContent.Of(request.Content),
+            MessageSender.Of(request.Sender),
+            TokenUsed.Of(request.TokenUsed),
+            MessageTime.Of(DateTime.UtcNow));
+
+        chat.AddMessage(message);
+
         await _dbContext.SaveChangesAsync(cancellationToken);
-        return new SendMessageCommandResponse(item.Id);
+
+        return new SendMessageCommandResponse(message.Id.Value);
     }
 }
+

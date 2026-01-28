@@ -17,14 +17,14 @@ using Microsoft.AspNetCore.Routing;
 namespace LearningAssistant.Features.GenerateQuize.V1;
 
 
-public record GenerateQuizeCommand() : ICommand<GenerateQuizeCommandResponse>
+public record GenerateQuizeCommand(Guid LessonId, string Questions) : ICommand<GenerateQuizeCommandResponse>
 {
     public Guid Id { get; init; } = NewId.NextGuid();
 }
 
 public record GenerateQuizeCommandResponse(Guid Id);
 
-public record GenerateQuizeRequest();
+public record GenerateQuizeRequest(Guid LessonId, string Questions);
 
 public record GenerateQuizeRequestResponse(Guid Id);
 
@@ -32,7 +32,7 @@ public class GenerateQuizeEndpoint : IMinimalEndpoint
 {
     public IEndpointRouteBuilder MapEndpoint(IEndpointRouteBuilder builder)
     {
-        builder.MapPost($"{EndpointConfig.BaseApiPath}/assistant", async (GenerateQuizeRequest request,
+        builder.MapPost($"{EndpointConfig.BaseApiPath}/assistant/quize", async (GenerateQuizeRequest request,
                 IMediator mediator, IMapper mapper,
                 CancellationToken cancellationToken) =>
         {
@@ -62,6 +62,8 @@ public class GenerateQuizeCommandValidator : AbstractValidator<GenerateQuizeComm
 {
     public GenerateQuizeCommandValidator()
     {
+        RuleFor(x => x.LessonId).NotEmpty();
+        RuleFor(x => x.Questions).NotEmpty();
     }
 }
 
@@ -78,7 +80,23 @@ internal class GenerateQuizeHandler : IRequestHandler<GenerateQuizeCommand, Gene
     {
         Guard.Against.Null(request, nameof(request));
 
+        var lesson = await _dbContext.Lessons.FindAsync(new object[] { LessonId.Of(request.LessonId) }, cancellationToken);
+
+        if (lesson == null)
+        {
+            throw new LessonNotFoundException(request.LessonId);
+        }
+
+        var quize = QuizeModel.Create(
+            QuizeId.Of(NewId.NextGuid()),
+            lesson.Id,
+            request.Questions);
+
+        lesson.AddQuize(quize);
+
         await _dbContext.SaveChangesAsync(cancellationToken);
-        return new GenerateQuizeCommandResponse(newAssistant.Id);
+        
+        return new GenerateQuizeCommandResponse(quize.Id.Value);
     }
 }
+

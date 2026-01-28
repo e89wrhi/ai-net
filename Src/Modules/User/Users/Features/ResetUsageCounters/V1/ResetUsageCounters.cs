@@ -17,14 +17,14 @@ using Microsoft.AspNetCore.Routing;
 namespace User.Features.ResetUsageCounters.V1;
 
 
-public record ResetUsageCounterCommand() : ICommand<ResetUsageCounterCommandResponse>
+public record ResetUsageCounterCommand(Guid UserId) : ICommand<ResetUsageCounterCommandResponse>
 {
     public Guid Id { get; init; } = NewId.NextGuid();
 }
 
 public record ResetUsageCounterCommandResponse(Guid Id);
 
-public record ResetUsageCounterRequest();
+public record ResetUsageCounterRequest(Guid UserId);
 
 public record ResetUsageCounterRequestResponse(Guid Id);
 
@@ -32,7 +32,7 @@ public class ResetUsageCounterEndpoint : IMinimalEndpoint
 {
     public IEndpointRouteBuilder MapEndpoint(IEndpointRouteBuilder builder)
     {
-        builder.MapPost($"{EndpointConfig.BaseApiPath}/users", async (ResetUsageCounterRequest request,
+        builder.MapPost($"{EndpointConfig.BaseApiPath}/users/reset-usage", async (ResetUsageCounterRequest request,
                 IMediator mediator, IMapper mapper,
                 CancellationToken cancellationToken) =>
         {
@@ -62,6 +62,7 @@ public class ResetUsageCounterCommandValidator : AbstractValidator<ResetUsageCou
 {
     public ResetUsageCounterCommandValidator()
     {
+        RuleFor(x => x.UserId).NotEmpty();
     }
 }
 
@@ -78,7 +79,18 @@ internal class ResetUsageCounterHandler : IRequestHandler<ResetUsageCounterComma
     {
         Guard.Against.Null(request, nameof(request));
 
+        var user = await _dbContext.Users.FindAsync(new object[] { UserId.Of(request.UserId) }, cancellationToken);
+
+        if (user == null)
+        {
+            throw new UserNotFoundException(request.UserId);
+        }
+
+        user.ResetUsages();
+
         await _dbContext.SaveChangesAsync(cancellationToken);
-        return new ResetUsageCounterCommandResponse(newUser.Id);
+        
+        return new ResetUsageCounterCommandResponse(user.Id.Value);
     }
 }
+

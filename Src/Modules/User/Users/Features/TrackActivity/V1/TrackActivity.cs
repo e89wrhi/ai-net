@@ -17,14 +17,14 @@ using Microsoft.AspNetCore.Routing;
 namespace User.Features.TrackActivity.V1;
 
 
-public record TrackActivityCommand() : ICommand<TrackActivityCommandResponse>
+public record TrackActivityCommand(Guid UserId, TrackedModule Module, string Action, Guid ResourceId, string IpAddress, string UserAgent) : ICommand<TrackActivityCommandResponse>
 {
     public Guid Id { get; init; } = NewId.NextGuid();
 }
 
 public record TrackActivityCommandResponse(Guid Id);
 
-public record TrackActivityRequest();
+public record TrackActivityRequest(Guid UserId, TrackedModule Module, string Action, Guid ResourceId);
 
 public record TrackActivityRequestResponse(Guid Id);
 
@@ -32,11 +32,21 @@ public class TrackActivityEndpoint : IMinimalEndpoint
 {
     public IEndpointRouteBuilder MapEndpoint(IEndpointRouteBuilder builder)
     {
-        builder.MapPost($"{EndpointConfig.BaseApiPath}/users", async (TrackActivityRequest request,
+        builder.MapPost($"{EndpointConfig.BaseApiPath}/users/track-activity", async (TrackActivityRequest request,
                 IMediator mediator, IMapper mapper,
+                IHttpContextAccessor httpContextAccessor,
                 CancellationToken cancellationToken) =>
         {
-            var command = mapper.Map<TrackActivityCommand>(request);
+            var ipAddress = httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+            var userAgent = httpContextAccessor.HttpContext?.Request.Headers["User-Agent"].ToString() ?? "unknown";
+
+            var command = new TrackActivityCommand(
+                request.UserId,
+                request.Module,
+                request.Action,
+                request.ResourceId,
+                ipAddress,
+                userAgent);
 
             var result = await mediator.Send(command, cancellationToken);
 
@@ -62,6 +72,8 @@ public class TrackActivityCommandValidator : AbstractValidator<TrackActivityComm
 {
     public TrackActivityCommandValidator()
     {
+        RuleFor(x => x.UserId).NotEmpty();
+        RuleFor(x => x.Action).NotEmpty();
     }
 }
 
@@ -78,7 +90,27 @@ internal class TrackActivityHandler : IRequestHandler<TrackActivityCommand, Trac
     {
         Guard.Against.Null(request, nameof(request));
 
+        var user = await _dbContext.Users.FindAsync(new object[] { UserId.Of(request.UserId) }, cancellationToken);
+
+        if (user == null)
+        {
+            throw new UserNotFoundException(request.UserId);
+        }
+
+        var activity = UserActivity.Create(
+            UserActivityId.Of(NewId.NextGuid()),
+            user.Id,
+            request.Module,
+            request.Action,
+            request.ResourceId,
+            request.IpAddress,
+            request.UserAgent);
+
+        user.TrackActivity(activity);
+
         await _dbContext.SaveChangesAsync(cancellationToken);
-        return new TrackActivityCommandResponse(newUser.Id);
+
+        return new TrackActivityCommandResponse(activity.Id.Value);
     }
 }
+

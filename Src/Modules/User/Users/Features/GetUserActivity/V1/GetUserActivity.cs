@@ -18,9 +18,9 @@ using MongoDB.Driver.Linq;
 namespace User.Features.GetUserActivity.V1;
 
 
-public record GetUserActivity : IQuery<GetUserActivityResult>, ICacheRequest
+public record GetUserActivity(Guid UserId) : IQuery<GetUserActivityResult>, ICacheRequest
 {
-    public string CacheKey => "GetUserActivity";
+    public string CacheKey => $"GetUserActivity_{UserId}";
     public DateTime? AbsoluteExpirationRelativeToNow => DateTime.Now.AddHours(1);
 }
 
@@ -32,10 +32,10 @@ public class GetUserActivityEndpoint : IMinimalEndpoint
 {
     public IEndpointRouteBuilder MapEndpoint(IEndpointRouteBuilder builder)
     {
-        builder.MapGet($"{EndpointConfig.BaseApiPath}/",
-                async (IMediator mediator, CancellationToken cancellationToken) =>
+        builder.MapGet($"{EndpointConfig.BaseApiPath}/users/{{userId}}/activities",
+                async (Guid userId, IMediator mediator, CancellationToken cancellationToken) =>
                 {
-                    var result = await mediator.Send(new GetUserActivity(), cancellationToken);
+                    var result = await mediator.Send(new GetUserActivity(userId), cancellationToken);
 
                     var response = result.Adapt<GetUserActivityResponseDto>();
 
@@ -43,7 +43,7 @@ public class GetUserActivityEndpoint : IMinimalEndpoint
                 })
             .RequireAuthorization(nameof(ApiScope))
             .WithName("GetUserActivity")
-            .WithApiVersionSet(builder.NewApiVersionSet("UserActivity").Build())
+            .WithApiVersionSet(builder.NewApiVersionSet("User").Build())
             .Produces<GetUserActivityResponseDto>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .WithSummary("Get User Activity")
@@ -71,16 +71,17 @@ internal class GetUserActivityHandler : IQueryHandler<GetUserActivity, GetUserAc
     {
         Guard.Against.Null(request, nameof(request));
 
-        var result = (await _readDbContext.User.AsQueryable().ToListAsync(cancellationToken))
-            .Where(i => i.Id == request.Id);
+        var user = await _readDbContext.User.AsQueryable()
+            .FirstOrDefaultAsync(x => x.Id == request.UserId, cancellationToken);
 
-        if (!result.Any())
+        if (user == null)
         {
-            throw new UserNotFoundException(request.Id);
+            throw new UserNotFoundException(request.UserId);
         }
 
-        var eventDtos = _mapper.Map<IEnumerable<UserActivityDto>>(result);
+        var activityDtos = _mapper.Map<IEnumerable<UserActivityDto>>(user.Activities);
 
-        return new GetUserActivityResult(eventDtos);
+        return new GetUserActivityResult(activityDtos);
     }
 }
+

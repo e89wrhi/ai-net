@@ -18,9 +18,9 @@ using MongoDB.Driver.Linq;
 namespace User.Features.GetUserUsageSummary.V1;
 
 
-public record GetUserUsageSummary : IQuery<GetUserUsageSummaryResult>, ICacheRequest
+public record GetUserUsageSummary(Guid UserId) : IQuery<GetUserUsageSummaryResult>, ICacheRequest
 {
-    public string CacheKey => "GetUserUsageSummary";
+    public string CacheKey => $"GetUserUsageSummary_{UserId}";
     public DateTime? AbsoluteExpirationRelativeToNow => DateTime.Now.AddHours(1);
 }
 
@@ -32,10 +32,10 @@ public class GetUserUsageSummaryEndpoint : IMinimalEndpoint
 {
     public IEndpointRouteBuilder MapEndpoint(IEndpointRouteBuilder builder)
     {
-        builder.MapGet($"{EndpointConfig.BaseApiPath}/",
-                async (IMediator mediator, CancellationToken cancellationToken) =>
+        builder.MapGet($"{EndpointConfig.BaseApiPath}/users/{{userId}}/usage-summary",
+                async (Guid userId, IMediator mediator, CancellationToken cancellationToken) =>
                 {
-                    var result = await mediator.Send(new GetUserUsageSummary(), cancellationToken);
+                    var result = await mediator.Send(new GetUserUsageSummary(userId), cancellationToken);
 
                     var response = result.Adapt<GetUserUsageSummaryResponseDto>();
 
@@ -43,7 +43,7 @@ public class GetUserUsageSummaryEndpoint : IMinimalEndpoint
                 })
             .RequireAuthorization(nameof(ApiScope))
             .WithName("GetUserUsageSummary")
-            .WithApiVersionSet(builder.NewApiVersionSet("UserUsageSummary").Build())
+            .WithApiVersionSet(builder.NewApiVersionSet("User").Build())
             .Produces<GetUserUsageSummaryResponseDto>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .WithSummary("Get User Usage Summary")
@@ -71,16 +71,17 @@ internal class GetUserUsageSummaryHandler : IQueryHandler<GetUserUsageSummary, G
     {
         Guard.Against.Null(request, nameof(request));
 
-        var result = (await _readDbContext.User.AsQueryable().ToListAsync(cancellationToken))
-            .Where(i => i.Id == request.Id);
+        var user = await _readDbContext.User.AsQueryable()
+            .FirstOrDefaultAsync(x => x.Id == request.UserId, cancellationToken);
 
-        if (!result.Any())
+        if (user == null)
         {
-            throw new UserNotFoundException(request.Id);
+            throw new UserNotFoundException(request.UserId);
         }
 
-        var eventDtos = _mapper.Map<IEnumerable<UserUsageSummaryDto>>(result);
+        var usageDtos = _mapper.Map<IEnumerable<UserUsageSummaryDto>>(user.Usages);
 
-        return new GetUserUsageSummaryResult(eventDtos);
+        return new GetUserUsageSummaryResult(usageDtos);
     }
 }
+

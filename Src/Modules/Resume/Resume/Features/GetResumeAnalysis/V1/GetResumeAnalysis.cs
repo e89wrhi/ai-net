@@ -18,24 +18,24 @@ using MongoDB.Driver.Linq;
 namespace Resume.Features.GetResumeAnalysis.V1;
 
 
-public record GetResumeAnalysis : IQuery<GetResumeAnalysisResult>, ICacheRequest
+public record GetResumeAnalysis(Guid ResumeId) : IQuery<GetResumeAnalysisResult>, ICacheRequest
 {
-    public string CacheKey => "GetResumeAnalysis";
+    public string CacheKey => $"GetResumeAnalysis_{ResumeId}";
     public DateTime? AbsoluteExpirationRelativeToNow => DateTime.Now.AddHours(1);
 }
 
-public record GetResumeAnalysisResult(IEnumerable<ResumeAnalysisDto> ResumeDtos);
+public record GetResumeAnalysisResult(ResumeAnalysisDto ResumeAnalysisDto);
 
-public record GetResumeAnalysisResponseDto(IEnumerable<ResumeAnalysisDto> ResumeDtos);
+public record GetResumeAnalysisResponseDto(ResumeAnalysisDto ResumeAnalysisDto);
 
 public class GetResumeAnalysisEndpoint : IMinimalEndpoint
 {
     public IEndpointRouteBuilder MapEndpoint(IEndpointRouteBuilder builder)
     {
-        builder.MapGet($"{EndpointConfig.BaseApiPath}/",
-                async (IMediator mediator, CancellationToken cancellationToken) =>
+        builder.MapGet($"{EndpointConfig.BaseApiPath}/resume/{{resumeId}}/analysis",
+                async (Guid resumeId, IMediator mediator, CancellationToken cancellationToken) =>
                 {
-                    var result = await mediator.Send(new GetResumeAnalysis(), cancellationToken);
+                    var result = await mediator.Send(new GetResumeAnalysis(resumeId), cancellationToken);
 
                     var response = result.Adapt<GetResumeAnalysisResponseDto>();
 
@@ -71,16 +71,17 @@ internal class GetResumeAnalysisHandler : IQueryHandler<GetResumeAnalysis, GetRe
     {
         Guard.Against.Null(request, nameof(request));
 
-        var result = (await _readDbContext.Resume.AsQueryable().ToListAsync(cancellationToken))
-            .Where(i => i.Id == request.Id);
+        var resume = await _readDbContext.Resume.AsQueryable()
+            .FirstOrDefaultAsync(x => x.Id == request.ResumeId, cancellationToken);
 
-        if (!result.Any())
+        if (resume == null)
         {
-            throw new ResumeNotFoundException(request.Id);
+            throw new ResumeNotFoundException(request.ResumeId);
         }
 
-        var eventDtos = _mapper.Map<IEnumerable<ResumeAnalysisDto>>(result);
+        var dto = _mapper.Map<ResumeAnalysisDto>(resume);
 
-        return new GetResumeAnalysisResult(eventDtos);
+        return new GetResumeAnalysisResult(dto);
     }
 }
+

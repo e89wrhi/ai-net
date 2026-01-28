@@ -16,14 +16,14 @@ using Microsoft.AspNetCore.Routing;
 
 namespace ImageCaption.Features.GenerateCaption.V1;
 
-public record GenerateCaptionCommand() : ICommand<GenerateCaptionCommandResponse>
+public record GenerateCaptionCommand(Guid ImageId, string CaptionText, double Confidence, string Language) : ICommand<GenerateCaptionCommandResponse>
 {
     public Guid Id { get; init; } = NewId.NextGuid();
 }
 
 public record GenerateCaptionCommandResponse(Guid Id);
 
-public record GenerateCaptionRequest();
+public record GenerateCaptionRequest(Guid ImageId, string CaptionText, double Confidence, string Language);
 
 public record GenerateCaptionRequestResponse(Guid Id);
 
@@ -32,7 +32,7 @@ public class GenerateCaptionEndpoint : IMinimalEndpoint
 {
     public IEndpointRouteBuilder MapEndpoint(IEndpointRouteBuilder builder)
     {
-        builder.MapPost($"{EndpointConfig.BaseApiPath}/image", async (GenerateCaptionRequest request,
+        builder.MapPost($"{EndpointConfig.BaseApiPath}/image/generate-caption", async (GenerateCaptionRequest request,
                 IMediator mediator, IMapper mapper,
                 CancellationToken cancellationToken) =>
         {
@@ -62,6 +62,8 @@ public class GenerateCaptionCommandValidator : AbstractValidator<GenerateCaption
 {
     public GenerateCaptionCommandValidator()
     {
+        RuleFor(x => x.ImageId).NotEmpty();
+        RuleFor(x => x.CaptionText).NotEmpty();
     }
 }
 
@@ -78,7 +80,25 @@ internal class GenerateCaptionHandler : IRequestHandler<GenerateCaptionCommand, 
     {
         Guard.Against.Null(request, nameof(request));
 
+        var image = await _dbContext.Images.FindAsync(new object[] { ImageId.Of(request.ImageId) }, cancellationToken);
+
+        if (image == null)
+        {
+            throw new ImageNotFoundException(request.ImageId);
+        }
+
+        var caption = CaptionModel.Create(
+            CaptionId.Of(NewId.NextGuid()),
+            image.Id,
+            request.CaptionText,
+            request.Confidence,
+            request.Language);
+
+        image.AddCaption(caption);
+
         await _dbContext.SaveChangesAsync(cancellationToken);
-        return new GenerateCaptionCommandResponse(newImage.Id);
+
+        return new GenerateCaptionCommandResponse(caption.Id.Value);
     }
 }
+

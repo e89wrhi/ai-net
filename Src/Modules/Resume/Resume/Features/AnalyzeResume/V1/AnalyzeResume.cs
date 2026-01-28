@@ -17,14 +17,14 @@ using Microsoft.AspNetCore.Routing;
 namespace Resume.Features.AnalyzeResume.V1;
 
 
-public record AnalyzeResumeCommand() : ICommand<AnalyzeResumeCommandResponse>
+public record AnalyzeResumeCommand(Guid ResumeId, string Summary, string ParsedText) : ICommand<AnalyzeResumeCommandResponse>
 {
     public Guid Id { get; init; } = NewId.NextGuid();
 }
 
 public record AnalyzeResumeCommandResponse(Guid Id);
 
-public record AnalyzeResumeRequest();
+public record AnalyzeResumeRequest(Guid ResumeId, string Summary, string ParsedText);
 
 public record AnalyzeResumeRequestResponse(Guid Id);
 
@@ -32,7 +32,7 @@ public class AnalyzeResumeEndpoint : IMinimalEndpoint
 {
     public IEndpointRouteBuilder MapEndpoint(IEndpointRouteBuilder builder)
     {
-        builder.MapPost($"{EndpointConfig.BaseApiPath}/resume", async (AnalyzeResumeRequest request,
+        builder.MapPost($"{EndpointConfig.BaseApiPath}/resume/analyze", async (AnalyzeResumeRequest request,
                 IMediator mediator, IMapper mapper,
                 CancellationToken cancellationToken) =>
         {
@@ -62,6 +62,9 @@ public class AnalyzeResumeCommandValidator : AbstractValidator<AnalyzeResumeComm
 {
     public AnalyzeResumeCommandValidator()
     {
+        RuleFor(x => x.ResumeId).NotEmpty();
+        RuleFor(x => x.Summary).NotEmpty();
+        RuleFor(x => x.ParsedText).NotEmpty();
     }
 }
 
@@ -78,7 +81,18 @@ internal class AnalyzeResumeHandler : IRequestHandler<AnalyzeResumeCommand, Anal
     {
         Guard.Against.Null(request, nameof(request));
 
+        var resume = await _dbContext.Resumes.FindAsync(new object[] { ResumeId.Of(request.ResumeId) }, cancellationToken);
+
+        if (resume == null)
+        {
+            throw new ResumeNotFoundException(request.ResumeId);
+        }
+
+        resume.CompleteAnalysis(request.Summary, ParsedText.Of(request.ParsedText));
+
         await _dbContext.SaveChangesAsync(cancellationToken);
-        return new AnalyzeResumeCommandResponse(newPayment.Id);
+        
+        return new AnalyzeResumeCommandResponse(resume.Id.Value);
     }
 }
+

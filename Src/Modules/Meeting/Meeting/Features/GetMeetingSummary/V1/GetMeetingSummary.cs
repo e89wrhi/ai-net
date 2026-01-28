@@ -18,24 +18,24 @@ using MongoDB.Driver.Linq;
 namespace Meeting.Features.GetMeetingSummary.V1;
 
 
-public record GetMeetingSummary : IQuery<GetMeetingSummaryResult>, ICacheRequest
+public record GetMeetingSummary(Guid MeetingId) : IQuery<GetMeetingSummaryResult>, ICacheRequest
 {
-    public string CacheKey => "GetMeetingSummary";
+    public string CacheKey => $"GetMeetingSummary_{MeetingId}";
     public DateTime? AbsoluteExpirationRelativeToNow => DateTime.Now.AddHours(1);
 }
 
-public record GetMeetingSummaryResult(IEnumerable<MeetingSummaryDto> MeetingDtos);
+public record GetMeetingSummaryResult(MeetingSummaryDto MeetingSummaryDto);
 
-public record GetMeetingSummaryResponseDto(IEnumerable<MeetingSummaryDto> MeetingDtos);
+public record GetMeetingSummaryResponseDto(MeetingSummaryDto MeetingSummaryDto);
 
 public class GetMeetingSummaryEndpoint : IMinimalEndpoint
 {
     public IEndpointRouteBuilder MapEndpoint(IEndpointRouteBuilder builder)
     {
-        builder.MapGet($"{EndpointConfig.BaseApiPath}/",
-                async (IMediator mediator, CancellationToken cancellationToken) =>
+        builder.MapGet($"{EndpointConfig.BaseApiPath}/meeting/{{meetingId}}/summary",
+                async (Guid meetingId, IMediator mediator, CancellationToken cancellationToken) =>
                 {
-                    var result = await mediator.Send(new GetMeetingSummary(), cancellationToken);
+                    var result = await mediator.Send(new GetMeetingSummary(meetingId), cancellationToken);
 
                     var response = result.Adapt<GetMeetingSummaryResponseDto>();
 
@@ -71,16 +71,17 @@ internal class GetMeetingSummaryHandler : IQueryHandler<GetMeetingSummary, GetMe
     {
         Guard.Against.Null(request, nameof(request));
 
-        var result = (await _readDbContext.Meeting.AsQueryable().ToListAsync(cancellationToken))
-            .Where(i => i.Id == request.Id);
+        var meeting = await _readDbContext.Meeting.AsQueryable()
+            .FirstOrDefaultAsync(x => x.Id == request.MeetingId, cancellationToken);
 
-        if (!result.Any())
+        if (meeting == null)
         {
-            throw new MeetingNotFoundException(request.Id);
+            throw new MeetingNotFoundException(request.MeetingId);
         }
 
-        var eventDtos = _mapper.Map<IEnumerable<MeetingSummaryDto>>(result);
+        var dto = _mapper.Map<MeetingSummaryDto>(meeting);
 
-        return new GetMeetingSummaryResult(eventDtos);
+        return new GetMeetingSummaryResult(dto);
     }
 }
+

@@ -18,9 +18,9 @@ using MongoDB.Driver.Linq;
 namespace Resume.Features.GetResumeSuggestions.V1;
 
 
-public record GetResumeSuggestions : IQuery<GetResumeSuggestionsResult>, ICacheRequest
+public record GetResumeSuggestions(Guid ResumeId) : IQuery<GetResumeSuggestionsResult>, ICacheRequest
 {
-    public string CacheKey => "GetResumeSuggestions";
+    public string CacheKey => $"GetResumeSuggestions_{ResumeId}";
     public DateTime? AbsoluteExpirationRelativeToNow => DateTime.Now.AddHours(1);
 }
 
@@ -32,10 +32,10 @@ public class GetResumeSuggestionsEndpoint : IMinimalEndpoint
 {
     public IEndpointRouteBuilder MapEndpoint(IEndpointRouteBuilder builder)
     {
-        builder.MapGet($"{EndpointConfig.BaseApiPath}/",
-                async (IMediator mediator, CancellationToken cancellationToken) =>
+        builder.MapGet($"{EndpointConfig.BaseApiPath}/resume/{{resumeId}}/suggestions",
+                async (Guid resumeId, IMediator mediator, CancellationToken cancellationToken) =>
                 {
-                    var result = await mediator.Send(new GetResumeSuggestions(), cancellationToken);
+                    var result = await mediator.Send(new GetResumeSuggestions(resumeId), cancellationToken);
 
                     var response = result.Adapt<GetResumeSuggestionsResponseDto>();
 
@@ -43,7 +43,7 @@ public class GetResumeSuggestionsEndpoint : IMinimalEndpoint
                 })
             .RequireAuthorization(nameof(ApiScope))
             .WithName("GetResumeSuggestions")
-            .WithApiVersionSet(builder.NewApiVersionSet("ResumeSuggestion").Build())
+            .WithApiVersionSet(builder.NewApiVersionSet("Resume").Build())
             .Produces<GetResumeSuggestionsResponseDto>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .WithSummary("Get Resume Suggestions")
@@ -71,16 +71,17 @@ internal class GetResumeSuggestionsHandler : IQueryHandler<GetResumeSuggestions,
     {
         Guard.Against.Null(request, nameof(request));
 
-        var result = (await _readDbContext.Resume.AsQueryable().ToListAsync(cancellationToken))
-            .Where(i => i.Id == request.Id);
+        var resume = await _readDbContext.Resume.AsQueryable()
+            .FirstOrDefaultAsync(x => x.Id == request.ResumeId, cancellationToken);
 
-        if (!result.Any())
+        if (resume == null)
         {
-            throw new ResumeNotFoundException(request.Id);
+            throw new ResumeNotFoundException(request.ResumeId);
         }
 
-        var eventDtos = _mapper.Map<IEnumerable<ResumeSuggestionDto>>(result);
+        var dtos = _mapper.Map<IEnumerable<ResumeSuggestionDto>>(resume.Suggestions);
 
-        return new GetResumeSuggestionsResult(eventDtos);
+        return new GetResumeSuggestionsResult(dtos);
     }
 }
+

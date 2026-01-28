@@ -49,7 +49,7 @@ public record UserModel : Aggregate<UserId>
     public void TrackActivity(UserActivity activity)
     {
         _activities.Add(activity);
-        AddDomainEvent(new User.Events.UserActivityTrackedDomainEvent(Id, activity.Id, activity.Module, activity.Action));
+        AddDomainEvent(new User.Events.UserActivityTrackedDomainEvent(Id, activity.Id, activity.Module, activity.Action, activity.ResourceId, activity.TimeStamp));
     }
 
     public void RecordUsage(UsageContainer usage)
@@ -57,4 +57,11 @@ public record UserModel : Aggregate<UserId>
         _usages.Add(usage);
         AddDomainEvent(new User.Events.UsageRecordAddedDomainEvent(Id, usage.Id, usage.TokenUsed));
     }
+
+    public void ResetUsages()
+    {
+        _usages.Clear();
+        // Add domain event if needed
+    }
 }
+

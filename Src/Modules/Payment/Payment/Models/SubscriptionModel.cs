@@ -69,4 +69,11 @@ public record SubscriptionModel : Aggregate<SubscriptionId>
         _charges.Add(charge);
         AddDomainEvent(new Payment.Events.UsageChargedDomainEvent(Id, charge.Description, charge.Cost));
     }
+    public void Cancel()
+    {
+        SubscriptionStatus = SubscriptionStatus.Cancelled;
+        LastModified = DateTime.UtcNow;
+
+        AddDomainEvent(new Payment.Events.SubscriptionCancelledDomainEvent(Id));
+    }
 }

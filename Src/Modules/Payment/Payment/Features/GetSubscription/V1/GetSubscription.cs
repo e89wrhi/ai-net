@@ -18,24 +18,24 @@ using MongoDB.Driver.Linq;
 namespace Payment.Features.GetSubscription.V1;
 
 
-public record GetSubscription : IQuery<GetSubscriptionResult>, ICacheRequest
+public record GetSubscription(Guid UserId) : IQuery<GetSubscriptionResult>, ICacheRequest
 {
-    public string CacheKey => "GetSubscription";
+    public string CacheKey => $"GetSubscription_{UserId}";
     public DateTime? AbsoluteExpirationRelativeToNow => DateTime.Now.AddHours(1);
 }
 
-public record GetSubscriptionResult(IEnumerable<SubscriptionDto> SubscriptionDtos);
+public record GetSubscriptionResult(SubscriptionDto SubscriptionDto);
 
-public record GetSubscriptionResponseDto(IEnumerable<SubscriptionDto> SubscriptionDtos);
+public record GetSubscriptionResponseDto(SubscriptionDto SubscriptionDto);
 
 public class GetSubscriptionEndpoint : IMinimalEndpoint
 {
     public IEndpointRouteBuilder MapEndpoint(IEndpointRouteBuilder builder)
     {
-        builder.MapGet($"{EndpointConfig.BaseApiPath}/",
-                async (IMediator mediator, CancellationToken cancellationToken) =>
+        builder.MapGet($"{EndpointConfig.BaseApiPath}/subscription/{{userId}}",
+                async (Guid userId, IMediator mediator, CancellationToken cancellationToken) =>
                 {
-                    var result = await mediator.Send(new GetSubscription(), cancellationToken);
+                    var result = await mediator.Send(new GetSubscription(userId), cancellationToken);
 
                     var response = result.Adapt<GetSubscriptionResponseDto>();
 
@@ -43,7 +43,7 @@ public class GetSubscriptionEndpoint : IMinimalEndpoint
                 })
             .RequireAuthorization(nameof(ApiScope))
             .WithName("GetSubscription")
-            .WithApiVersionSet(builder.NewApiVersionSet("Subscription").Build())
+            .WithApiVersionSet(builder.NewApiVersionSet("Payment").Build())
             .Produces<GetSubscriptionResponseDto>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .WithSummary("Get Subscription")
@@ -71,16 +71,17 @@ internal class GetSubscriptionHandler : IQueryHandler<GetSubscription, GetSubscr
     {
         Guard.Against.Null(request, nameof(request));
 
-        var result = (await _readDbContext.Subscription.AsQueryable().ToListAsync(cancellationToken))
-            .Where(i => i.Id == request.Id);
+        var subscription = await _readDbContext.Subscription.AsQueryable()
+            .FirstOrDefaultAsync(x => x.UserId == request.UserId && x.Status == "Active", cancellationToken);
 
-        if (!result.Any())
+        if (subscription == null)
         {
-            throw new SubscriptionNotFoundException(request.Id);
+            throw new SubscriptionNotFoundException(request.UserId);
         }
 
-        var eventDtos = _mapper.Map<IEnumerable<SubscriptionDto>>(result);
+        var dto = _mapper.Map<SubscriptionDto>(subscription);
 
-        return new GetSubscriptionResult(eventDtos);
+        return new GetSubscriptionResult(dto);
     }
 }
+

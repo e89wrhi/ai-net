@@ -17,14 +17,14 @@ using Microsoft.AspNetCore.Routing;
 namespace Payment.Features.CancelSubscription.V1;
 
 
-public record CancelSubscriptionCommand() : ICommand<CancelSubscriptionCommandResponse>
+public record CancelSubscriptionCommand(Guid SubscriptionId) : ICommand<CancelSubscriptionCommandResponse>
 {
     public Guid Id { get; init; } = NewId.NextGuid();
 }
 
 public record CancelSubscriptionCommandResponse(Guid Id);
 
-public record CancelSubscriptionRequest();
+public record CancelSubscriptionRequest(Guid SubscriptionId);
 
 public record CancelSubscriptionRequestResponse(Guid Id);
 
@@ -32,7 +32,7 @@ public class CancelSubscriptionEndpoint : IMinimalEndpoint
 {
     public IEndpointRouteBuilder MapEndpoint(IEndpointRouteBuilder builder)
     {
-        builder.MapPost($"{EndpointConfig.BaseApiPath}/payment", async (CancelSubscriptionRequest request,
+        builder.MapPost($"{EndpointConfig.BaseApiPath}/subscription/cancel", async (CancelSubscriptionRequest request,
                 IMediator mediator, IMapper mapper,
                 CancellationToken cancellationToken) =>
         {
@@ -62,6 +62,7 @@ public class CancelSubscriptionCommandValidator : AbstractValidator<CancelSubscr
 {
     public CancelSubscriptionCommandValidator()
     {
+        RuleFor(x => x.SubscriptionId).NotEmpty();
     }
 }
 
@@ -78,7 +79,18 @@ internal class CancelSubscriptionHandler : IRequestHandler<CancelSubscriptionCom
     {
         Guard.Against.Null(request, nameof(request));
 
+        var subscription = await _dbContext.Subscriptions.FindAsync(new object[] { SubscriptionId.Of(request.SubscriptionId) }, cancellationToken);
+
+        if (subscription == null)
+        {
+            throw new SubscriptionNotFoundException(request.SubscriptionId);
+        }
+
+        subscription.Cancel();
+
         await _dbContext.SaveChangesAsync(cancellationToken);
-        return new CancelSubscriptionCommandResponse(newMeeting.Id);
+        
+        return new CancelSubscriptionCommandResponse(subscription.Id.Value);
     }
 }
+

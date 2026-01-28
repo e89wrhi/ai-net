@@ -17,14 +17,14 @@ using Microsoft.AspNetCore.Routing;
 namespace Resume.Features.ReAnalyzeResume.V1;
 
 
-public record ReAnalyzeResumeCommand() : ICommand<ReAnalyzeResumeCommandResponse>
+public record ReAnalyzeResumeCommand(Guid ResumeId, string Summary, string ParsedText) : ICommand<ReAnalyzeResumeCommandResponse>
 {
     public Guid Id { get; init; } = NewId.NextGuid();
 }
 
 public record ReAnalyzeResumeCommandResponse(Guid Id);
 
-public record ReAnalyzeResumeRequest();
+public record ReAnalyzeResumeRequest(Guid ResumeId, string Summary, string ParsedText);
 
 public record ReAnalyzeResumeRequestResponse(Guid Id);
 
@@ -32,7 +32,7 @@ public class ReAnalyzeResumeEndpoint : IMinimalEndpoint
 {
     public IEndpointRouteBuilder MapEndpoint(IEndpointRouteBuilder builder)
     {
-        builder.MapPost($"{EndpointConfig.BaseApiPath}/resume", async (ReAnalyzeResumeRequest request,
+        builder.MapPost($"{EndpointConfig.BaseApiPath}/resume/re-analyze", async (ReAnalyzeResumeRequest request,
                 IMediator mediator, IMapper mapper,
                 CancellationToken cancellationToken) =>
         {
@@ -62,6 +62,9 @@ public class ReAnalyzeResumeCommandValidator : AbstractValidator<ReAnalyzeResume
 {
     public ReAnalyzeResumeCommandValidator()
     {
+        RuleFor(x => x.ResumeId).NotEmpty();
+        RuleFor(x => x.Summary).NotEmpty();
+        RuleFor(x => x.ParsedText).NotEmpty();
     }
 }
 
@@ -78,7 +81,18 @@ internal class ReAnalyzeResumeHandler : IRequestHandler<ReAnalyzeResumeCommand, 
     {
         Guard.Against.Null(request, nameof(request));
 
+        var resume = await _dbContext.Resumes.FindAsync(new object[] { ResumeId.Of(request.ResumeId) }, cancellationToken);
+
+        if (resume == null)
+        {
+            throw new ResumeNotFoundException(request.ResumeId);
+        }
+
+        resume.CompleteAnalysis(request.Summary, ParsedText.Of(request.ParsedText));
+
         await _dbContext.SaveChangesAsync(cancellationToken);
-        return new ReAnalyzeResumeCommandResponse(newResume.Id);
+        
+        return new ReAnalyzeResumeCommandResponse(resume.Id.Value);
     }
 }
+

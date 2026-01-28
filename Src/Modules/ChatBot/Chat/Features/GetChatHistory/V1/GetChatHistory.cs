@@ -17,9 +17,9 @@ using MongoDB.Driver.Linq;
 
 namespace ChatBot.Features.GetChatHistory.V1;
 
-public record GetChatHistory : IQuery<GetChatHistoryResult>, ICacheRequest
+public record GetChatHistory(Guid UserId) : IQuery<GetChatHistoryResult>, ICacheRequest
 {
-    public string CacheKey => "GetChatHistory";
+    public string CacheKey => $"GetChatHistory_{UserId}";
     public DateTime? AbsoluteExpirationRelativeToNow => DateTime.Now.AddHours(1);
 }
 
@@ -31,10 +31,10 @@ public class GetChatHistoryEndpoint : IMinimalEndpoint
 {
     public IEndpointRouteBuilder MapEndpoint(IEndpointRouteBuilder builder)
     {
-        builder.MapGet($"{EndpointConfig.BaseApiPath}/",
-                async (IMediator mediator, CancellationToken cancellationToken) =>
+        builder.MapGet($"{EndpointConfig.BaseApiPath}/chat/history/{{userId}}",
+                async (Guid userId, IMediator mediator, CancellationToken cancellationToken) =>
                 {
-                    var result = await mediator.Send(new GetChatHistory(), cancellationToken);
+                    var result = await mediator.Send(new GetChatHistory(userId), cancellationToken);
 
                     var response = result.Adapt<GetChatHistoryResponseDto>();
 
@@ -70,16 +70,12 @@ internal class GetChatHistoryHandler : IQueryHandler<GetChatHistory, GetChatHist
     {
         Guard.Against.Null(request, nameof(request));
 
-        var result = (await _readDbContext.Chat.AsQueryable().ToListAsync(cancellationToken))
-            .Where(i => i.Id == request.Id);
+        var chats = await _readDbContext.Chat.AsQueryable()
+            .Where(x => x.UserId == request.UserId)
+            .ToListAsync(cancellationToken);
 
-        if (!result.Any())
-        {
-            throw new ChatNotFoundException(request.Id);
-        }
+        var chatDtos = _mapper.Map<IEnumerable<ChatDto>>(chats);
 
-        var eventDtos = _mapper.Map<IEnumerable<ChatDto>>(result);
-
-        return new GetChatHistoryResult(eventDtos);
+        return new GetChatHistoryResult(chatDtos);
     }
 }

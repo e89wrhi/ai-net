@@ -17,14 +17,14 @@ using Microsoft.AspNetCore.Routing;
 namespace Meeting.Features.UploadMeetingAudio.V1;
 
 
-public record UploadMeetingAudioCommand() : ICommand<UploadMeetingAudioCommandResponse>
+public record UploadMeetingAudioCommand(string OrganizerId, string Title, string AudioUrl) : ICommand<UploadMeetingAudioCommandResponse>
 {
     public Guid Id { get; init; } = NewId.NextGuid();
 }
 
 public record UploadMeetingAudioCommandResponse(Guid Id);
 
-public record UploadMeetingAudioRequest();
+public record UploadMeetingAudioRequest(string OrganizerId, string Title, string AudioUrl);
 
 public record UploadMeetingAudioRequestResponse(Guid Id);
 
@@ -32,7 +32,7 @@ public class UploadMeetingAudioEndpoint : IMinimalEndpoint
 {
     public IEndpointRouteBuilder MapEndpoint(IEndpointRouteBuilder builder)
     {
-        builder.MapPost($"{EndpointConfig.BaseApiPath}/meeting", async (UploadMeetingAudioRequest request,
+        builder.MapPost($"{EndpointConfig.BaseApiPath}/meeting/upload", async (UploadMeetingAudioRequest request,
                 IMediator mediator, IMapper mapper,
                 CancellationToken cancellationToken) =>
         {
@@ -62,6 +62,8 @@ public class UploadMeetingAudioCommandValidator : AbstractValidator<UploadMeetin
 {
     public UploadMeetingAudioCommandValidator()
     {
+        RuleFor(x => x.OrganizerId).NotEmpty();
+        RuleFor(x => x.Title).NotEmpty();
     }
 }
 
@@ -78,7 +80,16 @@ internal class UploadMeetingAudioHandler : IRequestHandler<UploadMeetingAudioCom
     {
         Guard.Against.Null(request, nameof(request));
 
+        var meeting = MeetingModel.Create(
+            MeetingId.Of(NewId.NextGuid()),
+            request.OrganizerId,
+            Title.Of(request.Title),
+            AudioSource.Of(request.AudioUrl));
+
+        await _dbContext.Meetings.AddAsync(meeting, cancellationToken);
         await _dbContext.SaveChangesAsync(cancellationToken);
-        return new UploadMeetingAudioCommandResponse(newMeeting.Id);
+        
+        return new UploadMeetingAudioCommandResponse(meeting.Id.Value);
     }
 }
+

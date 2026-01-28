@@ -17,14 +17,14 @@ using Microsoft.AspNetCore.Routing;
 namespace Payment.Features.GenerateInvoice.V1;
 
 
-public record GenerateInvoiceCommand() : ICommand<GenerateInvoiceCommandResponse>
+public record GenerateInvoiceCommand(Guid SubscriptionId, decimal Amount, string Currency, string LineItems) : ICommand<GenerateInvoiceCommandResponse>
 {
     public Guid Id { get; init; } = NewId.NextGuid();
 }
 
 public record GenerateInvoiceCommandResponse(Guid Id);
 
-public record GenerateInvoiceRequest();
+public record GenerateInvoiceRequest(Guid SubscriptionId, decimal Amount, string Currency, string LineItems);
 
 public record GenerateInvoiceRequestResponse(Guid Id);
 
@@ -32,7 +32,7 @@ public class GenerateInvoiceEndpoint : IMinimalEndpoint
 {
     public IEndpointRouteBuilder MapEndpoint(IEndpointRouteBuilder builder)
     {
-        builder.MapPost($"{EndpointConfig.BaseApiPath}/payment", async (GenerateInvoiceRequest request,
+        builder.MapPost($"{EndpointConfig.BaseApiPath}/subscription/invoice/generate", async (GenerateInvoiceRequest request,
                 IMediator mediator, IMapper mapper,
                 CancellationToken cancellationToken) =>
         {
@@ -62,6 +62,8 @@ public class GenerateInvoiceCommandValidator : AbstractValidator<GenerateInvoice
 {
     public GenerateInvoiceCommandValidator()
     {
+        RuleFor(x => x.SubscriptionId).NotEmpty();
+        RuleFor(x => x.Amount).GreaterThan(0);
     }
 }
 
@@ -78,7 +80,27 @@ internal class GenerateInvoiceHandler : IRequestHandler<GenerateInvoiceCommand, 
     {
         Guard.Against.Null(request, nameof(request));
 
+        var subscription = await _dbContext.Subscriptions.FindAsync(new object[] { SubscriptionId.Of(request.SubscriptionId) }, cancellationToken);
+
+        if (subscription == null)
+        {
+            throw new SubscriptionNotFoundException(request.SubscriptionId);
+        }
+
+        var invoice = InvoiceModel.Create(
+            InvoiceId.Of(NewId.NextGuid()),
+            subscription.Id,
+            subscription.UserId,
+            BillingPeriod.Of(DateTime.UtcNow, DateTime.UtcNow.AddMonths(1)),
+            Money.Of(request.Amount, request.Currency),
+            request.LineItems,
+            $"INV-{subscription.Id.Value.ToString().Substring(0, 8)}-{DateTime.UtcNow:yyyyMMdd}");
+
+        subscription.AddInvoice(invoice);
+
         await _dbContext.SaveChangesAsync(cancellationToken);
-        return new GenerateInvoiceCommandResponse(newPayment.Id);
+        
+        return new GenerateInvoiceCommandResponse(invoice.Id.Value);
     }
 }
+

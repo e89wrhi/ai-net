@@ -18,9 +18,9 @@ using MongoDB.Driver.Linq;
 namespace Payment.Features.GetInvoices.V1;
 
 
-public record GetInvoices : IQuery<GetInvoicesResult>, ICacheRequest
+public record GetInvoices(Guid SubscriptionId) : IQuery<GetInvoicesResult>, ICacheRequest
 {
-    public string CacheKey => "GetInvoices";
+    public string CacheKey => $"GetInvoices_{SubscriptionId}";
     public DateTime? AbsoluteExpirationRelativeToNow => DateTime.Now.AddHours(1);
 }
 
@@ -32,10 +32,10 @@ public class GetInvoicesEndpoint : IMinimalEndpoint
 {
     public IEndpointRouteBuilder MapEndpoint(IEndpointRouteBuilder builder)
     {
-        builder.MapGet($"{EndpointConfig.BaseApiPath}/",
-                async (IMediator mediator, CancellationToken cancellationToken) =>
+        builder.MapGet($"{EndpointConfig.BaseApiPath}/subscription/{{subscriptionId}}/invoices",
+                async (Guid subscriptionId, IMediator mediator, CancellationToken cancellationToken) =>
                 {
-                    var result = await mediator.Send(new GetInvoices(), cancellationToken);
+                    var result = await mediator.Send(new GetInvoices(subscriptionId), cancellationToken);
 
                     var response = result.Adapt<GetInvoicesResponseDto>();
 
@@ -43,7 +43,7 @@ public class GetInvoicesEndpoint : IMinimalEndpoint
                 })
             .RequireAuthorization(nameof(ApiScope))
             .WithName("GetInvoices")
-            .WithApiVersionSet(builder.NewApiVersionSet("Invoice").Build())
+            .WithApiVersionSet(builder.NewApiVersionSet("Payment").Build())
             .Produces<GetInvoicesResponseDto>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .WithSummary("Get Invoices")
@@ -71,16 +71,17 @@ internal class GetInvoicesHandler : IQueryHandler<GetInvoices, GetInvoicesResult
     {
         Guard.Against.Null(request, nameof(request));
 
-        var result = (await _readDbContext.Subscription.AsQueryable().ToListAsync(cancellationToken))
-            .Where(i => i.Id == request.Id);
+        var subscription = await _readDbContext.Subscription.AsQueryable()
+            .FirstOrDefaultAsync(x => x.Id == request.SubscriptionId, cancellationToken);
 
-        if (!result.Any())
+        if (subscription == null)
         {
-            throw new InvoiceNotFoundException(request.Id);
+            throw new SubscriptionNotFoundException(request.SubscriptionId);
         }
 
-        var eventDtos = _mapper.Map<IEnumerable<InvoiceDto>>(result);
+        var dtos = _mapper.Map<IEnumerable<InvoiceDto>>(subscription.Invoices);
 
-        return new GetInvoicesResult(eventDtos);
+        return new GetInvoicesResult(dtos);
     }
 }
+
