@@ -3,4 +3,4 @@ using ChatBot.ValueObjects;
 
 namespace ChatBot.Events;
 
-public record MessageRecievedDomainEvent(SessionId SessionId, MessageId MessageId, string Content) : IDomainEvent;
+public record MessageRecievedDomainEvent(SessionId SessionId, MessageId MessageId, string Content, int TokenUsed) : IDomainEvent;

@@ -12,28 +12,27 @@ using AI.Common.Core;
 using User.Exceptions;
 using System;
 
-public record ResetUsageCountersMongo() : InternalCommand;
+public record ResetUsageCountersMongo(Guid UserId) : InternalCommand;
 
 public class ResetUsageCountersMongoHandler : ICommandHandler<ResetUsageCountersMongo>
 {
     private readonly UserReadDbContext _readDbContext;
-    private readonly IMapper _mapper;
 
-    public ResetUsageCountersMongoHandler(
-        UserReadDbContext readDbContext,
-        IMapper mapper)
+    public ResetUsageCountersMongoHandler(UserReadDbContext readDbContext)
     {
         _readDbContext = readDbContext;
-        _mapper = mapper;
     }
 
     public async Task<Unit> Handle(ResetUsageCountersMongo request, CancellationToken cancellationToken)
     {
         Guard.Against.Null(request, nameof(request));
 
-        var eventReadModel = _mapper.Map<UserReadModel>(request);
+        var filter = Builders<UserReadModel>.Filter.Eq(x => x.Id, request.UserId);
+        var update = Builders<UserReadModel>.Update.Set(x => x.Usages, new List<UsageContainerReadModel>());
 
+        await _readDbContext.User.UpdateOneAsync(filter, update, cancellationToken: cancellationToken);
 
         return Unit.Value;
     }
 }
+

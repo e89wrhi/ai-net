@@ -16,7 +16,7 @@ public record QuizeModel : Entity<QuizeId>
 
     public static QuizeModel Create(QuizeId id, LessonId lessonId, string questions)
     {
-        return new QuizeModel
+        var quiz = new QuizeModel
         {
             Id = id,
             LessonId = lessonId,
@@ -24,6 +24,9 @@ public record QuizeModel : Entity<QuizeId>
             QuizeStatus = QuizeStatus.Pending,
             CreatedAt = DateTime.UtcNow
         };
+
+        quiz.AddDomainEvent(new LearningAssistant.Events.QuizeGeneratedDomainEvent(lessonId, id, questions));
+        return quiz;
     }
 
     public void Submit(double score)
@@ -31,5 +34,8 @@ public record QuizeModel : Entity<QuizeId>
         Score = score;
         QuizeStatus = QuizeStatus.Completed;
         LastModified = DateTime.UtcNow;
+
+        AddDomainEvent(new LearningAssistant.Events.QuizeCompletedDomainEvent(LessonId, Id, score));
     }
+
 }

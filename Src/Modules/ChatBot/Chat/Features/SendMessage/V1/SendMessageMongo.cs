@@ -11,28 +11,40 @@ using AI.Common.Core;
 using ChatBot.Exceptions;
 using System;
 
-public record SendMessageMongo() : InternalCommand;
+public record SendMessageMongo(Guid ChatId, Guid MessageId, string Content, string Sender, int TokenUsed, DateTime SentAt) : InternalCommand;
 
 public class SendMessageMongoHandler : ICommandHandler<SendMessageMongo>
 {
     private readonly ChatReadDbContext _readDbContext;
-    private readonly IMapper _mapper;
 
-    public SendMessageMongoHandler(
-        ChatReadDbContext readDbContext,
-        IMapper mapper)
+    public SendMessageMongoHandler(ChatReadDbContext readDbContext)
     {
         _readDbContext = readDbContext;
-        _mapper = mapper;
     }
 
     public async Task<Unit> Handle(SendMessageMongo request, CancellationToken cancellationToken)
     {
         Guard.Against.Null(request, nameof(request));
 
-        var eventReadModel = _mapper.Map<ChatReadModel>(request);
+        var filter = Builders<ChatReadModel>.Filter.Eq(x => x.Id, request.ChatId);
+        
+        var message = new MessageReadModel
+        {
+            Id = request.MessageId,
+            Content = request.Content,
+            Sender = request.Sender,
+            SentAt = request.SentAt,
+            TokenUsed = request.TokenUsed
+        };
 
+        var update = Builders<ChatReadModel>.Update
+            .Push(x => x.Messages, message)
+            .Set(x => x.LastSentAt, request.SentAt)
+            .Inc(x => x.TotalTokens, request.TokenUsed);
+
+        await _readDbContext.Chats.UpdateOneAsync(filter, update, cancellationToken: cancellationToken);
 
         return Unit.Value;
     }
 }
+

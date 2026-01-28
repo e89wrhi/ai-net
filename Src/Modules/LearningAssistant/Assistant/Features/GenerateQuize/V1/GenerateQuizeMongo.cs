@@ -12,28 +12,35 @@ using AI.Common.Core;
 using LearningAssistant.Exceptions;
 using System;
 
-public record GenerateQuizeMongo() : InternalCommand;
+public record GenerateQuizeMongo(Guid LessonId, Guid QuizId, string Question, string CorrectAnswer) : InternalCommand;
 
 public class GenerateQuizeMongoHandler : ICommandHandler<GenerateQuizeMongo>
 {
     private readonly ProfileReadDbContext _readDbContext;
-    private readonly IMapper _mapper;
 
-    public GenerateQuizeMongoHandler(
-        ProfileReadDbContext readDbContext,
-        IMapper mapper)
+    public GenerateQuizeMongoHandler(ProfileReadDbContext readDbContext)
     {
         _readDbContext = readDbContext;
-        _mapper = mapper;
     }
 
     public async Task<Unit> Handle(GenerateQuizeMongo request, CancellationToken cancellationToken)
     {
         Guard.Against.Null(request, nameof(request));
 
-        var eventReadModel = _mapper.Map<ProfileReadModel>(request);
+        var filter = Builders<ProfileReadModel>.Filter.ElemMatch(x => x.Lessons, l => l.Id == request.LessonId);
+        
+        var quiz = new QuizeReadModel
+        {
+            Id = request.QuizId,
+            Question = request.Question,
+            CorrectAnswer = request.CorrectAnswer
+        };
 
+        var update = Builders<ProfileReadModel>.Update.Push("Lessons.$.Quizes", quiz);
+
+        await _readDbContext.Profile.UpdateOneAsync(filter, update, cancellationToken: cancellationToken);
 
         return Unit.Value;
     }
 }
+

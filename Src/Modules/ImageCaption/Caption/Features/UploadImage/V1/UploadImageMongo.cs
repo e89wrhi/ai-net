@@ -12,28 +12,37 @@ using AI.Common.Core;
 using ImageCaption.Exceptions;
 using System;
 
-public record UploadImageMongo() : InternalCommand;
+public record UploadImageMongo(Guid Id, string UserId, string FilePath, string Status, int Width, int Height, long Size, string Format, DateTime UploadedAt) : InternalCommand;
 
 public class UploadImageMongoHandler : ICommandHandler<UploadImageMongo>
 {
     private readonly ImageReadDbContext _readDbContext;
-    private readonly IMapper _mapper;
 
-    public UploadImageMongoHandler(
-        ImageReadDbContext readDbContext,
-        IMapper mapper)
+    public UploadImageMongoHandler(ImageReadDbContext readDbContext)
     {
         _readDbContext = readDbContext;
-        _mapper = mapper;
     }
 
     public async Task<Unit> Handle(UploadImageMongo request, CancellationToken cancellationToken)
     {
         Guard.Against.Null(request, nameof(request));
 
-        var eventReadModel = _mapper.Map<ImageReadModel>(request);
+        var image = new ImageReadModel
+        {
+            Id = request.Id,
+            UserId = request.UserId,
+            FilePath = request.FilePath,
+            Status = request.Status,
+            Width = request.Width,
+            Height = request.Height,
+            SizeInBytes = request.Size,
+            Format = request.Format,
+            UploadedAt = request.UploadedAt
+        };
 
+        await _readDbContext.Image.InsertOneAsync(image, cancellationToken: cancellationToken);
 
         return Unit.Value;
     }
 }
+

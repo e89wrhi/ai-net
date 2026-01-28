@@ -2,9 +2,12 @@
 using AI.Common.Core;
 using AI.Contracts.EventBus.Messages;
 using User.Events;
+using User.Features.CreateUser.V1;
 using User.Features.ResetUsageCounters.V1;
 using User.Features.TrackActivity.V1;
-using User.Models;
+
+using User.Features.UpdateUser.V1;
+
 
 namespace User;
 
@@ -27,7 +30,13 @@ public sealed class UserEventMapper : IEventMapper
         return @event switch
         {
             UserActivityTrackedDomainEvent e => new TrackActivityMongo(e.ActivityId.Value, e.UserId.Value, e.Module.ToString(), e.Action, e.ResourceId, e.TimeStamp),
+            UsageCountersResetDomainEvent e => new ResetUsageCountersMongo(e.UserId.Value),
+            UserCreatedDomainEvent e => new CreateUserMongo(e.UserId.Value, e.Username, e.Email),
+            UserProfileUpdatedDomainEvent e => new UpdateUserMongo(e.Id.Value, e.FullName),
             _ => null
+
+
+
         };
     }
 }

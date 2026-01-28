@@ -11,28 +11,26 @@ using AI.Common.Core;
 using ChatBot.Exceptions;
 using System;
 
-public record DeleteChatMongo() : InternalCommand;
+public record DeleteChatMongo(Guid ChatId) : InternalCommand;
 
 public class DeleteChatMongoHandler : ICommandHandler<DeleteChatMongo>
 {
     private readonly ChatReadDbContext _readDbContext;
-    private readonly IMapper _mapper;
 
-    public DeleteChatMongoHandler(
-        ChatReadDbContext readDbContext,
-        IMapper mapper)
+    public DeleteChatMongoHandler(ChatReadDbContext readDbContext)
     {
         _readDbContext = readDbContext;
-        _mapper = mapper;
     }
 
     public async Task<Unit> Handle(DeleteChatMongo request, CancellationToken cancellationToken)
     {
         Guard.Against.Null(request, nameof(request));
 
-        var eventReadModel = _mapper.Map<ChatReadModel>(request);
+        var filter = Builders<ChatReadModel>.Filter.Eq(x => x.Id, request.ChatId);
 
+        await _readDbContext.Chats.DeleteOneAsync(filter, cancellationToken: cancellationToken);
 
         return Unit.Value;
     }
 }
+

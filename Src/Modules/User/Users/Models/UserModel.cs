@@ -61,7 +61,8 @@ public record UserModel : Aggregate<UserId>
     public void ResetUsages()
     {
         _usages.Clear();
-        // Add domain event if needed
+        AddDomainEvent(new User.Events.UsageCountersResetDomainEvent(Id));
     }
+
 }
 

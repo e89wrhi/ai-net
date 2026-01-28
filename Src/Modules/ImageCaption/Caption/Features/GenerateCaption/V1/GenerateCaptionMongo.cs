@@ -12,28 +12,37 @@ using AI.Common.Core;
 using ImageCaption.Exceptions;
 using System;
 
-public record GenerateCaptionMongo() : InternalCommand;
+public record GenerateCaptionMongo(Guid ImageId, string Text, string Status, DateTime ProcessedAt) : InternalCommand;
 
 public class GenerateCaptionMongoHandler : ICommandHandler<GenerateCaptionMongo>
 {
     private readonly ImageReadDbContext _readDbContext;
-    private readonly IMapper _mapper;
 
-    public GenerateCaptionMongoHandler(
-        ImageReadDbContext readDbContext,
-        IMapper mapper)
+    public GenerateCaptionMongoHandler(ImageReadDbContext readDbContext)
     {
         _readDbContext = readDbContext;
-        _mapper = mapper;
     }
 
     public async Task<Unit> Handle(GenerateCaptionMongo request, CancellationToken cancellationToken)
     {
         Guard.Against.Null(request, nameof(request));
 
-        var eventReadModel = _mapper.Map<ImageReadModel>(request);
+        var filter = Builders<ImageReadModel>.Filter.Eq(x => x.Id, request.ImageId);
+        
+        var caption = new CaptionReadModel
+        {
+            Id = Guid.NewGuid(),
+            Text = request.Text,
+            CreatedAt = request.ProcessedAt
+        };
 
+        var update = Builders<ImageReadModel>.Update
+            .Push(x => x.Captions, caption)
+            .Set(x => x.Status, request.Status);
+
+        await _readDbContext.Image.UpdateOneAsync(filter, update, cancellationToken: cancellationToken);
 
         return Unit.Value;
     }
 }
+

@@ -1,21 +1,21 @@
 ﻿using AI.Common.Contracts.EventBus.Messages;
 using AI.Common.Core;
-using LearningAssistant.Features.DeleteChat.V1;
-using LearningAssistant.Features.StartChat.V1;
-using LearningAssistant.Models;
+using LearningAssistant.Events;
+using LearningAssistant.Features.GenerateLesson.V1;
+using LearningAssistant.Features.GenerateQuize.V1;
+using LearningAssistant.Features.SubmitQuize.V1;
 
 namespace LearningAssistant;
 
-
-// ref: https://www.ledjonbehluli.com/posts/domain_to_integration_event/
 public sealed class AssistantEventMapper : IEventMapper
 {
     public IIntegrationEvent? MapToIntegrationEvent(IDomainEvent @event)
     {
         return @event switch
         {
-            EventCreatedDomainEvent e => new EventCreated(e.Id),
-            EventDeletedDomainEvent e => new EventDeleted(e.Id),
+            LearningProfileCreatedDomainEvent e => new LearningProfileCreated(e.ProfileId.Value),
+            LessonGeneratedDomainEvent e => new LessonGenerated(e.LessonId.Value),
+            QuizeCompletedDomainEvent e => new QuizeCompleted(e.QuizeId.Value),
             _ => null
         };
     }
@@ -24,9 +24,9 @@ public sealed class AssistantEventMapper : IEventMapper
     {
         return @event switch
         {
-            EventCreatedDomainEvent e => new AddEventMongo(e.Id, e.MatchId, e.Title, e.Time,
-            e.Type.ToString()),
-            EventDeletedDomainEvent e => new DeleteEventMongo(e.Id),
+            LessonGeneratedDomainEvent e => new GenerateLessonMongo(e.ProfileId.Value, e.LessonId.Value, e.Title, e.Content),
+            QuizeGeneratedDomainEvent e => new GenerateQuizeMongo(e.LessonId.Value, e.QuizeId.Value, e.Question, "Wait for answer"),
+            QuizeCompletedDomainEvent e => new SubmitQuizeMongo(e.QuizeId.Value, "User Answer", true), // Simplified for mapper
             _ => null
         };
     }

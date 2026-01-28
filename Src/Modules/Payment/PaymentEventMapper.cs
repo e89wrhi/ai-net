@@ -1,21 +1,22 @@
 ﻿using AI.Common.Contracts.EventBus.Messages;
 using AI.Common.Core;
-using Payment.Features.DeleteChat.V1;
-using Payment.Features.StartChat.V1;
-using Payment.Models;
+using Payment.Events;
+using Payment.Features.CancelSubscription.V1;
+using Payment.Features.CreateSubscription.V1;
+using Payment.Features.GenerateInvoice.V1;
+using Payment.Features.RecordUsageCharge.V1;
 
 namespace Payment;
 
-
-// ref: https://www.ledjonbehluli.com/posts/domain_to_integration_event/
 public sealed class PaymentEventMapper : IEventMapper
 {
     public IIntegrationEvent? MapToIntegrationEvent(IDomainEvent @event)
     {
         return @event switch
         {
-            EventCreatedDomainEvent e => new EventCreated(e.Id),
-            EventDeletedDomainEvent e => new EventDeleted(e.Id),
+            SubscriptionCreatedDomainEvent e => new AI.Contracts.EventBus.Messages.SubscriptionCreated(e.SubscriptionId.Value),
+            InvoiceGeneratedDomainEvent e => new AI.Contracts.EventBus.Messages.InvoiceGenerated(e.InvoiceId.Value),
+            UsageChargedDomainEvent e => new AI.Contracts.EventBus.Messages.UsageCharged(e.ChargeId.Value),
             _ => null
         };
     }
@@ -24,9 +25,10 @@ public sealed class PaymentEventMapper : IEventMapper
     {
         return @event switch
         {
-            EventCreatedDomainEvent e => new AddEventMongo(e.Id, e.MatchId, e.Title, e.Time,
-            e.Type.ToString()),
-            EventDeletedDomainEvent e => new DeleteEventMongo(e.Id),
+            SubscriptionCreatedDomainEvent e => new CreateSubscriptionMongo(e.SubscriptionId.Value, e.UserId.Value, e.Plan, e.Status, e.StartedAt, e.ExpiresAt),
+            SubscriptionCancelledDomainEvent e => new CancelSubscriptionMongo(e.SubscriptionId.Value, e.Status),
+            InvoiceGeneratedDomainEvent e => new GenerateInvoiceMongo(e.SubscriptionId.Value, e.InvoiceId.Value, e.Amount, e.Currency, e.Status, e.InvoiceNumber, e.IssuedAt),
+            UsageChargedDomainEvent e => new RecordUsageChargeMongo(e.SubscriptionId.Value, e.ChargeId.Value, e.Amount, e.Currency, e.Module, e.Description, e.CreatedAt),
             _ => null
         };
     }

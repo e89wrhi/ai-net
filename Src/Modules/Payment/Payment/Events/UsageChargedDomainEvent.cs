@@ -3,4 +3,4 @@ using Payment.ValueObjects;
 
 namespace Payment.Events;
 
-public record UsageChargedDomainEvent(SubscriptionId SubscriptionId, string Reason, decimal Amount) : IDomainEvent;
+public record UsageChargedDomainEvent(SubscriptionId SubscriptionId, UsageChargeId ChargeId, decimal Amount, string Currency, string Module, string Description, DateTime CreatedAt) : IDomainEvent;

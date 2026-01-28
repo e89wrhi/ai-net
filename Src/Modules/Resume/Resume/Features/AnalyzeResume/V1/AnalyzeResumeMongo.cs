@@ -12,28 +12,34 @@ using AI.Common.Core;
 using Resume.Exceptions;
 using System;
 
-public record AnalyzeResumeMongo() : InternalCommand;
+public record AnalyzeResumeMongo(Guid ResumeId, string Summary, string ParsedText, List<string> Skills, List<string> Suggestions, string Status, DateTime AnalyzedAt) : InternalCommand;
 
 public class AnalyzeResumeMongoHandler : ICommandHandler<AnalyzeResumeMongo>
 {
     private readonly ResumeReadDbContext _readDbContext;
-    private readonly IMapper _mapper;
 
-    public AnalyzeResumeMongoHandler(
-        ResumeReadDbContext readDbContext,
-        IMapper mapper)
+    public AnalyzeResumeMongoHandler(ResumeReadDbContext readDbContext)
     {
         _readDbContext = readDbContext;
-        _mapper = mapper;
     }
 
     public async Task<Unit> Handle(AnalyzeResumeMongo request, CancellationToken cancellationToken)
     {
         Guard.Against.Null(request, nameof(request));
 
-        var eventReadModel = _mapper.Map<ResumeReadModel>(request);
+        var filter = Builders<ResumeReadModel>.Filter.Eq(x => x.Id, request.ResumeId);
+        
+        var update = Builders<ResumeReadModel>.Update
+            .Set(x => x.Summary, request.Summary)
+            .Set(x => x.ParsedText, request.ParsedText)
+            .Set(x => x.Skills, request.Skills)
+            .Set(x => x.Suggestions, request.Suggestions)
+            .Set(x => x.Status, request.Status)
+            .Set(x => x.AnalyzedAt, request.AnalyzedAt);
 
+        await _readDbContext.Resume.UpdateOneAsync(filter, update, cancellationToken: cancellationToken);
 
         return Unit.Value;
     }
 }
+

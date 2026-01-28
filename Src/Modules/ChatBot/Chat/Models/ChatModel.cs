@@ -44,22 +44,21 @@ public record ChatModel : Aggregate<SessionId>
     {
         _messages.Add(message);
         LastSentAt = DateTime.UtcNow;
-        TotalTokens += message.TokenUsed.Value; // Assuming TokenUsed has a Value property or similar
+        TotalTokens += message.TokenUsed.Value;
 
-        if (message.Sender == Enums.MessageSender.User.ToString())
+        if (message.Sender.ToString() == Enums.MessageSender.User.ToString())
         {
-            AddDomainEvent(new ChatBot.Events.MessageRecievedDomainEvent(Id, message.Id, message.Content.Value));
+            AddDomainEvent(new ChatBot.Events.MessageRecievedDomainEvent(Id, message.Id, message.Content.Value, message.TokenUsed.Value));
         }
         else
         {
-            AddDomainEvent(new ChatBot.Events.MessageRespondedDomainEvent(Id, message.Id, message.Content.Value));
+            AddDomainEvent(new ChatBot.Events.MessageRespondedDomainEvent(Id, message.Id, message.Content.Value, message.TokenUsed.Value));
         }
     }
 
-    public void UpdateTitle(string title, string summary)
+    public void Delete()
     {
-        Title = title;
-        Summary = summary;
-        LastModified = DateTime.UtcNow;
+        AddDomainEvent(new ChatBot.Events.ChatSessionDeletedDomainEvent(Id));
     }
 }
+

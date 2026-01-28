@@ -12,28 +12,34 @@ using AI.Common.Core;
 using Payment.Exceptions;
 using System;
 
-public record CreateSubscriptionMongo() : InternalCommand;
+public record CreateSubscriptionMongo(Guid Id, Guid UserId, string Plan, string Status, DateTime StartedAt, DateTime ExpiresAt) : InternalCommand;
 
 public class CreateSubscriptionMongoHandler : ICommandHandler<CreateSubscriptionMongo>
 {
     private readonly PaymentReadDbContext _readDbContext;
-    private readonly IMapper _mapper;
 
-    public CreateSubscriptionMongoHandler(
-        PaymentReadDbContext readDbContext,
-        IMapper mapper)
+    public CreateSubscriptionMongoHandler(PaymentReadDbContext readDbContext)
     {
         _readDbContext = readDbContext;
-        _mapper = mapper;
     }
 
     public async Task<Unit> Handle(CreateSubscriptionMongo request, CancellationToken cancellationToken)
     {
         Guard.Against.Null(request, nameof(request));
 
-        var eventReadModel = _mapper.Map<SubscriptionReadModel>(request);
+        var subscription = new SubscriptionReadModel
+        {
+            Id = request.Id,
+            UserId = request.UserId,
+            Plan = request.Plan,
+            Status = request.Status,
+            StartedAt = request.StartedAt,
+            ExpiresAt = request.ExpiresAt
+        };
 
+        await _readDbContext.Subscription.InsertOneAsync(subscription, cancellationToken: cancellationToken);
 
         return Unit.Value;
     }
 }
+

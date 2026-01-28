@@ -1,6 +1,8 @@
 ﻿using AI.Common.Core;
 using Resume.Enums;
 using Resume.ValueObjects;
+using System.Linq;
+
 
 namespace Resume.Models;
 
@@ -43,9 +45,10 @@ public record ResumeModel : Aggregate<ResumeId>
             CreatedAt = DateTime.UtcNow
         };
 
-        resume.AddDomainEvent(new Resume.Events.ResumeUploadedDomainEvent(id, userId, file.Value));
+        resume.AddDomainEvent(new Resume.Events.ResumeUploadedDomainEvent(id, userId, name.Value, file.Value));
         return resume;
     }
+
 
     public void AddSkill(SkillModel skill)
     {
@@ -66,6 +69,7 @@ public record ResumeModel : Aggregate<ResumeId>
         LastModified = DateTime.UtcNow;
 
         AddDomainEvent(new Resume.Events.ResumeParsedDomainEvent(Id, parsedText.Value.Length));
-        AddDomainEvent(new Resume.Events.ResumeAnalyzedDomainEvent(Id, _skills.Count, _suggestions.Count));
+        AddDomainEvent(new Resume.Events.ResumeAnalyzedDomainEvent(Id, summary, parsedText.Value, _skills.Select(x => x.Name).ToList(), _suggestions.Select(x => x.Description).ToList()));
+
     }
 }

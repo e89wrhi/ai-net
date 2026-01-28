@@ -3,4 +3,4 @@ using Meeting.ValueObjects;
 
 namespace Meeting.Events;
 
-public record MeetingUploadedDomainEvent(MeetingId MeetingId, string Title) : IDomainEvent;
+public record MeetingUploadedDomainEvent(MeetingId MeetingId, string OrganizerId, string Title) : IDomainEvent;

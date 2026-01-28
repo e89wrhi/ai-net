@@ -12,28 +12,35 @@ using AI.Common.Core;
 using ChatBot.Exceptions;
 using System;
 
-public record StartChatMongo() : InternalCommand;
+public record StartChatMongo(Guid Id, Guid UserId, string Title, string AiModelId, string SessionStatus, DateTime CreatedAt) : InternalCommand;
 
 public class StartChatMongoHandler : ICommandHandler<StartChatMongo>
 {
     private readonly ChatReadDbContext _readDbContext;
-    private readonly IMapper _mapper;
 
-    public StartChatMongoHandler(
-        ChatReadDbContext readDbContext,
-        IMapper mapper)
+    public StartChatMongoHandler(ChatReadDbContext readDbContext)
     {
         _readDbContext = readDbContext;
-        _mapper = mapper;
     }
 
     public async Task<Unit> Handle(StartChatMongo request, CancellationToken cancellationToken)
     {
         Guard.Against.Null(request, nameof(request));
 
-        var eventReadModel = _mapper.Map<ChatReadModel>(request);
+        var chat = new ChatReadModel
+        {
+            Id = request.Id,
+            UserId = request.UserId,
+            Title = request.Title,
+            AiModelId = request.AiModelId,
+            SessionStatus = request.SessionStatus,
+            LastSentAt = request.CreatedAt,
+            Messages = new List<MessageReadModel>()
+        };
 
+        await _readDbContext.Chats.InsertOneAsync(chat, cancellationToken: cancellationToken);
 
         return Unit.Value;
     }
 }
+

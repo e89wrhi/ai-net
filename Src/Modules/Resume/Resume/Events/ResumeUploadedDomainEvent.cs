@@ -3,4 +3,4 @@ using Resume.ValueObjects;
 
 namespace Resume.Events;
 
-public record ResumeUploadedDomainEvent(ResumeId ResumeId, string UserId, string FileName) : IDomainEvent;
+public record ResumeUploadedDomainEvent(ResumeId ResumeId, string UserId, string CandidateName, string FilePath) : IDomainEvent;

@@ -45,7 +45,7 @@ public record SubscriptionModel : Aggregate<SubscriptionId>
             CreatedAt = DateTime.UtcNow
         };
 
-        subscription.AddDomainEvent(new Payment.Events.SubscriptionCreatedDomainEvent(id, userId, plan.ToString()));
+        subscription.AddDomainEvent(new Payment.Events.SubscriptionCreatedDomainEvent(id, userId, plan.ToString(), SubscriptionStatus.Active.ToString(), subscription.StartedAt ?? DateTime.UtcNow, subscription.ExpiresAt ?? DateTime.UtcNow.AddMonths(1)));
         return subscription;
     }
 
@@ -61,19 +61,20 @@ public record SubscriptionModel : Aggregate<SubscriptionId>
     public void AddInvoice(InvoiceModel invoice)
     {
         _invoices.Add(invoice);
-        AddDomainEvent(new Payment.Events.InvoiceGeneratedDomainEvent(invoice.Id, Id, invoice.TotalAmount));
+        AddDomainEvent(new Payment.Events.InvoiceGeneratedDomainEvent(invoice.Id, Id, invoice.TotalAmount, invoice.Currency, invoice.PaymentStatus.ToString(), invoice.InvoiceNumber, invoice.InvoiceDate));
     }
 
     public void AddCharge(UsageCharge charge)
     {
         _charges.Add(charge);
-        AddDomainEvent(new Payment.Events.UsageChargedDomainEvent(Id, charge.Description, charge.Cost));
+        AddDomainEvent(new Payment.Events.UsageChargedDomainEvent(Id, charge.Id, charge.Cost, charge.Currency, charge.Module.ToString(), charge.Description, charge.CreatedAt));
     }
     public void Cancel()
     {
         SubscriptionStatus = SubscriptionStatus.Cancelled;
         LastModified = DateTime.UtcNow;
 
-        AddDomainEvent(new Payment.Events.SubscriptionCancelledDomainEvent(Id));
+        AddDomainEvent(new Payment.Events.SubscriptionCancelledDomainEvent(Id, SubscriptionStatus.Cancelled.ToString()));
     }
+
 }

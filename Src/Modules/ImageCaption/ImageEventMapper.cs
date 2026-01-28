@@ -1,21 +1,20 @@
 ﻿using AI.Common.Contracts.EventBus.Messages;
 using AI.Common.Core;
-using ImageCaption.Features.DeleteChat.V1;
-using ImageCaption.Features.StartChat.V1;
-using ImageCaption.Models;
+using ImageCaption.Events;
+using ImageCaption.Features.GenerateCaption.V1;
+using ImageCaption.Features.UploadImage.V1;
 
-namespace ChatBot;
+namespace ImageCaption;
 
-
-// ref: https://www.ledjonbehluli.com/posts/domain_to_integration_event/
-public sealed class ChatEventMapper : IEventMapper
+public sealed class ImageEventMapper : IEventMapper
 {
     public IIntegrationEvent? MapToIntegrationEvent(IDomainEvent @event)
     {
         return @event switch
         {
-            EventCreatedDomainEvent e => new EventCreated(e.Id),
-            EventDeletedDomainEvent e => new EventDeleted(e.Id),
+            ImageUploadedDomainEvent e => new ImageUploaded(e.ImageId.Value),
+            ImageAnalyzedDomainEvent e => new ImageAnalyzed(e.ImageId.Value),
+            CaptionGeneratedDomainEvent e => new ImageCaptionGenerated(e.ImageId.Value),
             _ => null
         };
     }
@@ -24,9 +23,8 @@ public sealed class ChatEventMapper : IEventMapper
     {
         return @event switch
         {
-            EventCreatedDomainEvent e => new AddEventMongo(e.Id, e.MatchId, e.Title, e.Time,
-            e.Type.ToString()),
-            EventDeletedDomainEvent e => new DeleteEventMongo(e.Id),
+            ImageUploadedDomainEvent e => new UploadImageMongo(e.ImageId.Value, e.UserId, e.FilePath, "Uploaded", e.Width, e.Height, e.Size, e.Format, DateTime.UtcNow),
+            CaptionGeneratedDomainEvent e => new GenerateCaptionMongo(e.ImageId.Value, e.Caption, "Captioned", DateTime.UtcNow),
             _ => null
         };
     }

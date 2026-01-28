@@ -1,21 +1,21 @@
-﻿using AI.Common.Contracts.EventBus.Messages;
+using AI.Common.Contracts.EventBus.Messages;
 using AI.Common.Core;
-using Resume.Features.DeleteChat.V1;
-using Resume.Features.StartChat.V1;
-using Resume.Models;
+using Resume.Events;
+using Resume.Features.AnalyzeResume.V1;
+using Resume.Features.ReAnalyzeResume.V1;
+using Resume.Features.UploadResume.V1;
 
 namespace Resume;
 
-
-// ref: https://www.ledjonbehluli.com/posts/domain_to_integration_event/
 public sealed class ResumeEventMapper : IEventMapper
 {
     public IIntegrationEvent? MapToIntegrationEvent(IDomainEvent @event)
     {
         return @event switch
         {
-            EventCreatedDomainEvent e => new EventCreated(e.Id),
-            EventDeletedDomainEvent e => new EventDeleted(e.Id),
+            ResumeUploadedDomainEvent e => new AI.Contracts.EventBus.Messages.ResumeUploaded(e.ResumeId.Value),
+            ResumeAnalyzedDomainEvent e => new AI.Contracts.EventBus.Messages.ResumeAnalyzed(e.ResumeId.Value),
+            ResumeParsedDomainEvent e => new AI.Contracts.EventBus.Messages.ResumeParsed(e.ResumeId.Value),
             _ => null
         };
     }
@@ -24,9 +24,8 @@ public sealed class ResumeEventMapper : IEventMapper
     {
         return @event switch
         {
-            EventCreatedDomainEvent e => new AddEventMongo(e.Id, e.MatchId, e.Title, e.Time,
-            e.Type.ToString()),
-            EventDeletedDomainEvent e => new DeleteEventMongo(e.Id),
+            ResumeUploadedDomainEvent e => new UploadResumeMongo(e.ResumeId.Value, e.UserId, e.CandidateName, e.FilePath, "Uploaded", DateTime.UtcNow),
+            ResumeAnalyzedDomainEvent e => new AnalyzeResumeMongo(e.ResumeId.Value, e.Summary, e.ParsedText, e.Skills, e.Suggestions, "Analyzed", DateTime.UtcNow),
             _ => null
         };
     }

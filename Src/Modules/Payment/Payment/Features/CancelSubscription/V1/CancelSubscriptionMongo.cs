@@ -12,28 +12,27 @@ using AI.Common.Core;
 using Payment.Exceptions;
 using System;
 
-public record CancelSubscriptionMongo() : InternalCommand;
+public record CancelSubscriptionMongo(Guid Id, string Status) : InternalCommand;
 
 public class CancelSubscriptionMongoHandler : ICommandHandler<CancelSubscriptionMongo>
 {
     private readonly PaymentReadDbContext _readDbContext;
-    private readonly IMapper _mapper;
 
-    public CancelSubscriptionMongoHandler(
-        PaymentReadDbContext readDbContext,
-        IMapper mapper)
+    public CancelSubscriptionMongoHandler(PaymentReadDbContext readDbContext)
     {
         _readDbContext = readDbContext;
-        _mapper = mapper;
     }
 
     public async Task<Unit> Handle(CancelSubscriptionMongo request, CancellationToken cancellationToken)
     {
         Guard.Against.Null(request, nameof(request));
 
-        var eventReadModel = _mapper.Map<SubscriptionReadModel>(request);
+        var filter = Builders<SubscriptionReadModel>.Filter.Eq(x => x.Id, request.Id);
+        var update = Builders<SubscriptionReadModel>.Update.Set(x => x.Status, request.Status);
 
+        await _readDbContext.Subscription.UpdateOneAsync(filter, update, cancellationToken: cancellationToken);
 
         return Unit.Value;
     }
 }
+

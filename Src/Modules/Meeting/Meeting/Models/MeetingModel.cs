@@ -44,7 +44,8 @@ public record MeetingModel : Aggregate<MeetingId>
             CreatedAt = DateTime.UtcNow
         };
 
-        meeting.AddDomainEvent(new Meeting.Events.MeetingUploadedDomainEvent(id, title.Value));
+        meeting.AddDomainEvent(new Meeting.Events.MeetingUploadedDomainEvent(id, organizerId, title.Value));
+
         return meeting;
     }
 
@@ -69,6 +70,7 @@ public record MeetingModel : Aggregate<MeetingId>
         LastModified = DateTime.UtcNow;
 
         AddDomainEvent(new Meeting.Events.MeetingTranscribedDomainEvent(Id, language.ToString()));
-        AddDomainEvent(new Meeting.Events.MeetingSummarizedDomainEvent(Id, summary));
+        AddDomainEvent(new Meeting.Events.MeetingSummarizedDomainEvent(Id, text, summary));
+
     }
 }

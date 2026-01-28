@@ -12,28 +12,31 @@ using AI.Common.Core;
 using Meeting.Exceptions;
 using System;
 
-public record SummarizeMeetingAudioMongo() : InternalCommand;
+public record SummarizeMeetingAudioMongo(Guid MeetingId, string Transcript, string Summary, string Status) : InternalCommand;
 
 public class SummarizeMeetingAudioMongoHandler : ICommandHandler<SummarizeMeetingAudioMongo>
 {
     private readonly MeetingReadDbContext _readDbContext;
-    private readonly IMapper _mapper;
 
-    public SummarizeMeetingAudioMongoHandler(
-        MeetingReadDbContext readDbContext,
-        IMapper mapper)
+    public SummarizeMeetingAudioMongoHandler(MeetingReadDbContext readDbContext)
     {
         _readDbContext = readDbContext;
-        _mapper = mapper;
     }
 
     public async Task<Unit> Handle(SummarizeMeetingAudioMongo request, CancellationToken cancellationToken)
     {
         Guard.Against.Null(request, nameof(request));
 
-        var eventReadModel = _mapper.Map<MeetingReadModel>(request);
+        var filter = Builders<MeetingReadModel>.Filter.Eq(x => x.Id, request.MeetingId);
+        
+        var update = Builders<MeetingReadModel>.Update
+            .Set(x => x.Transcript, request.Transcript)
+            .Set(x => x.Summary, request.Summary)
+            .Set(x => x.Status, request.Status);
 
+        await _readDbContext.Meeting.UpdateOneAsync(filter, update, cancellationToken: cancellationToken);
 
         return Unit.Value;
     }
 }
+

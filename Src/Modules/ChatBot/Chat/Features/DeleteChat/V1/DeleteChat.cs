@@ -80,7 +80,9 @@ internal class DeleteChatHandler : IRequestHandler<DeleteChatCommand, DeleteChat
             throw new ChatNotFoundException(request.SessionId);
         }
 
+        chat.Delete();
         _dbContext.Chats.Remove(chat);
+
         await _dbContext.SaveChangesAsync(cancellationToken);
         
         return new DeleteChatCommandResponse(chat.Id.Value);

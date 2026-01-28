@@ -12,28 +12,38 @@ using AI.Common.Core;
 using Payment.Exceptions;
 using System;
 
-public record RecordUsageChargeMongo() : InternalCommand;
+public record RecordUsageChargeMongo(Guid SubscriptionId, Guid ChargeId, decimal Amount, string Currency, string Module, string Description, DateTime CreatedAt) : InternalCommand;
 
 public class RecordUsageChargeMongoHandler : ICommandHandler<RecordUsageChargeMongo>
 {
     private readonly PaymentReadDbContext _readDbContext;
-    private readonly IMapper _mapper;
 
-    public RecordUsageChargeMongoHandler(
-        PaymentReadDbContext readDbContext,
-        IMapper mapper)
+    public RecordUsageChargeMongoHandler(PaymentReadDbContext readDbContext)
     {
         _readDbContext = readDbContext;
-        _mapper = mapper;
     }
 
     public async Task<Unit> Handle(RecordUsageChargeMongo request, CancellationToken cancellationToken)
     {
         Guard.Against.Null(request, nameof(request));
 
-        var eventReadModel = _mapper.Map<SubscriptionReadModel>(request);
+        var filter = Builders<SubscriptionReadModel>.Filter.Eq(x => x.Id, request.SubscriptionId);
+        
+        var charge = new UsageChargeReadModel
+        {
+            Id = request.ChargeId,
+            Amount = request.Amount,
+            Currency = request.Currency,
+            Module = request.Module,
+            Description = request.Description,
+            CreatedAt = request.CreatedAt
+        };
 
+        var update = Builders<SubscriptionReadModel>.Update.Push(x => x.Charges, charge);
+
+        await _readDbContext.Subscription.UpdateOneAsync(filter, update, cancellationToken: cancellationToken);
 
         return Unit.Value;
     }
 }
+

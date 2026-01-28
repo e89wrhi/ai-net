@@ -1,21 +1,21 @@
 ﻿using AI.Common.Contracts.EventBus.Messages;
 using AI.Common.Core;
-using Meeting.Features.DeleteChat.V1;
-using Meeting.Features.StartChat.V1;
-using Meeting.Models;
+using Meeting.Events;
+using Meeting.Features.SummarizeMeetingAudio.V1;
+using Meeting.Features.UploadMeetingAudio.V1;
 
 namespace Meeting;
 
-
-// ref: https://www.ledjonbehluli.com/posts/domain_to_integration_event/
 public sealed class MeetingEventMapper : IEventMapper
 {
     public IIntegrationEvent? MapToIntegrationEvent(IDomainEvent @event)
     {
         return @event switch
         {
-            EventCreatedDomainEvent e => new EventCreated(e.Id),
-            EventDeletedDomainEvent e => new EventDeleted(e.Id),
+            MeetingUploadedDomainEvent e => new MeetingUploaded(e.MeetingId.Value),
+            MeetingTranscribedDomainEvent e => new MeetingTranscribed(e.MeetingId.Value),
+            MeetingSummarizedDomainEvent e => new MeetingSummarized(e.MeetingId.Value),
+            ActionItemAddedDomainEvent e => new MeetingActionAdded(e.MeetingId.Value),
             _ => null
         };
     }
@@ -24,9 +24,8 @@ public sealed class MeetingEventMapper : IEventMapper
     {
         return @event switch
         {
-            EventCreatedDomainEvent e => new AddEventMongo(e.Id, e.MatchId, e.Title, e.Time,
-            e.Type.ToString()),
-            EventDeletedDomainEvent e => new DeleteEventMongo(e.Id),
+            MeetingUploadedDomainEvent e => new UploadMeetingAudioMongo(e.MeetingId.Value, e.OrganizerId, e.Title, "Uploaded", DateTime.UtcNow),
+            MeetingSummarizedDomainEvent e => new SummarizeMeetingAudioMongo(e.MeetingId.Value, e.Transcript, e.Summary, "Summarized"),
             _ => null
         };
     }

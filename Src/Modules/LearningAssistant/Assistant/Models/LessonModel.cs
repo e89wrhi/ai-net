@@ -22,7 +22,7 @@ public record LessonModel : Entity<LessonId>
 
     public static LessonModel Create(LessonId id, ProfileId profileId, string title, string content, DifficultyLevel level)
     {
-        return new LessonModel
+        var lesson = new LessonModel
         {
             Id = id,
             ProfileId = profileId,
@@ -32,7 +32,11 @@ public record LessonModel : Entity<LessonId>
             IsCompleted = false,
             CreatedAt = DateTime.UtcNow
         };
+
+        lesson.AddDomainEvent(new LearningAssistant.Events.LessonGeneratedDomainEvent(profileId, id, title, content));
+        return lesson;
     }
+
 
     public void Complete()
     {
