@@ -13,6 +13,8 @@ using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Meeting.Enums;
+using Meeting.Exceptions;
 
 namespace Meeting.Features.SummarizeMeetingAudio.V1;
 

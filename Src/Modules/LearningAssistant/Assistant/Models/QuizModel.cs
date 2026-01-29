@@ -5,37 +5,34 @@ using LearningAssistant.ValueObjects;
 
 namespace LearningAssistant.Models;
 
-public record QuizeModel : Entity<QuizeId>
+public record QuizModel : Entity<QuizId>
 {
     public LessonId LessonId { get; private set; } = default!;
-    public QuizeStatus QuizeStatus { get; private set; } = default!;
+    public QuizStatus QuizStatus { get; private set; } = default!;
     public double Score { get; private set; } = default!;
     public string Questions { get; private set; } = default!;
 
-    private QuizeModel() { }
+    private QuizModel() { }
 
-    public static QuizeModel Create(QuizeId id, LessonId lessonId, string questions)
+    public static QuizModel Create(QuizId id, LessonId lessonId, string questions)
     {
-        var quiz = new QuizeModel
+        var quiz = new QuizModel
         {
             Id = id,
             LessonId = lessonId,
             Questions = questions,
-            QuizeStatus = QuizeStatus.Pending,
+            QuizStatus = QuizStatus.Pending,
             CreatedAt = DateTime.UtcNow
         };
 
-        quiz.AddDomainEvent(new LearningAssistant.Events.QuizeGeneratedDomainEvent(lessonId, id, questions));
         return quiz;
     }
 
     public void Submit(double score)
     {
         Score = score;
-        QuizeStatus = QuizeStatus.Completed;
+        QuizStatus = QuizStatus.Completed;
         LastModified = DateTime.UtcNow;
-
-        AddDomainEvent(new LearningAssistant.Events.QuizeCompletedDomainEvent(LessonId, Id, score));
     }
 
 }

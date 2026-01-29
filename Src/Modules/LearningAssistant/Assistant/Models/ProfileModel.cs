@@ -44,7 +44,30 @@ public record ProfileModel : Aggregate<ProfileId>
         LessonsCount = _lessons.Count;
         LastAccessedAt = DateTime.UtcNow;
 
-        AddDomainEvent(new LearningAssistant.Events.LessonGeneratedDomainEvent(Id, lesson.Id, lesson.Title));
+        AddDomainEvent(new LearningAssistant.Events.LessonGeneratedDomainEvent(Id, lesson.Id, lesson.Title,
+            lesson.Content));
+    }
+
+    public void AddQuizToLesson(LessonId lessonId, QuizModel quiz)
+    {
+        var lesson = _lessons.FirstOrDefault(l => l.Id == lessonId);
+        if (lesson == null) return;
+        
+        lesson.AddQuiz(quiz);
+        AddDomainEvent(new LearningAssistant.Events.QuizGeneratedDomainEvent(lessonId, quiz.Id, quiz.Questions));
+    }
+
+    public void SubmitQuiz(LessonId lessonId, QuizId quizId, double score)
+    {
+        var lesson = _lessons.FirstOrDefault(l => l.Id == lessonId);
+        if (lesson == null) return;
+        
+        var quiz = lesson.Quizzes.FirstOrDefault(q => q.Id == quizId);
+        if (quiz == null) return;
+        
+        quiz.Submit(score);
+        AddDomainEvent(new LearningAssistant.Events.QuizCompletedDomainEvent(lessonId, quizId, score));
+        UpdateProgress();
     }
 
     public void UpdateProgress()

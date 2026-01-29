@@ -36,7 +36,7 @@ public record ChatModel : Aggregate<SessionId>
             LastSentAt = DateTime.UtcNow
         };
 
-        chat.AddDomainEvent(new ChatBot.Events.ChatSessionStartedDomainEvent(id, userId, title));
+        chat.AddDomainEvent(new ChatBot.Events.ChatSessionStartedDomainEvent(id, userId, title, aiModelId));
         return chat;
     }
 

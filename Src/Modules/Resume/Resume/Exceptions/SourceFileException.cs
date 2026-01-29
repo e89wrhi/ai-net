@@ -4,8 +4,8 @@ namespace Resume.Exceptions;
 
 public class SourceFileException : DomainException
 {
-    public SourceFileException(string source_filee)
-        : base($"source_filee: '{source_filee}' is invalid.")
+    public SourceFileException(string resumeurl, string filename)
+        : base($"resume: '{resumeurl}'/file: {filename} is invalid.")
     {
     }
 }

@@ -17,6 +17,8 @@ public sealed class AssistantDbContext : AppDbContextBase
     }
 
     public DbSet<ProfileModel> Profiles => Set<ProfileModel>();
+    public DbSet<QuizModel> Quizzes => Set<QuizModel>();
+    public DbSet<LessonModel> Lessons => Set<LessonModel>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

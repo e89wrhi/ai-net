@@ -2,10 +2,10 @@
 
 namespace Resume.Exceptions;
 
-public class ResumeException : DomainException
+public class ResumeNotFoundException : DomainException
 {
-    public ResumeException(string resume)
-        : base($"resume: '{resume}' is invalid.")
+    public ResumeNotFoundException(Guid id)
+        : base($"resume_id: '{id}' is invalid.")
     {
     }
 }

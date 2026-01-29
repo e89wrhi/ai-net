@@ -13,6 +13,9 @@ using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using User.Enums;
+using User.Exceptions;
+using User.Models;
 
 namespace User.Features.TrackActivity.V1;
 

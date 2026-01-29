@@ -16,7 +16,7 @@ public static class InitialData
 
     static InitialData()
     {
-        Meetings[0].CompleteTranscription("Today we discussed the project timeline...", TranscriptLanguage.English, 0.99, "Project timeline sync");
+        Meetings[0].CompleteTranscription("Today we discussed the project timeline...", TranscriptLanguage.EN, 0.99, "Project timeline sync");
         Meetings[0].AddActionItem(ActionItem.Of(Guid.NewGuid(), Meetings[0].Id, "Update the roadmap by Friday"));
     }
 }

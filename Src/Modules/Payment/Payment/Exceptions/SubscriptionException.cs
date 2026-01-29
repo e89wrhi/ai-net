@@ -2,9 +2,9 @@
 
 namespace Payment.Exceptions;
 
-public class SubscriptionException : DomainException
+public class SubscriptionNotFoundException : DomainException
 {
-    public SubscriptionException(string subscription)
+    public SubscriptionNotFoundException(Guid subscription)
         : base($"subscription: '{subscription}' is invalid.")
     {
     }

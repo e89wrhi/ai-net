@@ -1,9 +1,8 @@
 ﻿namespace LearningAssistant.Data.Seed;
 
-using AI.Common.Core;
-using global::LearningAssistant.Models;
-using global::LearningAssistant.ValueObjects;
-using global::LearningAssistant.Enums;
+using LearningAssistant.Models;
+using LearningAssistant.ValueObjects;
+using LearningAssistant.Enums;
 using System;
 using System.Collections.Generic;
 
@@ -20,8 +19,8 @@ public static class InitialData
         var lessonId = LessonId.Of(Guid.NewGuid());
         var lesson = LessonModel.Create(lessonId, profileId, "Introduction to Machine Learning", "Machine learning is a subset of AI...", DifficultyLevel.Beginner);
         
-        var quiz = QuizeModel.Create(QuizeId.Of(Guid.NewGuid()), lessonId, "What is Machine Learning?");
-        lesson.AddQuize(quiz);
+        var quiz = QuizModel.Create(QuizId.Of(Guid.NewGuid()), lessonId, "What is Machine Learning?");
+        lesson.AddQuiz(quiz);
         
         Profiles[0].AddLesson(lesson);
     }

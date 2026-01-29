@@ -4,8 +4,8 @@ namespace ImageCaption.Exceptions;
 
 public class FileReferenceException : DomainException
 {
-    public FileReferenceException(string file_reference)
-        : base($"file_reference: '{file_reference}' is invalid.")
+    public FileReferenceException(string imageurl, string filename)
+        : base($"image: '{imageurl}'/file: {filename} is invalid.")
     {
     }
 }

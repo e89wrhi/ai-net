@@ -2,8 +2,8 @@
 using AI.Common.Core;
 using LearningAssistant.Events;
 using LearningAssistant.Features.GenerateLesson.V1;
-using LearningAssistant.Features.GenerateQuize.V1;
-using LearningAssistant.Features.SubmitQuize.V1;
+using LearningAssistant.Features.GenerateQuiz.V1;
+using LearningAssistant.Features.SubmitQuiz.V1;
 
 namespace LearningAssistant;
 
@@ -15,7 +15,7 @@ public sealed class AssistantEventMapper : IEventMapper
         {
             LearningProfileCreatedDomainEvent e => new LearningProfileCreated(e.ProfileId.Value),
             LessonGeneratedDomainEvent e => new LessonGenerated(e.LessonId.Value),
-            QuizeCompletedDomainEvent e => new QuizeCompleted(e.QuizeId.Value),
+            QuizCompletedDomainEvent e => new QuizCompleted(e.QuizId.Value),
             _ => null
         };
     }
@@ -25,8 +25,8 @@ public sealed class AssistantEventMapper : IEventMapper
         return @event switch
         {
             LessonGeneratedDomainEvent e => new GenerateLessonMongo(e.ProfileId.Value, e.LessonId.Value, e.Title, e.Content),
-            QuizeGeneratedDomainEvent e => new GenerateQuizeMongo(e.LessonId.Value, e.QuizeId.Value, e.Question, "Wait for answer"),
-            QuizeCompletedDomainEvent e => new SubmitQuizeMongo(e.QuizeId.Value, "User Answer", true), // Simplified for mapper
+            QuizGeneratedDomainEvent e => new GenerateQuizMongo(e.LessonId.Value, e.QuizId.Value, e.Questions, "Wait for answer"),
+            QuizCompletedDomainEvent e => new SubmitQuizMongo(e.QuizId.Value, "User Answer", true), // Simplified for mapper
             _ => null
         };
     }

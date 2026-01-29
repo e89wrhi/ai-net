@@ -13,6 +13,7 @@ using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Resume.Exceptions;
 
 namespace Resume.Features.ReAnalyzeResume.V1;
 

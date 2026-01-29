@@ -4,25 +4,27 @@ namespace Payment.ValueObjects;
 
 public record PlanLimits
 {
-    public int Value { get; }
+    public int MaxRequestsPerDay { get; }
+    public int MaxTokensPerMonth { get; }
 
-    private PlanLimits(int value)
+    private PlanLimits(int maxRequestsPerDay, int maxTokensPerMonth)
     {
-        Value = value;
+        MaxRequestsPerDay = maxRequestsPerDay;
+        MaxTokensPerMonth = maxTokensPerMonth;
     }
 
-    public static PlanLimits Of(int value)
+    public static PlanLimits Of(int maxRequestsPerDay, int maxTokensPerMonth)
     {
-        if (value < 0)
+        if (maxTokensPerMonth < 0 || maxRequestsPerDay < 0)
         {
-            throw new PlanLimitException(value);
+            throw new PlanLimitException(maxRequestsPerDay, maxTokensPerMonth);
         }
 
-        return new PlanLimits(value);
+        return new PlanLimits(maxRequestsPerDay, maxTokensPerMonth);
     }
 
     public static implicit operator int(PlanLimits @value)
     {
-        return @value.Value;
+        return value.MaxRequestsPerDay;
     }
 }

@@ -15,8 +15,8 @@ public record LessonModel : Entity<LessonId>
     public bool IsCompleted { get; private set; } = default!;
     public DifficultyLevel DifficultyLevel { get; private set; } = default!;
 
-    private readonly List<QuizeModel> _quizes = new();
-    public IReadOnlyCollection<QuizeModel> Quizes => _quizes.AsReadOnly();
+    private readonly List<QuizModel> _quizzes = new();
+    public IReadOnlyCollection<QuizModel> Quizzes => _quizzes.AsReadOnly();
 
     private LessonModel() { }
 
@@ -33,7 +33,6 @@ public record LessonModel : Entity<LessonId>
             CreatedAt = DateTime.UtcNow
         };
 
-        lesson.AddDomainEvent(new LearningAssistant.Events.LessonGeneratedDomainEvent(profileId, id, title, content));
         return lesson;
     }
 
@@ -44,8 +43,8 @@ public record LessonModel : Entity<LessonId>
         LastModified = DateTime.UtcNow;
     }
 
-    public void AddQuize(QuizeModel quize)
+    public void AddQuiz(QuizModel quiz)
     {
-        _quizes.Add(quize);
+        _quizzes.Add(quiz);
     }
 }

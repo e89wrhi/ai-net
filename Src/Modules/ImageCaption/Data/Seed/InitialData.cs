@@ -10,8 +10,8 @@ public static class InitialData
 {
     public static List<ImageModel> Images { get; } = new()
     {
-        ImageModel.Create(ImageId.Of(Guid.Parse("9a8fad5b-d9cb-469f-a165-70867728950c")), "0f8fad5b-d9cb-469f-a165-70867728950e", FileReference.Of("uploads/img1.jpg"), 1920, 1080, 500000, "jpg"),
-        ImageModel.Create(ImageId.Of(Guid.Parse("aa8fad5b-d9cb-469f-a165-70867728950d")), "0f8fad5b-d9cb-469f-a165-70867728950e", FileReference.Of("uploads/img2.png"), 800, 600, 200000, "png")
+        ImageModel.Create(ImageId.Of(Guid.Parse("9a8fad5b-d9cb-469f-a165-70867728950c")), "0f8fad5b-d9cb-469f-a165-70867728950e", FileReference.Of("uploads/img1.jpg", "filename.jpg"), 1920, 1080, 500000, "jpg"),
+        ImageModel.Create(ImageId.Of(Guid.Parse("aa8fad5b-d9cb-469f-a165-70867728950d")), "0f8fad5b-d9cb-469f-a165-70867728950e", FileReference.Of("uploads/img2.png", "filename.png"), 800, 600, 200000, "png")
     };
 
     static InitialData()

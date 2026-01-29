@@ -4,8 +4,8 @@ namespace Payment.Exceptions;
 
 public class PlanLimitException : DomainException
 {
-    public PlanLimitException(int plan_limit)
-        : base($"plan_limit: '{plan_limit}' is invalid.")
+    public PlanLimitException(int maxRequestsPerDay, int maxTokensPerMonth)
+        : base($"requests per day: '{maxRequestsPerDay}'/tokens per month: '{maxTokensPerMonth}' is invalid.")
     {
     }
 }

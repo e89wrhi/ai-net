@@ -1,46 +1,40 @@
-﻿namespace LearningAssistant.Features.GenerateQuize.V1;
-
-
-using Ardalis.GuardClauses;
+﻿using Ardalis.GuardClauses;
 using LearningAssistant.Data;
 using LearningAssistant.Models;
-using MapsterMapper;
 using MediatR;
 using MongoDB.Driver;
-using MongoDB.Driver.Linq;
 using AI.Common.Core;
-using LearningAssistant.Exceptions;
-using System;
 
-public record GenerateQuizeMongo(Guid LessonId, Guid QuizId, string Question, string CorrectAnswer) : InternalCommand;
+namespace LearningAssistant.Features.GenerateQuiz.V1;
 
-public class GenerateQuizeMongoHandler : ICommandHandler<GenerateQuizeMongo>
+public record GenerateQuizMongo(Guid LessonId, Guid QuizId, string Question, string CorrectAnswer) : InternalCommand;
+
+public class GenerateQuizMongoHandler : ICommandHandler<GenerateQuizMongo>
 {
     private readonly ProfileReadDbContext _readDbContext;
 
-    public GenerateQuizeMongoHandler(ProfileReadDbContext readDbContext)
+    public GenerateQuizMongoHandler(ProfileReadDbContext readDbContext)
     {
         _readDbContext = readDbContext;
     }
 
-    public async Task<Unit> Handle(GenerateQuizeMongo request, CancellationToken cancellationToken)
+    public async Task<Unit> Handle(GenerateQuizMongo request, CancellationToken cancellationToken)
     {
         Guard.Against.Null(request, nameof(request));
 
         var filter = Builders<ProfileReadModel>.Filter.ElemMatch(x => x.Lessons, l => l.Id == request.LessonId);
         
-        var quiz = new QuizeReadModel
+        var quiz = new QuizReadModel
         {
             Id = request.QuizId,
             Question = request.Question,
             CorrectAnswer = request.CorrectAnswer
         };
 
-        var update = Builders<ProfileReadModel>.Update.Push("Lessons.$.Quizes", quiz);
+        var update = Builders<ProfileReadModel>.Update.Push("Lessons.$.Quizzes", quiz);
 
         await _readDbContext.Profile.UpdateOneAsync(filter, update, cancellationToken: cancellationToken);
 
         return Unit.Value;
     }
 }
-

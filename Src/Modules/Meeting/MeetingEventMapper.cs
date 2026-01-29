@@ -1,5 +1,6 @@
 ﻿using AI.Common.Contracts.EventBus.Messages;
 using AI.Common.Core;
+using AI.Contracts.EventBus.Messages;
 using Meeting.Events;
 using Meeting.Features.SummarizeMeetingAudio.V1;
 using Meeting.Features.UploadMeetingAudio.V1;

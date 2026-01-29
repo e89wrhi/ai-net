@@ -1,29 +1,28 @@
 ﻿
-
 using LearningAssistant.Exceptions;
 
 namespace LearningAssistant.ValueObjects;
 
-public record QuizeId
+public record QuizId
 {
     public Guid Value { get; }
 
-    private QuizeId(Guid value)
+    private QuizId(Guid value)
     {
         Value = value;
     }
 
-    public static QuizeId Of(Guid value)
+    public static QuizId Of(Guid value)
     {
         if (value == Guid.Empty)
         {
-            throw new QuizeIdException(value);
+            throw new QuizIdException(value);
         }
 
-        return new QuizeId(value);
+        return new QuizId(value);
     }
 
-    public static implicit operator Guid(QuizeId id)
+    public static implicit operator Guid(QuizId id)
     {
         return id.Value;
     }

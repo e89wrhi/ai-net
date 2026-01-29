@@ -45,7 +45,7 @@ public record ImageModel : Aggregate<ImageId>
             CreatedAt = DateTime.UtcNow
         };
 
-        image.AddDomainEvent(new ImageCaption.Events.ImageUploadedDomainEvent(id, userId, fileReference.Path, width, height, size, format));
+        image.AddDomainEvent(new ImageCaption.Events.ImageUploadedDomainEvent(id, userId, fileReference.FileName, width, height, size, format));
 
         return image;
     }

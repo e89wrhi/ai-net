@@ -2,6 +2,7 @@
 using AI.Common.Web;
 using Ardalis.GuardClauses;
 using ChatBot.Data;
+using ChatBot.Exceptions;
 using ChatBot.ValueObjects;
 using Duende.IdentityServer.EntityFramework.Entities;
 using FluentValidation;

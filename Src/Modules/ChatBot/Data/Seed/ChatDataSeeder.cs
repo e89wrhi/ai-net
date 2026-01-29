@@ -30,9 +30,9 @@ public class ChatDataSeeder(
             await eventDbContext.Chats.AddRangeAsync(InitialData.Chats);
             await eventDbContext.SaveChangesAsync();
 
-            if (!await MongoQueryable.AnyAsync(eventReadDbContext.Chat.AsQueryable()))
+            if (!await MongoQueryable.AnyAsync(eventReadDbContext.Chats.AsQueryable()))
             {
-                await eventReadDbContext.Chat.InsertManyAsync(mapper.Map<List<ChatReadModel>>(InitialData.Chats));
+                await eventReadDbContext.Chats.InsertManyAsync(mapper.Map<List<ChatReadModel>>(InitialData.Chats));
             }
         }
     }

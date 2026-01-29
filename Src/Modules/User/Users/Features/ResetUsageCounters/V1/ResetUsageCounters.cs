@@ -13,6 +13,7 @@ using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using User.Exceptions;
 
 namespace User.Features.ResetUsageCounters.V1;
 

@@ -10,8 +10,8 @@ public class ChatReadDbContext : MongoDbContext
 {
     public ChatReadDbContext(IOptions<MongoOptions> options) : base(options)
     {
-        Chat = GetCollection<ChatReadModel>(nameof(Chat).Underscore());
+        Chats = GetCollection<ChatReadModel>(nameof(Chats).Underscore());
     }
 
-    public IMongoCollection<ChatReadModel> Chat { get; }
+    public IMongoCollection<ChatReadModel> Chats { get; }
 }

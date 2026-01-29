@@ -13,6 +13,8 @@ using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Payment.Exceptions;
+using Payment.Models;
 
 namespace Payment.Features.RecordUsageCharge.V1;
 
@@ -93,7 +95,7 @@ internal class RecordUsageChargeHandler : IRequestHandler<RecordUsageChargeComma
             subscription.UserId,
             request.TokenUsed,
             request.Description,
-            Money.Of(request.Cost, request.Currency),
+            Money.Of(request.Cost),
             request.Module);
 
         subscription.AddCharge(charge);

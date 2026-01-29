@@ -15,7 +15,7 @@ public record SourceFile
     {
         if (string.IsNullOrEmpty(value))
         {
-            throw new SourceFileException(value);
+            throw new SourceFileException(value, "");
         }
 
         return new SourceFile(value);

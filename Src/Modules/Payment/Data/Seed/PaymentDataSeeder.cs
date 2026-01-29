@@ -25,9 +25,9 @@ public class PaymentDataSeeder(
 
     private async Task SeedPaymentAsync()
     {
-        if (!await EntityFrameworkQueryableExtensions.AnyAsync(eventDbContext.Subscription))
+        if (!await EntityFrameworkQueryableExtensions.AnyAsync(eventDbContext.Subscriptions))
         {
-            await eventDbContext.Subscription.AddRangeAsync(InitialData.Subscriptions);
+            await eventDbContext.Subscriptions.AddRangeAsync(InitialData.Subscriptions);
             await eventDbContext.SaveChangesAsync();
 
             if (!await MongoQueryable.AnyAsync(eventReadDbContext.Subscription.AsQueryable()))

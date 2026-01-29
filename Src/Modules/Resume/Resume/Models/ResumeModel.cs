@@ -45,7 +45,7 @@ public record ResumeModel : Aggregate<ResumeId>
             CreatedAt = DateTime.UtcNow
         };
 
-        resume.AddDomainEvent(new Resume.Events.ResumeUploadedDomainEvent(id, userId, name.Value, file.Value));
+        resume.AddDomainEvent(new Resume.Events.ResumeUploadedDomainEvent(id, userId, name.Value, file.FileName));
         return resume;
     }
 

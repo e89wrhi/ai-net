@@ -16,7 +16,7 @@ public sealed class PaymentDbContext : AppDbContextBase
     {
     }
 
-    public DbSet<SubscriptionModel> Subscription => Set<SubscriptionModel>();
+    public DbSet<SubscriptionModel> Subscriptions => Set<SubscriptionModel>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

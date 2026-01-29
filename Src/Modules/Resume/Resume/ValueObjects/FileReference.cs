@@ -4,25 +4,27 @@ namespace Resume.ValueObjects;
 
 public record FileReference
 {
-    public string Value { get; }
+    public string ResumeUrl { get; }
+    public string FileName { get; }
 
-    private FileReference(string value)
+    private FileReference(string resumeUrl, string fileName)
     {
-        Value = value;
+        ResumeUrl = resumeUrl;
+        FileName = fileName;
     }
 
-    public static FileReference Of(string value)
+    public static FileReference Of(string resumeUrl, string fileName)
     {
-        if (string.IsNullOrEmpty(value))
+        if (string.IsNullOrEmpty(resumeUrl) || string.IsNullOrEmpty(fileName))
         {
-            throw new SourceFileException(value);
+            throw new SourceFileException(resumeUrl, fileName);
         }
 
-        return new FileReference(value);
+        return new FileReference(resumeUrl, fileName);
     }
 
     public static implicit operator string(FileReference @value)
     {
-        return @value.Value;
+        return @value.ResumeUrl;
     }
 }

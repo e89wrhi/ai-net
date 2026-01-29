@@ -13,6 +13,7 @@ using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Meeting.Models;
 
 namespace Meeting.Features.UploadMeetingAudio.V1;
 

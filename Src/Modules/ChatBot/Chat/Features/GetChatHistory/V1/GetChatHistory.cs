@@ -70,7 +70,7 @@ internal class GetChatHistoryHandler : IQueryHandler<GetChatHistory, GetChatHist
     {
         Guard.Against.Null(request, nameof(request));
 
-        var chats = await _readDbContext.Chat.AsQueryable()
+        var chats = await _readDbContext.Chats.AsQueryable()
             .Where(x => x.UserId == request.UserId)
             .ToListAsync(cancellationToken);
 

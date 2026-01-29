@@ -14,10 +14,10 @@ public class LessonReadModel
     public string Title { get; set; } = default!;
     public string Content { get; set; } = default!;
     public bool IsCompleted { get; set; }
-    public List<QuizeReadModel> Quizes { get; set; } = new();
+    public List<QuizReadModel> Quizzes { get; set; } = new();
 }
 
-public class QuizeReadModel
+public class QuizReadModel
 {
     public Guid Id { get; set; }
     public string Question { get; set; } = default!;
@@ -25,4 +25,3 @@ public class QuizeReadModel
     public string? UserAnswer { get; set; }
     public bool? IsCorrect { get; set; }
 }
-

@@ -2,6 +2,8 @@
 using AI.Common.Web;
 using Ardalis.GuardClauses;
 using ChatBot.Data;
+using ChatBot.Exceptions;
+using ChatBot.Models;
 using ChatBot.ValueObjects;
 using Duende.IdentityServer.EntityFramework.Entities;
 using FluentValidation;
@@ -89,10 +91,9 @@ internal class SendMessageHandler : IRequestHandler<SendMessageCommand, SendMess
         var message = MessageModel.Create(
             MessageId.Of(NewId.NextGuid()),
             chat.Id,
-            MessageContent.Of(request.Content),
             MessageSender.Of(request.Sender),
-            TokenUsed.Of(request.TokenUsed),
-            MessageTime.Of(DateTime.UtcNow));
+            MessageContent.Of(request.Content),
+            TokenUsed.Of(request.TokenUsed));
 
         chat.AddMessage(message);
 

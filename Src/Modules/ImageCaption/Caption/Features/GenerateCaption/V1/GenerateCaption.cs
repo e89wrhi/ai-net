@@ -13,6 +13,8 @@ using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using ImageCaption.Exceptions;
+using ImageCaption.Models;
 
 namespace ImageCaption.Features.GenerateCaption.V1;
 
