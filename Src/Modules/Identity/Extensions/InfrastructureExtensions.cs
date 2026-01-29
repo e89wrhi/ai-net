@@ -1,0 +1,45 @@
+using AI.Common.EFCore;
+using AI.Common.Mapster;
+using AI.Common.Web;
+using FluentValidation;
+using Identity.Data;
+using Identity.Data.Seed;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.HttpOverrides;
+
+namespace Identity.Extensions.Infrastructure;
+
+
+public static class InfrastructureExtensions
+{
+    public static WebApplicationBuilder AddIdentityModules(this WebApplicationBuilder builder)
+    {
+        builder.Services.AddScoped<IdentityEventMapper>();
+        builder.AddMinimalEndpoints(assemblies: typeof(IdentityRoot).Assembly);
+        builder.Services.AddValidatorsFromAssembly(typeof(IdentityRoot).Assembly);
+        builder.Services.AddCustomMapster(typeof(IdentityRoot).Assembly);
+        builder.AddCustomDbContext<IdentityContext>(nameof(Identity));
+        builder.Services.AddScoped<IDataSeeder, IdentityDataSeeder>();
+        builder.AddCustomIdentityServer();
+
+        builder.Services.Configure<ForwardedHeadersOptions>(options =>
+        {
+            options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+        });
+
+        builder.Services.AddCustomMediatR();
+
+        return builder;
+    }
+
+
+    public static WebApplication UseIdentityModules(this WebApplication app)
+    {
+        app.UseForwardedHeaders();
+        app.UseIdentityServer();
+        app.UseMigration<IdentityContext>();
+
+        return app;
+    }
+}

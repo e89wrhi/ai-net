@@ -1,20 +1,22 @@
-﻿using AI.Common.Caching;
+using AI.Common.Caching;
 using AI.Common.Logging;
 using AI.Common.Validation;
-using Payment.Data;
+using Identity.Data;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Payment.Extensions;
+namespace Identity.Extensions.Infrastructure;
+
+using Configurations;
 
 public static class MediatRExtensions
 {
     public static IServiceCollection AddCustomMediatR(this IServiceCollection services)
     {
-        services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(typeof(PaymentRoot).Assembly));
+        services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(typeof(IdentityRoot).Assembly));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
-        services.AddScoped(typeof(IPipelineBehavior<,>), typeof(EfTxPaymentBehavior<,>));
+        services.AddScoped(typeof(IPipelineBehavior<,>), typeof(EfTxIdentityBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(CachingBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(InvalidateCachingBehavior<,>));
 
