@@ -344,13 +344,28 @@ where TEntryPoint : class
                     "PostgresOptions:ConnectionString",
                     PostgresTestcontainer.GetConnectionString()),
                 new(
-                    "PostgresOptions:ConnectionString:Flight",
+                    "PostgresOptions:ConnectionString:Chat",
                     PostgresTestcontainer.GetConnectionString()),
                  new(
                     "PostgresOptions:ConnectionString:Identity",
                     PostgresTestcontainer.GetConnectionString()),
                  new(
-                    "PostgresOptions:ConnectionString:Passenger",
+                    "PostgresOptions:ConnectionString:Image",
+                    PostgresTestcontainer.GetConnectionString()),
+                new(
+                    "PostgresOptions:ConnectionString:Assistant",
+                    PostgresTestcontainer.GetConnectionString()),
+                 new(
+                    "PostgresOptions:ConnectionString:Meeting",
+                    PostgresTestcontainer.GetConnectionString()),
+                 new(
+                    "PostgresOptions:ConnectionString:Payment",
+                    PostgresTestcontainer.GetConnectionString()),
+                new(
+                    "PostgresOptions:ConnectionString:Resume",
+                    PostgresTestcontainer.GetConnectionString()),
+                 new(
+                    "PostgresOptions:ConnectionString:User",
                     PostgresTestcontainer.GetConnectionString()),
                 new(
                     "PersistMessageOptions:ConnectionString",
