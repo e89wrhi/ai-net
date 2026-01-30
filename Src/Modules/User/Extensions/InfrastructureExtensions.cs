@@ -36,7 +36,7 @@ public static class InfrastructureExtensions
     public static WebApplication UseUserModules(this WebApplication app)
     { 
         app.UseMigration<UserDbContext>();
-        app.MapGrpcService<UserGrpcServices>();
+        app.MapGrpcService<UserGrpcService>();
 
         return app;
     }

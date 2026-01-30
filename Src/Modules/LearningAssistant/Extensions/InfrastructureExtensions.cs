@@ -36,7 +36,7 @@ public static class InfrastructureExtensions
     public static WebApplication UseAssistantModules(this WebApplication app)
     { 
         app.UseMigration<AssistantDbContext>();
-        app.MapGrpcService<AssistantGrpcServices>();
+        app.MapGrpcService<AssistantGrpcService>();
 
         return app;
     }

@@ -16,6 +16,8 @@ using Meeting;
 using Payment;
 using Resume;
 using User;
+using AI.Common.BaseExceptions;
+using AI.Common.Problems;
 
 namespace Api.Extensions;
 

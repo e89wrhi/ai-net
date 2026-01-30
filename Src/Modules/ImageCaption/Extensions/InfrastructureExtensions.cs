@@ -36,7 +36,7 @@ public static class InfrastructureExtensions
     public static WebApplication UseImageModules(this WebApplication app)
     { 
         app.UseMigration<ImageDbContext>();
-        app.MapGrpcService<ImageGrpcServices>();
+        app.MapGrpcService<ImageGrpcService>();
 
         return app;
     }

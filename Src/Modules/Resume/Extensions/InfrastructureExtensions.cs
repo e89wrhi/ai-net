@@ -36,7 +36,7 @@ public static class InfrastructureExtensions
     public static WebApplication UseResumeModules(this WebApplication app)
     { 
         app.UseMigration<ResumeDbContext>();
-        app.MapGrpcService<ResumeGrpcServices>();
+        app.MapGrpcService<ResumeGrpcService>();
 
         return app;
     }

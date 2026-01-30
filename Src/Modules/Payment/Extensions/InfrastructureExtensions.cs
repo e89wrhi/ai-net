@@ -36,7 +36,7 @@ public static class InfrastructureExtensions
     public static WebApplication UsePaymentModules(this WebApplication app)
     { 
         app.UseMigration<PaymentDbContext>();
-        app.MapGrpcService<PaymentGrpcServices>();
+        app.MapGrpcService<PaymentGrpcService>();
 
         return app;
     }

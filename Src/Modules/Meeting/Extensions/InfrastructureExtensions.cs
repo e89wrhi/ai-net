@@ -36,7 +36,7 @@ public static class InfrastructureExtensions
     public static WebApplication UseMeetingModules(this WebApplication app)
     { 
         app.UseMigration<MeetingDbContext>();
-        app.MapGrpcService<MeetingGrpcServices>();
+        app.MapGrpcService<MeetingGrpcService>();
 
         return app;
     }

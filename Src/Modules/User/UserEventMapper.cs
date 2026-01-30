@@ -20,7 +20,7 @@ public sealed class UserEventMapper : IEventMapper
         return @event switch
         {
             UserActivityTrackedDomainEvent e => new AI.Contracts.EventBus.Messages.UserActivityAdded(e.ActivityId.Value, e.UserId.Value, e.Module.ToString(), e.Action),
-            UserProfileUpdatedDomainEvent e => new AI.Contracts.EventBus.Messages.UserProfileUpdated(e.Id.Value),
+            UserProfileUpdatedDomainEvent e => new AI.Contracts.EventBus.Messages.UserProfileUpdated(e.UserId.Value),
             _ => null
         };
     }
@@ -32,7 +32,7 @@ public sealed class UserEventMapper : IEventMapper
             UserActivityTrackedDomainEvent e => new TrackActivityMongo(e.ActivityId.Value, e.UserId.Value, e.Module.ToString(), e.Action, e.ResourceId, e.TimeStamp),
             UsageCountersResetDomainEvent e => new ResetUsageCountersMongo(e.UserId.Value),
             UserCreatedDomainEvent e => new CreateUserMongo(e.UserId.Value, e.Username, e.Email),
-            UserProfileUpdatedDomainEvent e => new UpdateUserMongo(e.Id.Value, e.FullName),
+            UserProfileUpdatedDomainEvent e => new UpdateUserMongo(e.UserId.Value, e.FullName),
             _ => null
 
 

@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using LearningAssistant.Exceptions;
 using LearningAssistant.Models;
+using Duende.IdentityServer.EntityFramework.Entities;
 
 namespace LearningAssistant.Features.GenerateQuiz.V1;
 

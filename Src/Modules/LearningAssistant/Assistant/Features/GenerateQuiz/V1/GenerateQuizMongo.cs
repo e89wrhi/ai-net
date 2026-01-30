@@ -33,7 +33,7 @@ public class GenerateQuizMongoHandler : ICommandHandler<GenerateQuizMongo>
 
         var update = Builders<ProfileReadModel>.Update.Push("Lessons.$.Quizzes", quiz);
 
-        await _readDbContext.Profile.UpdateOneAsync(filter, update, cancellationToken: cancellationToken);
+        await _readDbContext.Profiles.UpdateOneAsync(filter, update, cancellationToken: cancellationToken);
 
         return Unit.Value;
     }

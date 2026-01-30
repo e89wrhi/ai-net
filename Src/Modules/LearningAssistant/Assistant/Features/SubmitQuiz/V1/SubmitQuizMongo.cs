@@ -32,7 +32,7 @@ public class SubmitQuizMongoHandler : ICommandHandler<SubmitQuizMongo>
 
         var arrayFilters = new List<ArrayFilterDefinition>
         {
-            new BsonDocumentArrayFilterDefinition<BsonDocument>(new BsonDocument("q.Id", request.QuizId))
+            new BsonDocumentArrayFilterDefinition<BsonDocument>(new BsonDocument())
         };
 
         var updateOptions = new UpdateOptions { ArrayFilters = arrayFilters };

@@ -12,4 +12,11 @@ public record ActionItem : Entity<ActionItemId>
     public DateTime DueDate { get; private set; } = default!;
     public bool IsCompleted { get; private set; } = default!;
     public string Priority { get; private set; } = default!;
+
+    public ActionItem(Guid id, MeetingId meetingId, string description)
+    {
+        MeetingId = meetingId;
+        Description = description;
+        IsCompleted = false;
+    }
 }

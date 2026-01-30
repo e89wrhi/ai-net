@@ -100,7 +100,7 @@ internal class TrackActivityHandler : IRequestHandler<TrackActivityCommand, Trac
             throw new UserNotFoundException(request.UserId);
         }
 
-        var activity = UserActivity.Create(
+        var activity = User.UserActivity.Create(
             UserActivityId.Of(NewId.NextGuid()),
             user.Id,
             request.Module,

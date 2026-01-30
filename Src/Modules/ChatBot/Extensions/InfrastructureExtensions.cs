@@ -11,6 +11,7 @@ using FluentValidation;
 using MassTransit.Contracts;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Grpc.AspNetCore;
 
 namespace ChatBot.Extensions;
 
@@ -36,7 +37,7 @@ public static class InfrastructureExtensions
     public static WebApplication UseChatModules(this WebApplication app)
     { 
         app.UseMigration<ChatDbContext>();
-        app.MapGrpcService<ChatGrpcServices>();
+        app.MapGrpcService<ChatGrpcService>();
 
         return app;
     }

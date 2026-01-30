@@ -39,7 +39,7 @@ public class GenerateLessonMongoHandler : ICommandHandler<GenerateLessonMongo>
 
         var update = Builders<ProfileReadModel>.Update.Push(x => x.Lessons, lesson);
 
-        await _readDbContext.Profile.UpdateOneAsync(filter, update, cancellationToken: cancellationToken);
+        await _readDbContext.Profiles.UpdateOneAsync(filter, update, cancellationToken: cancellationToken);
 
         return Unit.Value;
     }
