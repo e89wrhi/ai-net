@@ -2,56 +2,39 @@
 using AI.Common.Web;
 using Ardalis.GuardClauses;
 using ImageGen.Data;
-using ImageGen.Exceptions;
 using ImageGen.Models;
 using ImageGen.ValueObjects;
-using Duende.IdentityServer.EntityFramework.Entities;
-using FluentValidation;
-using Mapster;
-using MapsterMapper;
-using MassTransit;
-using MassTransit.Contracts;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.AI;
 
-namespace ImageGen.Features.SendImageGen.V1;
+namespace ImageGen.Features.ReGenerateImage.V1;
 
-public record SendImageGenCommand(Guid SessionId, string Content, string Sender, int TokenUsed) : ICommand<SendImageGenCommandResponse>
-{
-    public Guid Id { get; init; } = NewId.NextGuid();
-}
+public record ReGenerateImageCommand(Guid SessionId, string Instruction) : ICommand<ReGenerateImageResult>;
 
-public record SendImageGenCommandResponse(Guid Id);
+public record ReGenerateImageResult(Guid ResultId, string ImageUrl);
 
-public record SendImageGenRequest(Guid SessionId, string Content, string Sender, int TokenUsed);
-
-public record SendImageGenRequestResponse(Guid Id);
-
-public class SendImageGenEndpoint : IMinimalEndpoint
+public class ReGenerateImageEndpoint : IMinimalEndpoint
 {
     public IEndpointRouteBuilder MapEndpoint(IEndpointRouteBuilder builder)
     {
-        builder.MapPost($"{EndpointConfig.BaseApiPath}/imagegen/send-message", async (SendImageGenRequest request,
-                IMediator mediator, IMapper mapper,
-                CancellationToken cancellationToken) =>
-        {
-            var command = mapper.Map<SendImageGenCommand>(request);
-
-            var result = await mediator.Send(command, cancellationToken);
-
-            var response = result.Adapt<SendImageGenRequestResponse>();
-
-            return Results.Ok(response);
-        })
+        builder.MapPost($"{EndpointConfig.BaseApiPath}/imagegen/regenerate",
+                async (ReGenerateImageRequestDto request, IMediator mediator, CancellationToken cancellationToken) =>
+                {
+                    var command = new ReGenerateImageCommand(request.SessionId, request.Instruction);
+                    var result = await mediator.Send(command, cancellationToken);
+                    return Results.Ok(new ReGenerateImageResponseDto(result.ResultId, result.ImageUrl));
+                })
             .RequireAuthorization(nameof(ApiScope))
-            .WithName("SendImageGen")
+            .WithName("ReGenerateImage")
             .WithApiVersionSet(builder.NewApiVersionSet("ImageGen").Build())
-            .Produces<SendImageGenRequestResponse>()
+            .Produces<ReGenerateImageResponseDto>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
-            .WithSummary("Send ImageGen")
-            .WithDescription("Send ImageGen")
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .WithSummary("Re-generate Image")
+            .WithDescription("Re-generates or modifies an existing image based on new instructions.")
             .WithOpenApi()
             .HasApiVersion(1.0);
 
@@ -59,47 +42,63 @@ public class SendImageGenEndpoint : IMinimalEndpoint
     }
 }
 
-public class SendImageGenCommandValidator : AbstractValidator<SendImageGenCommand>
-{
-    public SendImageGenCommandValidator()
-    {
-        RuleFor(x => x.SessionId).NotEmpty();
-        RuleFor(x => x.Content).NotEmpty();
-    }
-}
+public record ReGenerateImageRequestDto(Guid SessionId, string Instruction);
+public record ReGenerateImageResponseDto(Guid ResultId, string ImageUrl);
 
-internal class SendImageGenHandler : IRequestHandler<SendImageGenCommand, SendImageGenCommandResponse>
+internal class ReGenerateImageHandler : ICommandHandler<ReGenerateImageCommand, ReGenerateImageResult>
 {
     private readonly ImageGenDbContext _dbContext;
+    private readonly IChatClient _chatClient;
 
-    public SendImageGenHandler(ImageGenDbContext dbContext)
+    public ReGenerateImageHandler(ImageGenDbContext dbContext, IChatClient chatClient)
     {
         _dbContext = dbContext;
+        _chatClient = chatClient;
     }
 
-    public async Task<SendImageGenCommandResponse> Handle(SendImageGenCommand request, CancellationToken cancellationToken)
+    public async Task<ReGenerateImageResult> Handle(ReGenerateImageCommand request, CancellationToken cancellationToken)
     {
-        Guard.Against.Null(request, nameof(request));
+        // 1. Load Session
+        var session = await _dbContext.Sessions.FindAsync(new object[] { CodeGenId.Of(request.SessionId) }, cancellationToken);
+        if (session == null) throw new ImageGen.Exceptions.ImageGenNotFoundException(request.SessionId);
 
-        var imagegen = await _dbContext.ImageGens.FindAsync(new object[] { SessionId.Of(request.SessionId) }, cancellationToken);
+        // 2. Load context
+        await _dbContext.Entry(session).Collection(s => s.Results).LoadAsync(cancellationToken);
+        var lastResult = session.Results.OrderByDescending(r => r.GeneratedAt).FirstOrDefault();
+        if (lastResult == null) throw new ImageGen.Exceptions.ImageGenResultNotFoundException(Guid.Empty);
 
-        if (imagegen == null)
+        // 3. Orchestrate re-generation
+        var messages = new List<ChatMessage>
         {
-            throw new ImageGenNotFoundException(request.SessionId);
-        }
+            new ChatMessage(ChatRole.System, "You are an image generation refiner."),
+            new ChatMessage(ChatRole.User, $"Original Prompt: {lastResult.Prompt.Value}"),
+            new ChatMessage(ChatRole.User, $"Refinement Instruction: {request.Instruction}")
+        };
 
-        var message = ImageGenModel.Create(
-            ImageGenId.Of(NewId.NextGuid()),
-            imagegen.Id,
-            ValueObjects.ImageGenerationPrompt.Of(request.Sender),
-            ValueObjects.GeneratedImage.Of(request.Content),
-            TokenUsed.Of(request.TokenUsed));
+        var completion = await _chatClient.CompleteAsync(messages, cancellationToken: cancellationToken);
 
-        imagegen.AddImageGen(message);
+        // Mock refined Image URL
+        var imageUrl = $"https://generated-images.com/{Guid.NewGuid()}_refined.png";
 
+        // 4. Update
+        var resultId = ImageGenResultId.Of(Guid.NewGuid());
+        var promptVo = ImageGenerationPrompt.Of(request.Instruction);
+        var imageVo = GeneratedImage.Of(imageUrl);
+        var tokenCountVo = TokenCount.Of(completion.Usage?.TotalTokenCount ?? 1200);
+        var costVo = CostEstimate.Of(0.04m);
+
+        var refinedResult = ImageGenerationResult.Create(
+            resultId, 
+            promptVo, 
+            imageVo, 
+            lastResult.Size, 
+            lastResult.Style, 
+            tokenCountVo, 
+            costVo);
+
+        session.AddResult(refinedResult);
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        return new SendImageGenCommandResponse(message.Id.Value);
+        return new ReGenerateImageResult(resultId.Value, imageUrl);
     }
 }
-

@@ -2,50 +2,39 @@
 using AI.Common.Web;
 using Ardalis.GuardClauses;
 using ImageGen.Data;
-using ImageGen.Exceptions;
+using ImageGen.Enums;
+using ImageGen.Models;
 using ImageGen.ValueObjects;
-using Duende.IdentityServer.EntityFramework.Entities;
-using FluentValidation;
-using Mapster;
-using MapsterMapper;
-using MassTransit;
-using MassTransit.Contracts;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.AI;
 
-namespace ImageGen.Features.DeleteImageGen.V1;
+namespace ImageGen.Features.GenerateImage.V1;
 
-public record DeleteImageGenCommand(Guid SessionId) : ICommand<DeleteImageGenCommandResponse>;
+public record GenerateImageCommand(string Prompt, ImageSize Size, ImageStyle Style) : ICommand<GenerateImageResult>;
 
-public record DeleteImageGenCommandResponse(Guid Id);
+public record GenerateImageResult(Guid SessionId, Guid ResultId, string ImageUrl);
 
-public record DeleteImageGenRequest(Guid SessionId);
-
-public record DeleteImageGenRequestResponse(Guid Id);
-
-public class DeleteImageGenEndpoint : IMinimalEndpoint
+public class GenerateImageEndpoint : IMinimalEndpoint
 {
     public IEndpointRouteBuilder MapEndpoint(IEndpointRouteBuilder builder)
     {
-        builder.MapDelete($"{EndpointConfig.BaseApiPath}/imagegen/{{sessionId}}", async (Guid sessionId,
-                IMediator mediator, MapsterMapper.IMapper mapper,
-                CancellationToken cancellationToken) =>
-        {
-            var result = await mediator.Send(new DeleteImageGenCommand(sessionId), cancellationToken);
-
-            var response = result.Adapt<DeleteImageGenRequestResponse>();
-
-            return Results.Ok(response);
-        })
+        builder.MapPost($"{EndpointConfig.BaseApiPath}/imagegen/generate",
+                async (GenerateImageRequestDto request, IMediator mediator, CancellationToken cancellationToken) =>
+                {
+                    var command = new GenerateImageCommand(request.Prompt, request.Size, request.Style);
+                    var result = await mediator.Send(command, cancellationToken);
+                    return Results.Ok(new GenerateImageResponseDto(result.SessionId, result.ResultId, result.ImageUrl));
+                })
             .RequireAuthorization(nameof(ApiScope))
-            .WithName("DeleteImageGen")
+            .WithName("GenerateImage")
             .WithApiVersionSet(builder.NewApiVersionSet("ImageGen").Build())
-            .Produces<DeleteImageGenRequestResponse>()
+            .Produces<GenerateImageResponseDto>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
-            .WithSummary("Delete ImageGen")
-            .WithDescription("Delete ImageGen")
+            .WithSummary("Generate Image")
+            .WithDescription("Generates an image from a text prompt using AI.")
             .WithOpenApi()
             .HasApiVersion(1.0);
 
@@ -53,40 +42,66 @@ public class DeleteImageGenEndpoint : IMinimalEndpoint
     }
 }
 
-public class DeleteImageGenCommandValidator : AbstractValidator<DeleteImageGenCommand>
-{
-    public DeleteImageGenCommandValidator()
-    {
-        RuleFor(x => x.SessionId).NotEmpty();
-    }
-}
+public record GenerateImageRequestDto(string Prompt, ImageSize Size, ImageStyle Style);
+public record GenerateImageResponseDto(Guid SessionId, Guid ResultId, string ImageUrl);
 
-internal class DeleteImageGenHandler : IRequestHandler<DeleteImageGenCommand, DeleteImageGenCommandResponse>
+internal class GenerateImageHandler : ICommandHandler<GenerateImageCommand, GenerateImageResult>
 {
     private readonly ImageGenDbContext _dbContext;
+    private readonly IChatClient _chatClient;
 
-    public DeleteImageGenHandler(ImageGenDbContext dbContext)
+    public GenerateImageHandler(ImageGenDbContext dbContext, IChatClient chatClient)
     {
         _dbContext = dbContext;
+        _chatClient = chatClient;
     }
 
-    public async Task<DeleteImageGenCommandResponse> Handle(DeleteImageGenCommand request, CancellationToken cancellationToken)
+    public async Task<GenerateImageResult> Handle(GenerateImageCommand request, CancellationToken cancellationToken)
     {
-        Guard.Against.Null(request, nameof(request));
+        Guard.Against.NullOrEmpty(request.Prompt, nameof(request.Prompt));
 
-        var imagegen = await _dbContext.ImageGens.FindAsync(new object[] { SessionId.Of(request.SessionId) }, cancellationToken);
-
-        if (imagegen == null)
+        // Use ChatClient to "acknowledge" the generation or log intent
+        var messages = new List<ChatMessage>
         {
-            throw new ImageGenNotFoundException(request.SessionId);
-        }
+            new ChatMessage(ChatRole.System, "You are an image generation orchestrator."),
+            new ChatMessage(ChatRole.User, $"Generate an image with prompt: {request.Prompt}. Style: {request.Style}, Size: {request.Size}")
+        };
 
-        imagegen.Delete();
-        _dbContext.ImageGens.Remove(imagegen);
+        // This is a placeholder for real image generation call
+        // In a real scenario, you'd use a dedicated IImageClient or similar
+        var completion = await _chatClient.CompleteAsync(messages, cancellationToken: cancellationToken);
 
+        // Mock Image URL
+        var imageUrl = $"https://generated-images.com/{Guid.NewGuid()}.png";
+
+        // Persist
+        var sessionId = ImageGenId.Of(Guid.NewGuid());
+        var userId = UserId.Of(Guid.NewGuid()); // Mock
+        var modelId = ModelId.Of(_chatClient.Metadata.ModelId ?? "dall-e-3");
+        var config = ImageGenerationConfiguration.Of("standard");
+
+        var session = ImageGenerationSession.Create(sessionId, userId, modelId, config);
+
+        var resultId = ImageGenResultId.Of(Guid.NewGuid());
+        var promptVo = ImageGenerationPrompt.Of(request.Prompt);
+        var imageVo = GeneratedImage.Of(imageUrl);
+        var tokenCountVo = TokenCount.Of(completion.Usage?.TotalTokenCount ?? 1000); // Images usually cost "tokens" or flat rates
+        var costVo = CostEstimate.Of(0.04m);
+
+        var result = ImageGenerationResult.Create(
+            resultId, 
+            promptVo, 
+            imageVo, 
+            request.Size, 
+            request.Style, 
+            tokenCountVo, 
+            costVo);
+
+        session.AddResult(result);
+
+        _dbContext.Sessions.Add(session);
         await _dbContext.SaveChangesAsync(cancellationToken);
-        
-        return new DeleteImageGenCommandResponse(imagegen.Id.Value);
+
+        return new GenerateImageResult(sessionId.Value, resultId.Value, imageUrl);
     }
 }
-
