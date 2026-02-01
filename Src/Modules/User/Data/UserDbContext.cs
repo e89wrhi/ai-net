@@ -16,7 +16,9 @@ public sealed class UserDbContext : AppDbContextBase
     {
     }
 
-    public DbSet<UserActivitySession> Users => Set<UserActivitySession>();
+    public DbSet<UserActivitySession> Sessions => Set<UserActivitySession>();
+    public DbSet<UserAnalytics> UserAnalytics => Set<UserAnalytics>();
+    public DbSet<ModuleAnalytics> ModuleAnalytics => Set<ModuleAnalytics>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
