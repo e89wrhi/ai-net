@@ -16,7 +16,8 @@ public sealed class ResumeDbContext : AppDbContextBase
     {
     }
 
-    public DbSet<ResumeModel> Resumes => Set<ResumeModel>();
+    public DbSet<ResumeAnalysisSession> Sessions => Set<ResumeAnalysisSession>();
+    public DbSet<ResumeAnalysisResult> Results => Set<ResumeAnalysisResult>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

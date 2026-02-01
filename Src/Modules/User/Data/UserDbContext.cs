@@ -16,7 +16,7 @@ public sealed class UserDbContext : AppDbContextBase
     {
     }
 
-    public DbSet<UserModel> Users => Set<UserModel>();
+    public DbSet<UserActivitySession> Users => Set<UserActivitySession>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

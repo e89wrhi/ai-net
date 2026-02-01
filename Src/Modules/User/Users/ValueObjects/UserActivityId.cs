@@ -1,6 +1,4 @@
-﻿
-
-using User.Exceptions;
+﻿using User.Exceptions;
 
 namespace User.ValueObjects;
 

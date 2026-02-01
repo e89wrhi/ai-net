@@ -10,8 +10,8 @@ public class ResumeReadDbContext : MongoDbContext
 {
     public ResumeReadDbContext(IOptions<MongoOptions> options) : base(options)
     {
-        Resume = GetCollection<ResumeReadModel>(nameof(Resume).Underscore());
+        Resume = GetCollection<ResumeAnalysisReadModel>(nameof(Resume).Underscore());
     }
 
-    public IMongoCollection<ResumeReadModel> Resume { get; }
+    public IMongoCollection<ResumeAnalysisReadModel> Resume { get; }
 }

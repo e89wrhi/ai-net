@@ -1,0 +1,11 @@
+﻿using AI.Common.BaseExceptions;
+
+namespace AiOrchestration.Exceptions;
+
+public class TemperatureException : DomainException
+{
+    public TemperatureException(int temprature)
+        : base($"temprature: '{temprature}' is invalid.")
+    {
+    }
+}

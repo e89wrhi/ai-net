@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+package Translate;
+import "google/protobuf/timestamp.proto";
+
+service TranslateGrpcService {
+  rpc StartTranslate (StartTranslateRequest) returns (StartTranslateResponse);
+  rpc DeleteTranslate (DeleteTranslateRequest) returns (DeleteTranslateResponse);
+  rpc GetTranslateHistory (GetTranslateHistoryRequest) returns (GetTranslateHistoryResponse);
+}
+
+message StartTranslateRequest {
+  string user_id = 1;
+  string title = 2;
+  string ai_model_id = 3;
+}
+
+message StartTranslateResponse {
+  string session_id = 1;
+}
+
+message DeleteTranslateRequest {
+  string session_id = 1;
+}
+
+message DeleteTranslateResponse {
+  string session_id = 1;
+}
+
+message GetTranslateHistoryRequest {
+  string user_id = 1;
+}
+
+message Translate {
+  string id = 1;
+  string content = 2;
+  string sender = 3;
+  google.protobuf.Timestamp sent_at = 4;
+  int32 token_used = 5;
+}
+
+message TranslateSummary {
+  string id = 1;
+  string title = 2;
+  string summary = 3;
+  string ai_model_id = 4;
+  string session_status = 5;
+  google.protobuf.Timestamp last_sent_at = 6;
+  int32 total_tokens = 7;
+  repeated Translate messages = 8;
+}
+
+message GetTranslateHistoryResponse {
+  repeated TranslateSummary translates = 1;
+}

@@ -1,8 +1,9 @@
 ﻿namespace ChatBot.Enums;
 
 public enum MessageSender
-{ 
-    User = 0,
-    Assistant = 1,
-    System = 2
+{
+    System = 0,
+    User = 1,
+    Assistant = 2,
+    Tool = 3,
 }

@@ -25,6 +25,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Common\Common\Common.csproj" />
+    <ProjectReference Include="..\AiOrchestration\AiOrchestration.csproj" />
   </ItemGroup>
 
 </Project>

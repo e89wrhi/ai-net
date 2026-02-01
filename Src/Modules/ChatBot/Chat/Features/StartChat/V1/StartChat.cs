@@ -81,7 +81,7 @@ internal class StartChatHandler : IRequestHandler<StartChatCommand, StartChatCom
     {
         Guard.Against.Null(request, nameof(request));
 
-        var chat = ChatModel.Create(
+        var chat = ChatSession.Create(
             SessionId.Of(NewId.NextGuid()),
             UserId.Of(request.UserId),
             request.Title,

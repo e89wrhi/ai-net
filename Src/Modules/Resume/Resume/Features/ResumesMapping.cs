@@ -31,21 +31,21 @@ public class ResumeMappings : IRegister
             .Map(d => d.AwayVotesCount, s => s.AwayVotesCount)
             .Map(d => d.DrawVotesCount, s => s.DrawVotesCount);
 
-        config.NewConfig<CreateResumeMongo, ResumeReadModel>()
+        config.NewConfig<CreateResumeMongo, ResumeAnalysisReadModel>()
             .Map(d => d.Id, s => NewId.NextGuid())
             .Map(d => d.ResumeId, s => s.Id);
 
-        config.NewConfig<Models.Resume, ResumeReadModel>()
+        config.NewConfig<Models.Resume, ResumeAnalysisReadModel>()
             .Map(d => d.Id, s => NewId.NextGuid())
             .Map(d => d.ResumeId, s => s.Id.Value);
 
-        config.NewConfig<ResumeReadModel, ResumeDto>()
+        config.NewConfig<ResumeAnalysisReadModel, ResumeDto>()
             .Map(d => d.Id, s => s.ResumeId);
 
-        config.NewConfig<UpdateResumeMongo, ResumeReadModel>()
+        config.NewConfig<UpdateResumeMongo, ResumeAnalysisReadModel>()
             .Map(d => d.ResumeId, s => s.Id);
 
-        config.NewConfig<DeleteResumeMongo, ResumeReadModel>()
+        config.NewConfig<DeleteResumeMongo, ResumeAnalysisReadModel>()
             .Map(d => d.ResumeId, s => s.Id);
 
         config.NewConfig<CreateResumeRequestDto, CreateResume>()

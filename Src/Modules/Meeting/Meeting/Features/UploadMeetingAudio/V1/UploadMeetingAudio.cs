@@ -84,7 +84,7 @@ internal class UploadMeetingAudioHandler : IRequestHandler<UploadMeetingAudioCom
         var meeting = MeetingModel.Create(
             MeetingId.Of(NewId.NextGuid()),
             request.OrganizerId,
-            Title.Of(request.Title),
+            ValueObjects.MeetingAnalysisConfiguration.Of(request.Title),
             AudioSource.Of(request.AudioUrl));
 
         await _dbContext.Meetings.AddAsync(meeting, cancellationToken);

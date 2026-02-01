@@ -5,7 +5,7 @@ namespace ChatBot.Exceptions;
 public class MessageContentException : DomainException
 {
     public MessageContentException(string msgcontent)
-        : base($"msgcontent: '{msgcontent}' is invalid.")
+        : base($"msg_content: '{msgcontent}' is invalid.")
     {
     }
 }

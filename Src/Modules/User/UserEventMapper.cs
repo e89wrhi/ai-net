@@ -30,7 +30,7 @@ public sealed class UserEventMapper : IEventMapper
         return @event switch
         {
             UserActivityTrackedDomainEvent e => new TrackActivityMongo(e.ActivityId.Value, e.UserId.Value, e.Module.ToString(), e.Action, e.ResourceId, e.TimeStamp),
-            UsageCountersResetDomainEvent e => new ResetUsageCountersMongo(e.UserId.Value),
+            UserActivitySessionStartedDomainEvent e => new ResetUsageCountersMongo(e.UserId.Value),
             UserCreatedDomainEvent e => new CreateUserMongo(e.UserId.Value, e.Username, e.Email),
             UserProfileUpdatedDomainEvent e => new UpdateUserMongo(e.UserId.Value, e.FullName),
             _ => null

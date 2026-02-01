@@ -92,7 +92,7 @@ internal class SummarizeMeetingAudioHandler : IRequestHandler<SummarizeMeetingAu
 
         meeting.CompleteTranscription(
             request.TranscriptionText,
-            Enum.Parse<TranscriptLanguage>(request.Language),
+            Enum.Parse<MeetingAnalysisFailureReason>(request.Language),
             request.ConfidenceScore,
             request.Summary);
 

@@ -1,6 +1,4 @@
-﻿
-
-using Payment.Exceptions;
+﻿using Payment.Exceptions;
 
 namespace Payment.ValueObjects;
 

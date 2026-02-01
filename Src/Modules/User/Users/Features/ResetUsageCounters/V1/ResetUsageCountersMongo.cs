@@ -27,8 +27,8 @@ public class ResetUsageCountersMongoHandler : ICommandHandler<ResetUsageCounters
     {
         Guard.Against.Null(request, nameof(request));
 
-        var filter = Builders<UserReadModel>.Filter.Eq(x => x.Id, request.UserId);
-        var update = Builders<UserReadModel>.Update.Set(x => x.Usages, new List<UsageContainerReadModel>());
+        var filter = Builders<UserAnalyticsReadModel>.Filter.Eq(x => x.Id, request.UserId);
+        var update = Builders<UserAnalyticsReadModel>.Update.Set(x => x.Usages, new List<UsageContainerReadModel>());
 
         await _readDbContext.User.UpdateOneAsync(filter, update, cancellationToken: cancellationToken);
 

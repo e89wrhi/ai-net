@@ -29,21 +29,21 @@ public class MeetingMappings : IRegister
             .Map(d => d.AwayVotesCount, s => s.AwayVotesCount)
             .Map(d => d.DrawVotesCount, s => s.DrawVotesCount);
 
-        config.NewConfig<CreateMeetingMongo, MeetingReadModel>()
+        config.NewConfig<CreateMeetingMongo, MeetingAnalysisSessionReadModel>()
             .Map(d => d.Id, s => NewId.NextGuid())
             .Map(d => d.MeetingId, s => s.Id);
 
-        config.NewConfig<Models.Meeting, MeetingReadModel>()
+        config.NewConfig<Models.Meeting, MeetingAnalysisSessionReadModel>()
             .Map(d => d.Id, s => NewId.NextGuid())
             .Map(d => d.MeetingId, s => s.Id.Value);
 
-        config.NewConfig<MeetingReadModel, MeetingDto>()
+        config.NewConfig<MeetingAnalysisSessionReadModel, MeetingDto>()
             .Map(d => d.Id, s => s.MeetingId);
 
-        config.NewConfig<UpdateMeetingMongo, MeetingReadModel>()
+        config.NewConfig<UpdateMeetingMongo, MeetingAnalysisSessionReadModel>()
             .Map(d => d.MeetingId, s => s.Id);
 
-        config.NewConfig<DeleteMeetingMongo, MeetingReadModel>()
+        config.NewConfig<DeleteMeetingMongo, MeetingAnalysisSessionReadModel>()
             .Map(d => d.MeetingId, s => s.Id);
 
         config.NewConfig<CreateMeetingRequestDto, CreateMeeting>()

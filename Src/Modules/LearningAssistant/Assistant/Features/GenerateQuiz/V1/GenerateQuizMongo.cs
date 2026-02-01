@@ -11,9 +11,9 @@ public record GenerateQuizMongo(Guid LessonId, Guid QuizId, string Question, str
 
 public class GenerateQuizMongoHandler : ICommandHandler<GenerateQuizMongo>
 {
-    private readonly ProfileReadDbContext _readDbContext;
+    private readonly LearningReadDbContext _readDbContext;
 
-    public GenerateQuizMongoHandler(ProfileReadDbContext readDbContext)
+    public GenerateQuizMongoHandler(LearningReadDbContext readDbContext)
     {
         _readDbContext = readDbContext;
     }
@@ -22,7 +22,7 @@ public class GenerateQuizMongoHandler : ICommandHandler<GenerateQuizMongo>
     {
         Guard.Against.Null(request, nameof(request));
 
-        var filter = Builders<ProfileReadModel>.Filter.ElemMatch(x => x.Lessons, l => l.Id == request.LessonId);
+        var filter = Builders<LearningSessionReadModel>.Filter.ElemMatch(x => x.Lessons, l => l.Id == request.LessonId);
         
         var quiz = new QuizReadModel
         {
@@ -31,7 +31,7 @@ public class GenerateQuizMongoHandler : ICommandHandler<GenerateQuizMongo>
             CorrectAnswer = request.CorrectAnswer
         };
 
-        var update = Builders<ProfileReadModel>.Update.Push("Lessons.$.Quizzes", quiz);
+        var update = Builders<LearningSessionReadModel>.Update.Push("Lessons.$.Quizzes", quiz);
 
         await _readDbContext.Profiles.UpdateOneAsync(filter, update, cancellationToken: cancellationToken);
 

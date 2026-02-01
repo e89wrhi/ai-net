@@ -23,9 +23,9 @@ public static class InfrastructureExtensions
         builder.AddMinimalEndpoints(assemblies: typeof(ImageRoot).Assembly);
         builder.Services.AddValidatorsFromAssembly(typeof(ImageRoot).Assembly);
         builder.Services.AddCustomMapster(typeof(ImageRoot).Assembly);
-        builder.AddCustomDbContext<ImageDbContext>(nameof(Image));
+        builder.AddCustomDbContext<ImageCaptionDbContext>(nameof(Image));
         builder.Services.AddScoped<IDataSeeder, ImageDataSeeder>();
-        builder.AddMongoDbContext<ImageReadDbContext>();
+        builder.AddMongoDbContext<ImageCaptionReadDbContext>();
 
         builder.Services.AddCustomMediatR();
 
@@ -35,7 +35,7 @@ public static class InfrastructureExtensions
 
     public static WebApplication UseImageModules(this WebApplication app)
     { 
-        app.UseMigration<ImageDbContext>();
+        app.UseMigration<ImageCaptionDbContext>();
         app.MapGrpcService<ImageGrpcService>();
 
         return app;

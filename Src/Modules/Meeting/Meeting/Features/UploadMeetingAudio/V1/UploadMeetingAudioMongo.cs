@@ -27,7 +27,7 @@ public class UploadMeetingAudioMongoHandler : ICommandHandler<UploadMeetingAudio
     {
         Guard.Against.Null(request, nameof(request));
 
-        var meeting = new MeetingReadModel
+        var meeting = new MeetingAnalysisSessionReadModel
         {
             Id = request.Id,
             OrganizerId = request.OrganizerId,

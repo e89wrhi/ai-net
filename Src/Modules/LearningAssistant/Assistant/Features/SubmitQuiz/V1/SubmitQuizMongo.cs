@@ -13,9 +13,9 @@ public record SubmitQuizMongo(Guid QuizId, string UserAnswer, bool IsCorrect) : 
 
 public class SubmitQuizMongoHandler : ICommandHandler<SubmitQuizMongo>
 {
-    private readonly ProfileReadDbContext _readDbContext;
+    private readonly LearningReadDbContext _readDbContext;
 
-    public SubmitQuizMongoHandler(ProfileReadDbContext readDbContext)
+    public SubmitQuizMongoHandler(LearningReadDbContext readDbContext)
     {
         _readDbContext = readDbContext;
     }
@@ -25,8 +25,8 @@ public class SubmitQuizMongoHandler : ICommandHandler<SubmitQuizMongo>
         Guard.Against.Null(request, nameof(request));
 
         // Using arrayFilters to update a deeply nested element by its ID
-        var filter = Builders<ProfileReadModel>.Filter.Empty;
-        var update = Builders<ProfileReadModel>.Update
+        var filter = Builders<LearningSessionReadModel>.Filter.Empty;
+        var update = Builders<LearningSessionReadModel>.Update
             .Set("Lessons.$[].Quizzes.$[q].UserAnswer", request.UserAnswer)
             .Set("Lessons.$[].Quizzes.$[q].IsCorrect", request.IsCorrect);
 

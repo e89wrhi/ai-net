@@ -32,7 +32,7 @@ public class ChatDataSeeder(
 
             if (!await MongoQueryable.AnyAsync(eventReadDbContext.Chats.AsQueryable()))
             {
-                await eventReadDbContext.Chats.InsertManyAsync(mapper.Map<List<ChatReadModel>>(InitialData.Chats));
+                await eventReadDbContext.Chats.InsertManyAsync(mapper.Map<List<ChatSessionReadModel>>(InitialData.Chats));
             }
         }
     }

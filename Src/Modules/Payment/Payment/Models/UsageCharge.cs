@@ -3,7 +3,7 @@ using Payment.ValueObjects;
 
 namespace Payment.Models;
 
-public record UsageCharge : Entity<UsageChargeId>
+public record UsageCharge : Entity<PaymentId>
 {
     public SubscriptionId SubscriptionId { get; private set; } = default!;
     public UserId UserId { get; private set; } = default!;
@@ -12,7 +12,7 @@ public record UsageCharge : Entity<UsageChargeId>
     public Money Cost { get; private set; } = default!;
     public string Module { get; private set; } = default!;
 
-    public static UsageCharge Create(UsageChargeId id, SubscriptionId subscriptionId, UserId userId, string tokenUsed, string description, Money cost, string module)
+    public static UsageCharge Create(PaymentId id, SubscriptionId subscriptionId, UserId userId, string tokenUsed, string description, Money cost, string module)
     {
         return new UsageCharge
         {

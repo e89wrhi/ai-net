@@ -16,7 +16,8 @@ public sealed class ChatDbContext : AppDbContextBase
     {
     }
 
-    public DbSet<ChatModel> Chats => Set<ChatModel>();
+    public DbSet<ChatSession> Chats => Set<ChatSession>();
+    public DbSet<ChatMessage> Messages => Set<ChatMessage>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

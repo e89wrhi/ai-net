@@ -10,8 +10,8 @@ public class UserReadDbContext : MongoDbContext
 {
     public UserReadDbContext(IOptions<MongoOptions> options) : base(options)
     {
-        User = GetCollection<UserReadModel>(nameof(User).Underscore());
+        User = GetCollection<UserAnalyticsReadModel>(nameof(User).Underscore());
     }
 
-    public IMongoCollection<UserReadModel> User { get; }
+    public IMongoCollection<UserAnalyticsReadModel> User { get; }
 }

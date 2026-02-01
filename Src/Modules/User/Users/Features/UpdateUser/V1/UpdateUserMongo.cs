@@ -22,8 +22,8 @@ public class UpdateUserMongoHandler : ICommandHandler<UpdateUserMongo>
     {
         Guard.Against.Null(request, nameof(request));
 
-        var filter = Builders<UserReadModel>.Filter.Eq(x => x.Id, request.Id);
-        var update = Builders<UserReadModel>.Update.Set(x => x.FullName, request.FullName);
+        var filter = Builders<UserAnalyticsReadModel>.Filter.Eq(x => x.Id, request.Id);
+        var update = Builders<UserAnalyticsReadModel>.Update.Set(x => x.FullName, request.FullName);
 
         await _readDbContext.User.UpdateOneAsync(filter, update, cancellationToken: cancellationToken);
 

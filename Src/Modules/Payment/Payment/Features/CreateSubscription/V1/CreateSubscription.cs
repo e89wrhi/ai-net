@@ -19,14 +19,14 @@ using Payment.Models;
 namespace Payment.Features.CreateSubscription.V1;
 
 
-public record CreateSubscriptionCommand(Guid UserId, SubscriptionPlan Plan, int MaxRequestsPerDay, int MaxTokensPerMonth) : ICommand<CreateSubscriptionCommandResponse>
+public record CreateSubscriptionCommand(Guid UserId, Models.SubscriptionPlan Plan, int MaxRequestsPerDay, int MaxTokensPerMonth) : ICommand<CreateSubscriptionCommandResponse>
 {
     public Guid Id { get; init; } = NewId.NextGuid();
 }
 
 public record CreateSubscriptionCommandResponse(Guid Id);
 
-public record CreateSubscriptionRequest(Guid UserId, SubscriptionPlan Plan, int MaxRequestsPerDay, int MaxTokensPerMonth);
+public record CreateSubscriptionRequest(Guid UserId, Models.SubscriptionPlan Plan, int MaxRequestsPerDay, int MaxTokensPerMonth);
 
 public record CreateSubscriptionRequestResponse(Guid Id);
 
@@ -85,7 +85,7 @@ internal class CreateSubscriptionHandler : IRequestHandler<CreateSubscriptionCom
             SubscriptionId.Of(NewId.NextGuid()),
             UserId.Of(request.UserId),
             request.Plan,
-            PlanLimits.Of(request.MaxRequestsPerDay, request.MaxTokensPerMonth));
+            ValueObjects.SubscriptionPlan.Of(request.MaxRequestsPerDay, request.MaxTokensPerMonth));
 
         await _dbContext.Subscriptions.AddAsync(subscription, cancellationToken);
         await _dbContext.SaveChangesAsync(cancellationToken);

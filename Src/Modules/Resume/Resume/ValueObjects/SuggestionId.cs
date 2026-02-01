@@ -1,6 +1,4 @@
-﻿
-
-using Resume.Exceptions;
+﻿using Resume.Exceptions;
 
 namespace Resume.ValueObjects;
 

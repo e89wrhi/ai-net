@@ -26,7 +26,7 @@ public class SendMessageMongoHandler : ICommandHandler<SendMessageMongo>
     {
         Guard.Against.Null(request, nameof(request));
 
-        var filter = Builders<ChatReadModel>.Filter.Eq(x => x.Id, request.ChatId);
+        var filter = Builders<ChatSessionReadModel>.Filter.Eq(x => x.Id, request.ChatId);
         
         var message = new MessageReadModel
         {
@@ -37,7 +37,7 @@ public class SendMessageMongoHandler : ICommandHandler<SendMessageMongo>
             TokenUsed = request.TokenUsed
         };
 
-        var update = Builders<ChatReadModel>.Update
+        var update = Builders<ChatSessionReadModel>.Update
             .Push(x => x.Messages, message)
             .Set(x => x.LastSentAt, request.SentAt)
             .Inc(x => x.TotalTokens, request.TokenUsed);

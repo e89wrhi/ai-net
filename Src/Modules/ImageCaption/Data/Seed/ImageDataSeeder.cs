@@ -8,8 +8,8 @@ using MongoDB.Driver.Linq;
 namespace ImageCaption.Data.Seed;
 
 public class ImageDataSeeder(
-    ImageDbContext eventDbContext,
-    ImageReadDbContext eventReadDbContext,
+    ImageCaptionDbContext eventDbContext,
+    ImageCaptionReadDbContext eventReadDbContext,
     IMapper mapper
 ) : IDataSeeder
 {
@@ -32,7 +32,7 @@ public class ImageDataSeeder(
 
             if (!await MongoQueryable.AnyAsync(eventReadDbContext.Image.AsQueryable()))
             {
-                await eventReadDbContext.Image.InsertManyAsync(mapper.Map<List<ImageReadModel>>(InitialData.Images));
+                await eventReadDbContext.Image.InsertManyAsync(mapper.Map<List<ImageCaptionReadModel>>(InitialData.Images));
             }
         }
     }

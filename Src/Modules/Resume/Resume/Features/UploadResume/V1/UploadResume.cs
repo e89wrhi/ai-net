@@ -85,8 +85,8 @@ internal class UploadResumeHandler : IRequestHandler<UploadResumeCommand, Upload
         var resume = ResumeModel.Create(
             ResumeId.Of(NewId.NextGuid()),
             request.UserId,
-            CandidateName.Of(request.CandidateName),
-            FileReference.Of(request.ResumeUrl, request.FileName));
+            ValueObjects.ResumeAnalysisConfiguration.Of(request.CandidateName),
+            ValueObjects.ResumeFile.Of(request.ResumeUrl, request.FileName));
 
         await _dbContext.Resumes.AddAsync(resume, cancellationToken);
         await _dbContext.SaveChangesAsync(cancellationToken);

@@ -32,7 +32,7 @@ public class MeetingDataSeeder(
 
             if (!await MongoQueryable.AnyAsync(eventReadDbContext.Meeting.AsQueryable()))
             {
-                await eventReadDbContext.Meeting.InsertManyAsync(mapper.Map<List<MeetingReadModel>>(InitialData.Meetings));
+                await eventReadDbContext.Meeting.InsertManyAsync(mapper.Map<List<MeetingAnalysisSessionReadModel>>(InitialData.Meetings));
             }
         }
     }

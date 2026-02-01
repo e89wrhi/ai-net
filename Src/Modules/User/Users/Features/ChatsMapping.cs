@@ -18,7 +18,7 @@ public class UserMappings : IRegister
 {
     public void Register(TypeAdapterConfig config)
     {
-        config.NewConfig<Models.UserModel, UserDto>()
+        config.NewConfig<Models.UserActivitySession, UserDto>()
             .Map(d => d.Id, s => s.Id.Value.ToString())
             .Map(d => d.HomeTeam, s => s.HomeTeam)
             .Map(d => d.AwayTeam, s => s.AwayTeam)
@@ -32,21 +32,21 @@ public class UserMappings : IRegister
             .Map(d => d.AwayVotesCount, s => s.AwayVotesCount)
             .Map(d => d.DrawVotesCount, s => s.DrawVotesCount);
 
-        config.NewConfig<CreateUserMongo, UserReadModel>()
+        config.NewConfig<CreateUserMongo, UserAnalyticsReadModel>()
             .Map(d => d.Id, s => NewId.NextGuid())
             .Map(d => d.UserId, s => s.Id);
 
-        config.NewConfig<Models.User, UserReadModel>()
+        config.NewConfig<Models.User, UserAnalyticsReadModel>()
             .Map(d => d.Id, s => NewId.NextGuid())
             .Map(d => d.UserId, s => s.Id.Value);
 
-        config.NewConfig<UserReadModel, UserDto>()
+        config.NewConfig<UserAnalyticsReadModel, UserDto>()
             .Map(d => d.Id, s => s.UserId);
 
-        config.NewConfig<UpdateUserMongo, UserReadModel>()
+        config.NewConfig<UpdateUserMongo, UserAnalyticsReadModel>()
             .Map(d => d.UserId, s => s.Id);
 
-        config.NewConfig<DeleteUserMongo, UserReadModel>()
+        config.NewConfig<DeleteUserMongo, UserAnalyticsReadModel>()
             .Map(d => d.UserId, s => s.Id);
 
         config.NewConfig<CreateUserRequestDto, CreateUser>()

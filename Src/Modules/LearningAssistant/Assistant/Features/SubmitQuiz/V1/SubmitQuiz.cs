@@ -71,9 +71,9 @@ public class SubmitQuizCommandValidator : AbstractValidator<SubmitQuizCommand>
 
 internal class SubmitQuizHandler : IRequestHandler<SubmitQuizCommand, SubmitQuizCommandResponse>
 {
-    private readonly AssistantDbContext _dbContext;
+    private readonly LearningDbContext _dbContext;
 
-    public SubmitQuizHandler(AssistantDbContext dbContext)
+    public SubmitQuizHandler(LearningDbContext dbContext)
     {
         _dbContext = dbContext;
     }
@@ -83,7 +83,7 @@ internal class SubmitQuizHandler : IRequestHandler<SubmitQuizCommand, SubmitQuiz
         Guard.Against.Null(request, nameof(request));
 
         var lesson = await _dbContext.Lessons
-            .FirstOrDefaultAsync(x => x.Id == LessonId.Of(request.LessonId), cancellationToken);
+            .FirstOrDefaultAsync(x => x.Id == LearningId.Of(request.LessonId), cancellationToken);
 
         if (lesson == null)
         {
@@ -100,7 +100,7 @@ internal class SubmitQuizHandler : IRequestHandler<SubmitQuizCommand, SubmitQuiz
             throw new ProfileNotFoundException(lesson.ProfileId);
         }
 
-        profile.SubmitQuiz(LessonId.Of(request.LessonId), QuizId.Of(request.QuizId), request.Score);
+        profile.SubmitQuiz(LearningId.Of(request.LessonId), QuizId.Of(request.QuizId), request.Score);
 
         await _dbContext.SaveChangesAsync(cancellationToken);
         

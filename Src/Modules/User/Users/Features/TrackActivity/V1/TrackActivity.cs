@@ -101,7 +101,7 @@ internal class TrackActivityHandler : IRequestHandler<TrackActivityCommand, Trac
         }
 
         var activity = User.UserActivity.Create(
-            UserActivityId.Of(NewId.NextGuid()),
+            UserAnalyticsId.Of(NewId.NextGuid()),
             user.Id,
             request.Module,
             request.Action,

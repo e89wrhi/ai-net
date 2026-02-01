@@ -3,14 +3,14 @@ using Microsoft.EntityFrameworkCore.Design;
 
 namespace ImageCaption.Data;
 
-public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<ImageDbContext>
+public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<ImageCaptionDbContext>
 {
-    public ImageDbContext CreateDbContext(string[] args)
+    public ImageCaptionDbContext CreateDbContext(string[] args)
     {
-        var builder = new DbContextOptionsBuilder<ImageDbContext>();
+        var builder = new DbContextOptionsBuilder<ImageCaptionDbContext>();
 
-        builder.UseNpgsql("Server=localhost;Port=5432;Database=image;User Id=postgres;Password=postgres;Include Error Detail=true")
+        builder.UseNpgsql("Server=localhost;Port=5432;Database=imagecaption;User Id=postgres;Password=postgres;Include Error Detail=true")
             .UseSnakeCaseNamingConvention();
-        return new ImageDbContext(builder.Options);
+        return new ImageCaptionDbContext(builder.Options);
     }
 }

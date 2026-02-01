@@ -16,9 +16,9 @@ public record GenerateCaptionMongo(Guid ImageId, string Text, string Status, Dat
 
 public class GenerateCaptionMongoHandler : ICommandHandler<GenerateCaptionMongo>
 {
-    private readonly ImageReadDbContext _readDbContext;
+    private readonly ImageCaptionReadDbContext _readDbContext;
 
-    public GenerateCaptionMongoHandler(ImageReadDbContext readDbContext)
+    public GenerateCaptionMongoHandler(ImageCaptionReadDbContext readDbContext)
     {
         _readDbContext = readDbContext;
     }
@@ -27,7 +27,7 @@ public class GenerateCaptionMongoHandler : ICommandHandler<GenerateCaptionMongo>
     {
         Guard.Against.Null(request, nameof(request));
 
-        var filter = Builders<ImageReadModel>.Filter.Eq(x => x.Id, request.ImageId);
+        var filter = Builders<ImageCaptionReadModel>.Filter.Eq(x => x.Id, request.ImageId);
         
         var caption = new CaptionReadModel
         {
@@ -36,7 +36,7 @@ public class GenerateCaptionMongoHandler : ICommandHandler<GenerateCaptionMongo>
             CreatedAt = request.ProcessedAt
         };
 
-        var update = Builders<ImageReadModel>.Update
+        var update = Builders<ImageCaptionReadModel>.Update
             .Push(x => x.Captions, caption)
             .Set(x => x.Status, request.Status);
 

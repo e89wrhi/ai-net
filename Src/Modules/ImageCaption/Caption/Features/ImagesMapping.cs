@@ -19,21 +19,21 @@ public class ImageMappings : IRegister
                 x.DepartureDate,
                 x.ArriveDate, x.ArriveAirportId, x.DurationMinutes, x.ImageDate, x.Status, x.Price));
 
-        config.NewConfig<CreateImageMongo, ImageReadModel>()
+        config.NewConfig<CreateImageMongo, ImageCaptionReadModel>()
             .Map(d => d.Id, s => NewId.NextGuid())
             .Map(d => d.ImageId, s => s.Id);
 
-        config.NewConfig<Models.Image, ImageReadModel>()
+        config.NewConfig<Models.Image, ImageCaptionReadModel>()
             .Map(d => d.Id, s => NewId.NextGuid())
             .Map(d => d.ImageId, s => s.Id.Value);
 
-        config.NewConfig<ImageReadModel, ImageDto>()
+        config.NewConfig<ImageCaptionReadModel, ImageDto>()
             .Map(d => d.Id, s => s.ImageId);
 
-        config.NewConfig<UpdateImageMongo, ImageReadModel>()
+        config.NewConfig<UpdateImageMongo, ImageCaptionReadModel>()
             .Map(d => d.ImageId, s => s.Id);
 
-        config.NewConfig<DeleteImageMongo, ImageReadModel>()
+        config.NewConfig<DeleteImageMongo, ImageCaptionReadModel>()
             .Map(d => d.ImageId, s => s.Id);
 
         config.NewConfig<CreateImageRequestDto, CreateImage>()

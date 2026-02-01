@@ -26,7 +26,7 @@ public class DeleteChatMongoHandler : ICommandHandler<DeleteChatMongo>
     {
         Guard.Against.Null(request, nameof(request));
 
-        var filter = Builders<ChatReadModel>.Filter.Eq(x => x.Id, request.ChatId);
+        var filter = Builders<ChatSessionReadModel>.Filter.Eq(x => x.Id, request.ChatId);
 
         await _readDbContext.Chats.DeleteOneAsync(filter, cancellationToken: cancellationToken);
 

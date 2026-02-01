@@ -16,7 +16,8 @@ public sealed class MeetingDbContext : AppDbContextBase
     {
     }
 
-    public DbSet<MeetingModel> Meetings => Set<MeetingModel>();
+    public DbSet<MeetingAnalysisSession> Sessions => Set<MeetingAnalysisSession>();
+    public DbSet<MeetingTranscript> Transcripts => Set<MeetingTranscript>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

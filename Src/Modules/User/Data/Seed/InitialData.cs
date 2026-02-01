@@ -8,10 +8,10 @@ using System.Collections.Generic;
 
 public static class InitialData
 {
-    public static List<UserModel> Users { get; } = new()
+    public static List<UserActivitySession> Users { get; } = new()
     {
-        UserModel.Create(UserId.Of(Guid.Parse("0f8fad5b-d9cb-469f-a165-70867728950e")), "john_doe", "john@example.com"),
-        UserModel.Create(UserId.Of(Guid.Parse("1d8fad5b-d9cb-469f-a165-70867728950f")), "jane_smith", "jane@example.com")
+        UserActivitySession.Create(UserId.Of(Guid.Parse("0f8fad5b-d9cb-469f-a165-70867728950e")), "john_doe", "john@example.com"),
+        UserActivitySession.Create(UserId.Of(Guid.Parse("1d8fad5b-d9cb-469f-a165-70867728950f")), "jane_smith", "jane@example.com")
     };
 
     static InitialData()

@@ -8,8 +8,8 @@ using MongoDB.Driver.Linq;
 namespace LearningAssistant.Data.Seed;
 
 public class ProfileDataSeeder(
-    AssistantDbContext eventDbContext,
-    ProfileReadDbContext eventReadDbContext,
+    LearningDbContext eventDbContext,
+    LearningReadDbContext eventReadDbContext,
     IMapper mapper
 ) : IDataSeeder
 {
@@ -32,7 +32,7 @@ public class ProfileDataSeeder(
 
             if (!await MongoQueryable.AnyAsync(eventReadDbContext.Profiles.AsQueryable()))
             {
-                await eventReadDbContext.Profiles.InsertManyAsync(mapper.Map<List<ProfileReadModel>>(InitialData.Profiles));
+                await eventReadDbContext.Profiles.InsertManyAsync(mapper.Map<List<LearningSessionReadModel>>(InitialData.Profiles));
             }
         }
     }

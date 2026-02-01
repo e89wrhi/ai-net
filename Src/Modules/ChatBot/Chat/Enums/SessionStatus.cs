@@ -3,5 +3,7 @@
 public enum SessionStatus
 {
     Active = 0,
-    Closed = 1,
+    Completed = 1,
+    Failed = 2,
+    Deleted = 3,
 }

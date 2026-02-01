@@ -93,7 +93,7 @@ internal class GenerateInvoiceHandler : IRequestHandler<GenerateInvoiceCommand, 
             InvoiceId.Of(NewId.NextGuid()),
             subscription.Id,
             subscription.UserId,
-            BillingPeriod.Of(DateTime.UtcNow.AddMonths(1)),
+            ValueObjects.PaymentMethod.Of(DateTime.UtcNow.AddMonths(1)),
             Money.Of(request.Amount),
             request.LineItems,
             $"INV-{subscription.Id.Value.ToString().Substring(0, 8)}-{DateTime.UtcNow:yyyyMMdd}");

@@ -72,9 +72,9 @@ public class GenerateLessonCommandValidator : AbstractValidator<GenerateLessonCo
 
 internal class GenerateLessonHandler : IRequestHandler<GenerateLessonCommand, GenerateLessonCommandResponse>
 {
-    private readonly AssistantDbContext _dbContext;
+    private readonly LearningDbContext _dbContext;
 
-    public GenerateLessonHandler(AssistantDbContext dbContext)
+    public GenerateLessonHandler(LearningDbContext dbContext)
     {
         _dbContext = dbContext;
     }
@@ -83,9 +83,9 @@ internal class GenerateLessonHandler : IRequestHandler<GenerateLessonCommand, Ge
     {
         Guard.Against.Null(request, nameof(request));
 
-        var lesson = LessonModel.Create(
-            LessonId.Of(NewId.NextGuid()),
-            ProfileId.Of(request.ProfileId),
+        var lesson = LearningActivityItem.Create(
+            LearningId.Of(NewId.NextGuid()),
+            ActivityId.Of(request.ProfileId),
             request.Title,
             request.Content,
             request.Level);

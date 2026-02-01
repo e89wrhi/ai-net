@@ -5,7 +5,7 @@ public record AiModel : Aggregate<ModelId>
 {
     public string Name { get; private set; } = default!;
     public string Description { get; private set; } = default!;
-    public string Version { get; private set; } = default!;
+    public string AiVersion { get; private set; } = default!;
     public bool IsActive { get; private set; } = true;
     public Provider Provider { get; private set; } = default!;
     public string Capabilities { get; private set; } = default!;
@@ -24,7 +24,7 @@ public record AiModel : Aggregate<ModelId>
             Id = id,
             Name = name,
             Description = description,
-            Version = version,
+            AiVersion = version,
             Provider = provider,
             CreatedAt = DateTime.UtcNow,
             IsActive = true

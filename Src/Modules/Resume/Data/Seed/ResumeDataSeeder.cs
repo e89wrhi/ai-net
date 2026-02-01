@@ -32,7 +32,7 @@ public class ResumeDataSeeder(
 
             if (!await MongoQueryable.AnyAsync(eventReadDbContext.Resume.AsQueryable()))
             {
-                await eventReadDbContext.Resume.InsertManyAsync(mapper.Map<List<ResumeReadModel>>(InitialData.Resumes));
+                await eventReadDbContext.Resume.InsertManyAsync(mapper.Map<List<ResumeAnalysisReadModel>>(InitialData.Resumes));
             }
         }
     }

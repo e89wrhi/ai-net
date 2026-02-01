@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+package Summary;
+import "google/protobuf/timestamp.proto";
+
+service SummaryGrpcService {
+  rpc StartSummary (StartSummaryRequest) returns (StartSummaryResponse);
+  rpc DeleteSummary (DeleteSummaryRequest) returns (DeleteSummaryResponse);
+  rpc GetSummaryHistory (GetSummaryHistoryRequest) returns (GetSummaryHistoryResponse);
+}
+
+message StartSummaryRequest {
+  string user_id = 1;
+  string title = 2;
+  string ai_model_id = 3;
+}
+
+message StartSummaryResponse {
+  string session_id = 1;
+}
+
+message DeleteSummaryRequest {
+  string session_id = 1;
+}
+
+message DeleteSummaryResponse {
+  string session_id = 1;
+}
+
+message GetSummaryHistoryRequest {
+  string user_id = 1;
+}
+
+message Summary {
+  string id = 1;
+  string content = 2;
+  string sender = 3;
+  google.protobuf.Timestamp sent_at = 4;
+  int32 token_used = 5;
+}
+
+message SummarySummary {
+  string id = 1;
+  string title = 2;
+  string summary = 3;
+  string ai_model_id = 4;
+  string session_status = 5;
+  google.protobuf.Timestamp last_sent_at = 6;
+  int32 total_tokens = 7;
+  repeated Summary messages = 8;
+}
+
+message GetSummaryHistoryResponse {
+  repeated SummarySummary summarys = 1;
+}

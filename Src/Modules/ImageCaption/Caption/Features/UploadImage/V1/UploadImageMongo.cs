@@ -16,9 +16,9 @@ public record UploadImageMongo(Guid Id, string UserId, string FilePath, string S
 
 public class UploadImageMongoHandler : ICommandHandler<UploadImageMongo>
 {
-    private readonly ImageReadDbContext _readDbContext;
+    private readonly ImageCaptionReadDbContext _readDbContext;
 
-    public UploadImageMongoHandler(ImageReadDbContext readDbContext)
+    public UploadImageMongoHandler(ImageCaptionReadDbContext readDbContext)
     {
         _readDbContext = readDbContext;
     }
@@ -27,7 +27,7 @@ public class UploadImageMongoHandler : ICommandHandler<UploadImageMongo>
     {
         Guard.Against.Null(request, nameof(request));
 
-        var image = new ImageReadModel
+        var image = new ImageCaptionReadModel
         {
             Id = request.Id,
             UserId = request.UserId,

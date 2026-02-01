@@ -22,7 +22,7 @@ public class CreateUserMongoHandler : ICommandHandler<CreateUserMongo>
     {
         Guard.Against.Null(request, nameof(request));
 
-        var user = new UserReadModel
+        var user = new UserAnalyticsReadModel
         {
             Id = request.Id,
             Username = request.Username,

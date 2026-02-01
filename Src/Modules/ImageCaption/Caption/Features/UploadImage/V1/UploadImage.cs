@@ -69,9 +69,9 @@ public class UploadImageCommandValidator : AbstractValidator<UploadImageCommand>
 
 internal class UploadImageHandler : IRequestHandler<UploadImageCommand, UploadImageCommandResponse>
 {
-    private readonly ImageDbContext _dbContext;
+    private readonly ImageCaptionDbContext _dbContext;
 
-    public UploadImageHandler(ImageDbContext dbContext)
+    public UploadImageHandler(ImageCaptionDbContext dbContext)
     {
         _dbContext = dbContext;
     }
@@ -81,9 +81,9 @@ internal class UploadImageHandler : IRequestHandler<UploadImageCommand, UploadIm
         Guard.Against.Null(request, nameof(request));
 
         var image = ImageModel.Create(
-            ImageId.Of(NewId.NextGuid()),
+            ImageCaptionResultId.Of(NewId.NextGuid()),
             request.UserId,
-            FileReference.Of(request.ImageUrl, request.FileName),
+            ValueObjects.CaptionConfidence.Of(request.ImageUrl, request.FileName),
             request.Width,
             request.Height,
             request.SizeInBytes,

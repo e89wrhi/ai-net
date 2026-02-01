@@ -88,12 +88,12 @@ internal class SendMessageHandler : IRequestHandler<SendMessageCommand, SendMess
             throw new ChatNotFoundException(request.SessionId);
         }
 
-        var message = MessageModel.Create(
+        var message = ChatMessage.Create(
             MessageId.Of(NewId.NextGuid()),
             chat.Id,
-            MessageSender.Of(request.Sender),
-            MessageContent.Of(request.Content),
-            TokenUsed.Of(request.TokenUsed));
+            ValueObjects.MessageContent.Of(request.Sender),
+            Models.MessageContent.Of(request.Content),
+            ValueObjects.MaxTokens.Of(request.TokenUsed));
 
         chat.AddMessage(message);
 

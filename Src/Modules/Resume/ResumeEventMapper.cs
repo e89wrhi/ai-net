@@ -13,9 +13,9 @@ public sealed class ResumeEventMapper : IEventMapper
     {
         return @event switch
         {
-            ResumeUploadedDomainEvent e => new AI.Contracts.EventBus.Messages.ResumeUploaded(e.ResumeId.Value),
+            ResumeAnalysisSessionFailedDomainEvent e => new AI.Contracts.EventBus.Messages.ResumeUploaded(e.ResumeId.Value),
             ResumeAnalyzedDomainEvent e => new AI.Contracts.EventBus.Messages.ResumeAnalyzed(e.ResumeId.Value),
-            ResumeParsedDomainEvent e => new AI.Contracts.EventBus.Messages.ResumeParsed(e.ResumeId.Value),
+            ResumeAnalysisSessionCompletedDomainEvent e => new AI.Contracts.EventBus.Messages.ResumeParsed(e.ResumeId.Value),
             _ => null
         };
     }
@@ -24,7 +24,7 @@ public sealed class ResumeEventMapper : IEventMapper
     {
         return @event switch
         {
-            ResumeUploadedDomainEvent e => new UploadResumeMongo(e.ResumeId.Value, e.UserId, e.CandidateName, e.FilePath, "Uploaded", DateTime.UtcNow),
+            ResumeAnalysisSessionFailedDomainEvent e => new UploadResumeMongo(e.ResumeId.Value, e.UserId, e.CandidateName, e.FilePath, "Uploaded", DateTime.UtcNow),
             ResumeAnalyzedDomainEvent e => new AnalyzeResumeMongo(e.ResumeId.Value, e.Summary, e.ParsedText, e.Skills, e.Suggestions, "Analyzed", DateTime.UtcNow),
             _ => null
         };

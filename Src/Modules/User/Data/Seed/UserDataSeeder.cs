@@ -32,7 +32,7 @@ public class UserDataSeeder(
 
             if (!await MongoQueryable.AnyAsync(eventReadDbContext.User.AsQueryable()))
             {
-                await eventReadDbContext.User.InsertManyAsync(mapper.Map<List<UserReadModel>>(InitialData.Users));
+                await eventReadDbContext.User.InsertManyAsync(mapper.Map<List<UserAnalyticsReadModel>>(InitialData.Users));
             }
         }
     }

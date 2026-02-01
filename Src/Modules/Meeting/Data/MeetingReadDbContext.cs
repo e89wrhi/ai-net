@@ -10,8 +10,8 @@ public class MeetingReadDbContext : MongoDbContext
 {
     public MeetingReadDbContext(IOptions<MongoOptions> options) : base(options)
     {
-        Meeting = GetCollection<MeetingReadModel>(nameof(Meeting).Underscore());
+        Meeting = GetCollection<MeetingAnalysisSessionReadModel>(nameof(Meeting).Underscore());
     }
 
-    public IMongoCollection<MeetingReadModel> Meeting { get; }
+    public IMongoCollection<MeetingAnalysisSessionReadModel> Meeting { get; }
 }

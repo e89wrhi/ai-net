@@ -14,9 +14,9 @@ public sealed class MeetingEventMapper : IEventMapper
         return @event switch
         {
             MeetingUploadedDomainEvent e => new MeetingUploaded(e.MeetingId.Value),
-            MeetingTranscribedDomainEvent e => new MeetingTranscribed(e.MeetingId.Value),
-            MeetingSummarizedDomainEvent e => new MeetingSummarized(e.MeetingId.Value),
-            ActionItemAddedDomainEvent e => new MeetingActionAdded(e.MeetingId.Value),
+            MeetingAnalysisSessionFailedDomainEvent e => new MeetingTranscribed(e.MeetingId.Value),
+            MeetingAnalysisSessionCompletedDomainEvent e => new MeetingSummarized(e.MeetingId.Value),
+            MeetingAnalysisSessionStartedDomainEvent e => new MeetingActionAdded(e.MeetingId.Value),
             _ => null
         };
     }
@@ -26,7 +26,7 @@ public sealed class MeetingEventMapper : IEventMapper
         return @event switch
         {
             MeetingUploadedDomainEvent e => new UploadMeetingAudioMongo(e.MeetingId.Value, e.OrganizerId, e.Title, "Uploaded", DateTime.UtcNow),
-            MeetingSummarizedDomainEvent e => new SummarizeMeetingAudioMongo(e.MeetingId.Value, e.Transcript, e.Summary, "Summarized"),
+            MeetingAnalysisSessionCompletedDomainEvent e => new SummarizeMeetingAudioMongo(e.MeetingId.Value, e.Transcript, e.Summary, "Summarized"),
             _ => null
         };
     }

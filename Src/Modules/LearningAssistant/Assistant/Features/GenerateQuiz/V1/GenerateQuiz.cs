@@ -71,9 +71,9 @@ public class GenerateQuizCommandValidator : AbstractValidator<GenerateQuizComman
 
 internal class GenerateQuizHandler : IRequestHandler<GenerateQuizCommand, GenerateQuizCommandResponse>
 {
-    private readonly AssistantDbContext _dbContext;
+    private readonly LearningDbContext _dbContext;
 
-    public GenerateQuizHandler(AssistantDbContext dbContext)
+    public GenerateQuizHandler(LearningDbContext dbContext)
     {
         _dbContext = dbContext;
     }
@@ -82,7 +82,7 @@ internal class GenerateQuizHandler : IRequestHandler<GenerateQuizCommand, Genera
     {
         Guard.Against.Null(request, nameof(request));
 
-        var lesson = await _dbContext.Lessons.FindAsync(new object[] { LessonId.Of(request.LessonId) }, cancellationToken);
+        var lesson = await _dbContext.Lessons.FindAsync(new object[] { LearningId.Of(request.LessonId) }, cancellationToken);
 
         if (lesson == null)
         {

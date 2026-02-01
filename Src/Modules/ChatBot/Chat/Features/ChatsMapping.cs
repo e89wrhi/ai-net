@@ -21,21 +21,21 @@ public class ChatMappings : IRegister
                 x.DepartureDate,
                 x.ArriveDate, x.ArriveAirportId, x.DurationMinutes, x.ChatDate, x.Status, x.Price));
 
-        config.NewConfig<CreateChatMongo, ChatReadModel>()
+        config.NewConfig<CreateChatMongo, ChatSessionReadModel>()
             .Map(d => d.Id, s => NewId.NextGuid())
             .Map(d => d.ChatId, s => s.Id);
 
-        config.NewConfig<Models.Chat, ChatReadModel>()
+        config.NewConfig<Models.Chat, ChatSessionReadModel>()
             .Map(d => d.Id, s => NewId.NextGuid())
             .Map(d => d.ChatId, s => s.Id.Value);
 
-        config.NewConfig<ChatReadModel, ChatDto>()
+        config.NewConfig<ChatSessionReadModel, ChatDto>()
             .Map(d => d.Id, s => s.ChatId);
 
-        config.NewConfig<UpdateChatMongo, ChatReadModel>()
+        config.NewConfig<UpdateChatMongo, ChatSessionReadModel>()
             .Map(d => d.ChatId, s => s.Id);
 
-        config.NewConfig<DeleteChatMongo, ChatReadModel>()
+        config.NewConfig<DeleteChatMongo, ChatSessionReadModel>()
             .Map(d => d.ChatId, s => s.Id);
 
         config.NewConfig<CreateChatRequestDto, CreateChat>()

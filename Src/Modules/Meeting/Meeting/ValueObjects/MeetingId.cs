@@ -1,6 +1,4 @@
-﻿
-
-using Meeting.Exceptions;
+﻿using Meeting.Exceptions;
 
 namespace Meeting.ValueObjects;
 

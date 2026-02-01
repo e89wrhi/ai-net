@@ -23,9 +23,9 @@ public static class InfrastructureExtensions
         builder.AddMinimalEndpoints(assemblies: typeof(AssistantRoot).Assembly);
         builder.Services.AddValidatorsFromAssembly(typeof(AssistantRoot).Assembly);
         builder.Services.AddCustomMapster(typeof(AssistantRoot).Assembly);
-        builder.AddCustomDbContext<AssistantDbContext>(nameof(Assistant));
+        builder.AddCustomDbContext<LearningDbContext>(nameof(Assistant));
         builder.Services.AddScoped<IDataSeeder, ProfileDataSeeder>();
-        builder.AddMongoDbContext<ProfileReadDbContext>();
+        builder.AddMongoDbContext<LearningReadDbContext>();
 
         builder.Services.AddCustomMediatR();
 
@@ -35,7 +35,7 @@ public static class InfrastructureExtensions
 
     public static WebApplication UseAssistantModules(this WebApplication app)
     { 
-        app.UseMigration<AssistantDbContext>();
+        app.UseMigration<LearningDbContext>();
         app.MapGrpcService<AssistantGrpcService>();
 
         return app;

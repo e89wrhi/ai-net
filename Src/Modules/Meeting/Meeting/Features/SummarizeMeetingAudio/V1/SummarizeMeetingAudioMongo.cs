@@ -27,9 +27,9 @@ public class SummarizeMeetingAudioMongoHandler : ICommandHandler<SummarizeMeetin
     {
         Guard.Against.Null(request, nameof(request));
 
-        var filter = Builders<MeetingReadModel>.Filter.Eq(x => x.Id, request.MeetingId);
+        var filter = Builders<MeetingAnalysisSessionReadModel>.Filter.Eq(x => x.Id, request.MeetingId);
         
-        var update = Builders<MeetingReadModel>.Update
+        var update = Builders<MeetingAnalysisSessionReadModel>.Update
             .Set(x => x.Transcript, request.Transcript)
             .Set(x => x.Summary, request.Summary)
             .Set(x => x.Status, request.Status);

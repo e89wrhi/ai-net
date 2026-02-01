@@ -27,9 +27,9 @@ public class AnalyzeResumeMongoHandler : ICommandHandler<AnalyzeResumeMongo>
     {
         Guard.Against.Null(request, nameof(request));
 
-        var filter = Builders<ResumeReadModel>.Filter.Eq(x => x.Id, request.ResumeId);
+        var filter = Builders<ResumeAnalysisReadModel>.Filter.Eq(x => x.Id, request.ResumeId);
         
-        var update = Builders<ResumeReadModel>.Update
+        var update = Builders<ResumeAnalysisReadModel>.Update
             .Set(x => x.Summary, request.Summary)
             .Set(x => x.ParsedText, request.ParsedText)
             .Set(x => x.Skills, request.Skills)

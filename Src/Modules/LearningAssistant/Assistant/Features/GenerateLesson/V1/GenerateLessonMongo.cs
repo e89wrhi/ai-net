@@ -16,9 +16,9 @@ public record GenerateLessonMongo(Guid ProfileId, Guid LessonId, string Title, s
 
 public class GenerateLessonMongoHandler : ICommandHandler<GenerateLessonMongo>
 {
-    private readonly ProfileReadDbContext _readDbContext;
+    private readonly LearningReadDbContext _readDbContext;
 
-    public GenerateLessonMongoHandler(ProfileReadDbContext readDbContext)
+    public GenerateLessonMongoHandler(LearningReadDbContext readDbContext)
     {
         _readDbContext = readDbContext;
     }
@@ -27,7 +27,7 @@ public class GenerateLessonMongoHandler : ICommandHandler<GenerateLessonMongo>
     {
         Guard.Against.Null(request, nameof(request));
 
-        var filter = Builders<ProfileReadModel>.Filter.Eq(x => x.Id, request.ProfileId);
+        var filter = Builders<LearningSessionReadModel>.Filter.Eq(x => x.Id, request.ProfileId);
         
         var lesson = new LessonReadModel
         {
@@ -37,7 +37,7 @@ public class GenerateLessonMongoHandler : ICommandHandler<GenerateLessonMongo>
             IsCompleted = false
         };
 
-        var update = Builders<ProfileReadModel>.Update.Push(x => x.Lessons, lesson);
+        var update = Builders<LearningSessionReadModel>.Update.Push(x => x.Lessons, lesson);
 
         await _readDbContext.Profiles.UpdateOneAsync(filter, update, cancellationToken: cancellationToken);
 

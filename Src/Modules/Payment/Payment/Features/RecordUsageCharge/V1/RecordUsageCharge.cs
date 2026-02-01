@@ -90,7 +90,7 @@ internal class RecordUsageChargeHandler : IRequestHandler<RecordUsageChargeComma
         }
 
         var charge = UsageCharge.Create(
-            UsageChargeId.Of(NewId.NextGuid()),
+            PaymentId.Of(NewId.NextGuid()),
             subscription.Id,
             subscription.UserId,
             request.TokenUsed,

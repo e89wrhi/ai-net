@@ -14,8 +14,8 @@ public sealed class AssistantEventMapper : IEventMapper
         return @event switch
         {
             LearningProfileCreatedDomainEvent e => new LearningProfileCreated(e.ProfileId.Value),
-            LessonGeneratedDomainEvent e => new LessonGenerated(e.LessonId.Value),
-            QuizCompletedDomainEvent e => new QuizCompleted(e.QuizId.Value),
+            LearningActivityRecordedDomainEvent e => new LessonGenerated(e.LessonId.Value),
+            LearningSessionFailedDomainEvent e => new QuizCompleted(e.QuizId.Value),
             _ => null
         };
     }
@@ -24,9 +24,9 @@ public sealed class AssistantEventMapper : IEventMapper
     {
         return @event switch
         {
-            LessonGeneratedDomainEvent e => new GenerateLessonMongo(e.ProfileId.Value, e.LessonId.Value, e.Title, e.Content),
+            LearningActivityRecordedDomainEvent e => new GenerateLessonMongo(e.ProfileId.Value, e.LessonId.Value, e.Title, e.Content),
             QuizGeneratedDomainEvent e => new GenerateQuizMongo(e.LessonId.Value, e.QuizId.Value, e.Questions, "Wait for answer"),
-            QuizCompletedDomainEvent e => new SubmitQuizMongo(e.QuizId.Value, "User Answer", true), // Simplified for mapper
+            LearningSessionFailedDomainEvent e => new SubmitQuizMongo(e.QuizId.Value, "User Answer", true), // Simplified for mapper
             _ => null
         };
     }

@@ -12,12 +12,12 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.Extensions.Logging;
 using System;
 
-public class ChatConfiguration : IEntityTypeConfiguration<ChatModel>
+public class ChatConfiguration : IEntityTypeConfiguration<ChatSession>
 {
-    public void Configure(EntityTypeBuilder<ChatModel> builder)
+    public void Configure(EntityTypeBuilder<ChatSession> builder)
     {
 
-        builder.ToTable(nameof(ChatModel));
+        builder.ToTable(nameof(ChatSession));
 
         builder.HasKey(r => r.Id);
         builder.Property(r => r.Id).ValueGeneratedNever()

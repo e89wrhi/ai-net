@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+package CodeDebug;
+import "google/protobuf/timestamp.proto";
+
+service CodeDebugGrpcService {
+  rpc StartCodeDebug (StartCodeDebugRequest) returns (StartCodeDebugResponse);
+  rpc DeleteCodeDebug (DeleteCodeDebugRequest) returns (DeleteCodeDebugResponse);
+  rpc GetCodeDebugHistory (GetCodeDebugHistoryRequest) returns (GetCodeDebugHistoryResponse);
+}
+
+message StartCodeDebugRequest {
+  string user_id = 1;
+  string title = 2;
+  string ai_model_id = 3;
+}
+
+message StartCodeDebugResponse {
+  string session_id = 1;
+}
+
+message DeleteCodeDebugRequest {
+  string session_id = 1;
+}
+
+message DeleteCodeDebugResponse {
+  string session_id = 1;
+}
+
+message GetCodeDebugHistoryRequest {
+  string user_id = 1;
+}
+
+message CodeDebug {
+  string id = 1;
+  string content = 2;
+  string sender = 3;
+  google.protobuf.Timestamp sent_at = 4;
+  int32 token_used = 5;
+}
+
+message CodeDebugSummary {
+  string id = 1;
+  string title = 2;
+  string summary = 3;
+  string ai_model_id = 4;
+  string session_status = 5;
+  google.protobuf.Timestamp last_sent_at = 6;
+  int32 total_tokens = 7;
+  repeated CodeDebug messages = 8;
+}
+
+message GetCodeDebugHistoryResponse {
+  repeated CodeDebugSummary codedebugs = 1;
+}

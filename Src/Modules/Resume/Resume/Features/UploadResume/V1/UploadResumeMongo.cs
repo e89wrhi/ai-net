@@ -27,7 +27,7 @@ public class UploadResumeMongoHandler : ICommandHandler<UploadResumeMongo>
     {
         Guard.Against.Null(request, nameof(request));
 
-        var resume = new ResumeReadModel
+        var resume = new ResumeAnalysisReadModel
         {
             Id = request.Id,
             UserId = request.UserId,

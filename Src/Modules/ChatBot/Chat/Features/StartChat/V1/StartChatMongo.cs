@@ -27,7 +27,7 @@ public class StartChatMongoHandler : ICommandHandler<StartChatMongo>
     {
         Guard.Against.Null(request, nameof(request));
 
-        var chat = new ChatReadModel
+        var chat = new ChatSessionReadModel
         {
             Id = request.Id,
             UserId = request.UserId,

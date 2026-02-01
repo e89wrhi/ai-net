@@ -21,7 +21,7 @@ public class ImageConfiguration : IEntityTypeConfiguration<ImageModel>
 
         builder.HasKey(r => r.Id);
         builder.Property(r => r.Id).ValueGeneratedNever()
-            .HasConversion<Guid>(itemId => itemId.Value, dbId => ImageId.Of(dbId));
+            .HasConversion<Guid>(itemId => itemId.Value, dbId => ImageCaptionResultId.Of(dbId));
 
         builder.Property(r => r.Version).IsConcurrencyToken();
 

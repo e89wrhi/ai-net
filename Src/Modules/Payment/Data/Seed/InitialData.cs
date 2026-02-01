@@ -11,7 +11,7 @@ public static class InitialData
 {
     public static List<SubscriptionModel> Subscriptions { get; } = new()
     {
-        SubscriptionModel.Create(SubscriptionId.Of(Guid.Parse("da8fad5b-d9cb-469f-a165-708677289511")), UserId.Of(Guid.Parse("0f8fad5b-d9cb-469f-a165-70867728950e")), SubscriptionPlan.Pro, PlanLimits.Of(1000, 1000))
+        SubscriptionModel.Create(SubscriptionId.Of(Guid.Parse("da8fad5b-d9cb-469f-a165-708677289511")), UserId.Of(Guid.Parse("0f8fad5b-d9cb-469f-a165-70867728950e")), Models.SubscriptionPlan.Pro, ValueObjects.SubscriptionPlan.Of(1000, 1000))
     };
 
     static InitialData()

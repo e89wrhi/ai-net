@@ -71,9 +71,9 @@ public class GenerateCaptionCommandValidator : AbstractValidator<GenerateCaption
 
 internal class GenerateCaptionHandler : IRequestHandler<GenerateCaptionCommand, GenerateCaptionCommandResponse>
 {
-    private readonly ImageDbContext _dbContext;
+    private readonly ImageCaptionDbContext _dbContext;
 
-    public GenerateCaptionHandler(ImageDbContext dbContext)
+    public GenerateCaptionHandler(ImageCaptionDbContext dbContext)
     {
         _dbContext = dbContext;
     }
@@ -82,7 +82,7 @@ internal class GenerateCaptionHandler : IRequestHandler<GenerateCaptionCommand, 
     {
         Guard.Against.Null(request, nameof(request));
 
-        var image = await _dbContext.Images.FindAsync(new object[] { ImageId.Of(request.ImageId) }, cancellationToken);
+        var image = await _dbContext.Images.FindAsync(new object[] { ImageCaptionResultId.Of(request.ImageId) }, cancellationToken);
 
         if (image == null)
         {
@@ -90,7 +90,7 @@ internal class GenerateCaptionHandler : IRequestHandler<GenerateCaptionCommand, 
         }
 
         var caption = CaptionModel.Create(
-            CaptionId.Of(NewId.NextGuid()),
+            ImageCaptionId.Of(NewId.NextGuid()),
             image.Id,
             request.CaptionText,
             request.Confidence,

@@ -12,12 +12,12 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.Extensions.Logging;
 using System;
 
-public class UserConfiguration : IEntityTypeConfiguration<UserModel>
+public class UserConfiguration : IEntityTypeConfiguration<UserActivitySession>
 {
-    public void Configure(EntityTypeBuilder<UserModel> builder)
+    public void Configure(EntityTypeBuilder<UserActivitySession> builder)
     {
 
-        builder.ToTable(nameof(UserModel));
+        builder.ToTable(nameof(UserActivitySession));
 
         builder.HasKey(r => r.Id);
         builder.Property(r => r.Id).ValueGeneratedNever()

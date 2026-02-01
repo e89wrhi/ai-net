@@ -27,7 +27,7 @@ public class TrackActivityMongoHandler : ICommandHandler<TrackActivityMongo>
     {
         Guard.Against.Null(request, nameof(request));
 
-        var filter = Builders<UserReadModel>.Filter.Eq(x => x.Id, request.UserId);
+        var filter = Builders<UserAnalyticsReadModel>.Filter.Eq(x => x.Id, request.UserId);
         var activity = new UserActivityReadModel
         {
             Id = request.Id,
@@ -37,7 +37,7 @@ public class TrackActivityMongoHandler : ICommandHandler<TrackActivityMongo>
             TimeStamp = request.TimeStamp
         };
 
-        var update = Builders<UserReadModel>.Update.Push(x => x.Activities, activity);
+        var update = Builders<UserAnalyticsReadModel>.Update.Push(x => x.Activities, activity);
 
         await _readDbContext.User.UpdateOneAsync(filter, update, cancellationToken: cancellationToken);
 
