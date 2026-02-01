@@ -57,7 +57,7 @@ public record AutoCompleteSession : Aggregate<AutoCompleteId>
         TotalCost = CostEstimate.Of(totalcost += request.Cost);
         AddDomainEvent(
             new Events.AutoCompleteRequestedDomainEvent(
-                Id, request.Id, request.Prompt.Value));
+                Id, request.Id, request.Prompt.Value, request.Suggestion.Value, request.TokenUsed.Value));
     }
 
     public void Complete()

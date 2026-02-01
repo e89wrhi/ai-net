@@ -74,15 +74,15 @@ internal class DeleteAutoCompleteHandler : IRequestHandler<DeleteAutoCompleteCom
     {
         Guard.Against.Null(request, nameof(request));
 
-        var autoComplete = await _dbContext.AutoCompletes.FindAsync(new object[] { SessionId.Of(request.SessionId) }, cancellationToken);
+        var autoComplete = await _dbContext.AutoCompletes.FindAsync(new object[] { AutoCompleteId.Of(request.SessionId) }, cancellationToken);
 
         if (autoComplete == null)
         {
             throw new AutoCompleteNotFoundException(request.SessionId);
         }
 
-        autocomplete.Delete();
-        _dbContext.AutoCompletes.Remove(autocomplete);
+        // autoComplete.Delete(); // Aggregate doesn't have Delete method, we just remove it.
+        _dbContext.AutoCompletes.Remove(autoComplete);
 
         await _dbContext.SaveChangesAsync(cancellationToken);
         

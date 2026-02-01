@@ -3,4 +3,9 @@ using AutoComplete.ValueObjects;
 
 namespace AutoComplete.Events;
 
-public record AutoCompleteRequestedDomainEvent(AutoCompleteId Id, AutoCompleteRequestId RequestId, string Prompt): IDomainEvent;
+public record AutoCompleteRequestedDomainEvent(
+    AutoCompleteId SessionId, 
+    AutoCompleteRequestId RequestId, 
+    string Prompt, 
+    string Response,
+    int TokensUsed) : IDomainEvent;

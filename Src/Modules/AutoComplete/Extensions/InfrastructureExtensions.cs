@@ -12,6 +12,8 @@ using MassTransit.Contracts;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Grpc.AspNetCore;
+using Microsoft.Extensions.AI;
+using AutoComplete.Services;
 
 namespace AutoComplete.Extensions;
 
@@ -29,6 +31,10 @@ public static class InfrastructureExtensions
         builder.AddMongoDbContext<AutocompleteReadDbContext>();
 
         builder.Services.AddCustomMediatR();
+
+        // Register AI Chat Client
+        // In a real scenario, this would be configured with a real provider (e.g. OpenAI, Llama)
+        builder.Services.AddSingleton<IChatClient, SimulatedChatClient>();
 
         return builder;
     }
