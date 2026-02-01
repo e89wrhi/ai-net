@@ -17,6 +17,7 @@ public sealed class PaymentDbContext : AppDbContextBase
     }
 
     public DbSet<PaymentSession> Sessions => Set<PaymentSession>();
+    public DbSet<SubscriptionModel> Subscriptions => Set<SubscriptionModel>();
     public DbSet<Invoice> Invoices => Set<Invoice>();
     public DbSet<UsageCharge> UsageCharges => Set<UsageCharge>();
 

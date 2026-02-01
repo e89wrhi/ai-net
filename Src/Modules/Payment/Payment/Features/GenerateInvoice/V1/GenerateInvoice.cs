@@ -89,14 +89,12 @@ internal class GenerateInvoiceHandler : IRequestHandler<GenerateInvoiceCommand, 
             throw new SubscriptionNotFoundException(request.SubscriptionId);
         }
 
-        var invoice = InvoiceModel.Create(
+        var invoiceNumber = $"INV-{subscription.Id.Value.ToString().Substring(0, 8)}-{DateTime.UtcNow:yyyyMMdd}";
+        var invoice = Invoice.Create(
             InvoiceId.Of(NewId.NextGuid()),
-            subscription.Id,
-            subscription.UserId,
-            ValueObjects.PaymentMethod.Of(DateTime.UtcNow.AddMonths(1)),
+            invoiceNumber,
             Money.Of(request.Amount),
-            request.LineItems,
-            $"INV-{subscription.Id.Value.ToString().Substring(0, 8)}-{DateTime.UtcNow:yyyyMMdd}");
+            CurrencyCode.Of(request.Currency));
 
         subscription.AddInvoice(invoice);
 

@@ -32,6 +32,18 @@ public record Invoice : Entity<InvoiceId>
         };
     }
 
+    public void ApplyDiscount(decimal percentage)
+    {
+        if (percentage <= 0 || percentage > 100) return;
+        var discountAmount = Amount.Amount * (percentage / 100);
+        Amount = Money.Of(Amount.Amount - discountAmount, Amount.Currency);
+    }
+
+    public void UpdateAmount(Money newAmount)
+    {
+        Amount = newAmount;
+    }
+
     public void MarkPaid()
     {
         Status = InvoiceStatus.Paid;

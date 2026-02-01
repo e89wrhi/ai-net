@@ -52,6 +52,25 @@ public record PaymentSession : Aggregate<PaymentId>
             new Events.InvoiceCreatedDomainEvent(Id, invoice.Id, invoice.Amount));
     }
 
+    public void Refund()
+    {
+        Status = PaymentStatus.Refunded;
+        LastUpdatedAt = DateTime.UtcNow;
+        AddDomainEvent(new Events.PaymentRefundedDomainEvent(Id));
+    }
+
+    public void Retry()
+    {
+        Status = PaymentStatus.Pending;
+        LastUpdatedAt = DateTime.UtcNow;
+    }
+
+    public void SetAmount(Money newAmount)
+    {
+        Amount = newAmount;
+        LastUpdatedAt = DateTime.UtcNow;
+    }
+
     public void Complete()
     {
         Status = PaymentStatus.Completed;

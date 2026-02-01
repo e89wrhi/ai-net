@@ -84,8 +84,9 @@ internal class CreateSubscriptionHandler : IRequestHandler<CreateSubscriptionCom
         var subscription = SubscriptionModel.Create(
             SubscriptionId.Of(NewId.NextGuid()),
             UserId.Of(request.UserId),
-            request.Plan,
-            ValueObjects.SubscriptionPlan.Of(request.MaxRequestsPerDay, request.MaxTokensPerMonth));
+            request.Plan.ToString(),
+            request.MaxRequestsPerDay,
+            request.MaxTokensPerMonth);
 
         await _dbContext.Subscriptions.AddAsync(subscription, cancellationToken);
         await _dbContext.SaveChangesAsync(cancellationToken);
