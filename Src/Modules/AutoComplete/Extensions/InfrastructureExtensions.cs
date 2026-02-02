@@ -1,6 +1,5 @@
 ﻿using AI.Common.EFCore;
 using AI.Common.Mapster;
-using AI.Common.Mongo;
 using AI.Common.Web;
 using AutoComplete;
 using AutoComplete.Data;
@@ -28,7 +27,7 @@ public static class InfrastructureExtensions
         builder.Services.AddCustomMapster(typeof(AutoCompleteRoot).Assembly);
         builder.AddCustomDbContext<AutocompleteDbContext>(nameof(AutoComplete));
         builder.Services.AddScoped<IDataSeeder, AutocompleteDataSeeder>();
-        builder.AddMongoDbContext<AutocompleteReadDbContext>();
+        // MongoDB removed - was redundant with SQL storage
 
         builder.Services.AddCustomMediatR();
 

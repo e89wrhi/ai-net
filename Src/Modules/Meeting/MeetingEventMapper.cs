@@ -1,9 +1,4 @@
-﻿using AI.Common.Contracts.EventBus.Messages;
-using AI.Common.Core;
-using AI.Contracts.EventBus.Messages;
-using Meeting.Events;
-using Meeting.Features.SummarizeMeetingAudio.V1;
-using Meeting.Features.UploadMeetingAudio.V1;
+﻿using AI.Common.Core;
 
 namespace Meeting;
 
@@ -13,10 +8,8 @@ public sealed class MeetingEventMapper : IEventMapper
     {
         return @event switch
         {
-            MeetingUploadedDomainEvent e => new MeetingUploaded(e.MeetingId.Value),
-            MeetingAnalysisSessionFailedDomainEvent e => new MeetingTranscribed(e.MeetingId.Value),
-            MeetingAnalysisSessionCompletedDomainEvent e => new MeetingSummarized(e.MeetingId.Value),
-            MeetingAnalysisSessionStartedDomainEvent e => new MeetingActionAdded(e.MeetingId.Value),
+            // map to integration event here(if needed)
+            // MeetingAnalysisSessionFailedDomainEvent e => new MeetingTranscribed(e.MeetingId.Value),
             _ => null
         };
     }
@@ -25,8 +18,8 @@ public sealed class MeetingEventMapper : IEventMapper
     {
         return @event switch
         {
-            MeetingUploadedDomainEvent e => new UploadMeetingAudioMongo(e.MeetingId.Value, e.OrganizerId, e.Title, "Uploaded", DateTime.UtcNow),
-            MeetingAnalysisSessionCompletedDomainEvent e => new SummarizeMeetingAudioMongo(e.MeetingId.Value, e.Transcript, e.Summary, "Summarized"),
+            // map domain events to internal commands to handle changes
+            // DomainEvent e => new MethodName(e.SessionId.Value),
             _ => null
         };
     }

@@ -1,5 +1,5 @@
+using System.Security.Claims;
 using AI.Common.Web;
-using Duende.IdentityServer.EntityFramework.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -12,10 +12,18 @@ public class StreamAutoCompleteEndpoint : IMinimalEndpoint
     public IEndpointRouteBuilder MapEndpoint(IEndpointRouteBuilder builder)
     {
         builder.MapPost($"{EndpointConfig.BaseApiPath}/autocomplete/stream",
-                (StreamAutoCompleteRequestDto request, IMediator mediator, CancellationToken cancellationToken) =>
+                (StreamAutoCompleteRequestDto request, IMediator mediator, IHttpContextAccessor httpContextAccessor, CancellationToken cancellationToken) =>
                 {
-                    // Mock User ID or extract from context
-                    var userId = Guid.NewGuid();
+                    var userIdClaim = httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
+                    
+                    if (!Guid.TryParse(userIdClaim, out var userId))
+                    {
+                        // For streaming endpoints returning IAsyncEnumerable, throwing or returning a special stream is an option.
+                        // However, since it's RequireAuthorization, we can assume it's usually there or let it fail gracefully.
+                        // Throwing will be caught by the global error handler.
+                        throw new UnauthorizedAccessException("User ID claim is missing or invalid.");
+                    }
+
                     var command = new StreamAutoCompleteCommand(userId, request.Prompt);
                     
                     return mediator.CreateStream(command, cancellationToken);
@@ -25,6 +33,7 @@ public class StreamAutoCompleteEndpoint : IMinimalEndpoint
             .WithApiVersionSet(builder.NewApiVersionSet("AutoComplete").Build())
             .Produces<IAsyncEnumerable<string>>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
             .WithSummary("Stream AI Completion")
             .WithDescription("Streams text completion using an AI model.")
             .WithOpenApi()

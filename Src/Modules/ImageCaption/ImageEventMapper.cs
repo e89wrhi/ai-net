@@ -1,8 +1,4 @@
-﻿using AI.Common.Contracts.EventBus.Messages;
-using AI.Common.Core;
-using ImageCaption.Events;
-using ImageCaption.Features.GenerateCaption.V1;
-using ImageCaption.Features.UploadImage.V1;
+﻿using AI.Common.Core;
 
 namespace ImageCaption;
 
@@ -12,9 +8,8 @@ public sealed class ImageEventMapper : IEventMapper
     {
         return @event switch
         {
-            ImageUploadedDomainEvent e => new ImageUploaded(e.ImageId.Value),
-            ImageAnalyzedDomainEvent e => new ImageAnalyzed(e.ImageId.Value),
-            CaptionGeneratedDomainEvent e => new ImageCaptionGenerated(e.ImageId.Value),
+            // map to integration event here(if needed)
+            // ImageCaptionGeneratedDomainEvent e => new ImageUploaded(e.Id.Value),
             _ => null
         };
     }
@@ -23,8 +18,8 @@ public sealed class ImageEventMapper : IEventMapper
     {
         return @event switch
         {
-            ImageUploadedDomainEvent e => new UploadImageMongo(e.ImageId.Value, e.UserId, e.FilePath, "Uploaded", e.Width, e.Height, e.Size, e.Format, DateTime.UtcNow),
-            CaptionGeneratedDomainEvent e => new GenerateCaptionMongo(e.ImageId.Value, e.Caption, "Captioned", DateTime.UtcNow),
+            // map domain events to internal commands to handle changes
+            // DomainEvent e => new MethodName(e.SessionId.Value),
             _ => null
         };
     }

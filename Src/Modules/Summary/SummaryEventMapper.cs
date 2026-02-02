@@ -1,9 +1,4 @@
-﻿using AI.Common.Contracts.EventBus.Summarys;
-using AI.Common.Core;
-using Summary.Events;
-using Summary.Features.DeleteSummary.V1;
-using Summary.Features.SendSummary.V1;
-using Summary.Features.StartSummary.V1;
+﻿using AI.Common.Core;
 
 namespace Summary;
 
@@ -13,9 +8,8 @@ public sealed class SummaryEventMapper : IEventMapper
     {
         return @event switch
         {
-            TextSummarySessionStartedDomainEvent e => new SummarySessionStarted(e.SessionId.Value),
-            SummaryRecievedDomainEvent e => new SummaryRecieved(e.SummaryId.Value),
-            SummaryRespondedDomainEvent e => new SummaryResponded(e.SummaryId.Value),
+            // map to integration event here(if needed)
+            // TextSummarySessionStartedDomainEvent e => new (e.Id.Value),
             _ => null
         };
     }
@@ -24,10 +18,8 @@ public sealed class SummaryEventMapper : IEventMapper
     {
         return @event switch
         {
-            TextSummarySessionStartedDomainEvent e => new StartSummaryMongo(e.SessionId.Value, e.UserId.Value, e.Title, e.AiModelId, "Active", DateTime.UtcNow),
-            SummaryRecievedDomainEvent e => new SendSummaryMongo(e.SessionId.Value, e.SummaryId.Value, e.Content, "User", e.TokenUsed, DateTime.UtcNow),
-            SummaryRespondedDomainEvent e => new SendSummaryMongo(e.SessionId.Value, e.SummaryId.Value, e.Response, "AI", e.TokenUsed, DateTime.UtcNow),
-            SummarySessionDeletedDomainEvent e => new SummarizeTextMongo(e.Id.Value),
+            // map domain events to internal commands to handle changes
+            // DomainEvent e => new MethodName(e.SessionId.Value),
             _ => null
         };
     }

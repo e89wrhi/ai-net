@@ -1,22 +1,20 @@
-﻿using AI.Common.Caching;
+﻿using System.Security.Claims;
+using AI.Common.Caching;
 using AI.Common.Core;
 using AI.Common.Web;
 using Ardalis.GuardClauses;
 using Payment.Data;
 using Payment.Dtos;
 using Payment.Exceptions;
-using Duende.IdentityServer.EntityFramework.Entities;
 using Mapster;
 using MapsterMapper;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using MongoDB.Driver;
-using MongoDB.Driver.Linq;
+using Microsoft.EntityFrameworkCore;
 
 namespace Payment.Features.GetSubscription.V1;
-
 
 public record GetSubscription(Guid UserId) : IQuery<GetSubscriptionResult>, ICacheRequest
 {
@@ -32,9 +30,16 @@ public class GetSubscriptionEndpoint : IMinimalEndpoint
 {
     public IEndpointRouteBuilder MapEndpoint(IEndpointRouteBuilder builder)
     {
-        builder.MapGet($"{EndpointConfig.BaseApiPath}/subscription/{{userId}}",
-                async (Guid userId, IMediator mediator, CancellationToken cancellationToken) =>
+        builder.MapGet($"{EndpointConfig.BaseApiPath}/subscription",
+                async (IMediator mediator, IHttpContextAccessor httpContextAccessor, CancellationToken cancellationToken) =>
                 {
+                    var userIdClaim = httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
+                    
+                    if (!Guid.TryParse(userIdClaim, out var userId))
+                    {
+                        return Results.Unauthorized();
+                    }
+
                     var result = await mediator.Send(new GetSubscription(userId), cancellationToken);
 
                     var response = result.Adapt<GetSubscriptionResponseDto>();
@@ -45,9 +50,10 @@ public class GetSubscriptionEndpoint : IMinimalEndpoint
             .WithName("GetSubscription")
             .WithApiVersionSet(builder.NewApiVersionSet("Payment").Build())
             .Produces<GetSubscriptionResponseDto>()
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .WithSummary("Get Subscription")
-            .WithDescription("Get Subscription")
+            .WithDescription("Gets the active subscription for the currently authenticated user.")
             .WithOpenApi()
             .HasApiVersion(1.0);
 
@@ -58,12 +64,12 @@ public class GetSubscriptionEndpoint : IMinimalEndpoint
 internal class GetSubscriptionHandler : IQueryHandler<GetSubscription, GetSubscriptionResult>
 {
     private readonly IMapper _mapper;
-    private readonly PaymentReadDbContext _readDbContext;
+    private readonly PaymentDbContext _dbContext;
 
-    public GetSubscriptionHandler(IMapper mapper, PaymentReadDbContext readDbContext)
+    public GetSubscriptionHandler(IMapper mapper, PaymentDbContext dbContext)
     {
         _mapper = mapper;
-        _readDbContext = readDbContext;
+        _dbContext = dbContext;
     }
 
     public async Task<GetSubscriptionResult> Handle(GetSubscription request,
@@ -71,7 +77,7 @@ internal class GetSubscriptionHandler : IQueryHandler<GetSubscription, GetSubscr
     {
         Guard.Against.Null(request, nameof(request));
 
-        var subscription = await _readDbContext.Subscription.AsQueryable()
+        var subscription = await _dbContext.Subscriptions
             .FirstOrDefaultAsync(x => x.UserId == request.UserId && x.Status == "Active", cancellationToken);
 
         if (subscription == null)

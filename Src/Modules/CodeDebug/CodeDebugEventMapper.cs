@@ -1,9 +1,4 @@
-﻿using AI.Common.Contracts.EventBus.CodeDebugs;
-using AI.Common.Core;
-using CodeDebug.Events;
-using CodeDebug.Features.DeleteCodeDebug.V1;
-using CodeDebug.Features.SendCodeDebug.V1;
-using CodeDebug.Features.StartCodeDebug.V1;
+﻿using AI.Common.Core;
 
 namespace CodeDebug;
 
@@ -13,9 +8,8 @@ public sealed class CodeDebugEventMapper : IEventMapper
     {
         return @event switch
         {
-            CodeDebugSessionStartedDomainEvent e => new CodeDebugSessionStarted(e.SessionId.Value),
-            CodeDebugAnalyzedDomainEvent e => new CodeDebugRecieved(e.CodeDebugId.Value),
-            CodeDebugRespondedDomainEvent e => new CodeDebugResponded(e.CodeDebugId.Value),
+            // map to integration event here(if needed)
+            // CodeDebugSessionStartedDomainEvent e => new (e.Id.Value),
             _ => null
         };
     }
@@ -24,10 +18,8 @@ public sealed class CodeDebugEventMapper : IEventMapper
     {
         return @event switch
         {
-            CodeDebugSessionStartedDomainEvent e => new StartCodeDebugMongo(e.SessionId.Value, e.UserId.Value, e.Title, e.AiModelId, "Active", DateTime.UtcNow),
-            CodeDebugAnalyzedDomainEvent e => new SendCodeDebugMongo(e.SessionId.Value, e.CodeDebugId.Value, e.Content, "User", e.TokenUsed, DateTime.UtcNow),
-            CodeDebugRespondedDomainEvent e => new SendCodeDebugMongo(e.SessionId.Value, e.CodeDebugId.Value, e.Response, "AI", e.TokenUsed, DateTime.UtcNow),
-            CodeDebugSessionDeletedDomainEvent e => new DebugCodeMongo(e.Id.Value),
+            // map domain events to internal commands to handle changes
+            // DomainEvent e => new MethodName(e.SessionId.Value),
             _ => null
         };
     }

@@ -1,9 +1,4 @@
-﻿using AI.Common.Contracts.EventBus.ImageGens;
-using AI.Common.Core;
-using ImageGen.Events;
-using ImageGen.Features.DeleteImageGen.V1;
-using ImageGen.Features.SendImageGen.V1;
-using ImageGen.Features.StartImageGen.V1;
+﻿using AI.Common.Core;
 
 namespace ImageGen;
 
@@ -13,9 +8,8 @@ public sealed class ImageGenEventMapper : IEventMapper
     {
         return @event switch
         {
-            ImageGenerationSessionStartedDomainEvent e => new ImageGenSessionStarted(e.SessionId.Value),
-            ImageGeneratedDomainEvent e => new ImageGenRecieved(e.ImageGenId.Value),
-            ImageGenRespondedDomainEvent e => new ImageGenResponded(e.ImageGenId.Value),
+            // map to integration event here(if needed)
+            // ImageGenerationSessionStartedDomainEvent e => new (e.Id.Value),
             _ => null
         };
     }
@@ -24,10 +18,8 @@ public sealed class ImageGenEventMapper : IEventMapper
     {
         return @event switch
         {
-            ImageGenerationSessionStartedDomainEvent e => new StartImageGenMongo(e.SessionId.Value, e.UserId.Value, e.Title, e.AiModelId, "Active", DateTime.UtcNow),
-            ImageGeneratedDomainEvent e => new SendImageGenMongo(e.SessionId.Value, e.ImageGenId.Value, e.Content, "User", e.TokenUsed, DateTime.UtcNow),
-            ImageGenRespondedDomainEvent e => new SendImageGenMongo(e.SessionId.Value, e.ImageGenId.Value, e.Response, "AI", e.TokenUsed, DateTime.UtcNow),
-            ImageGenSessionDeletedDomainEvent e => new GenerateImageMongo(e.Id.Value),
+            // map domain events to internal commands to handle changes
+            // DomainEvent e => new MethodName(e.SessionId.Value),
             _ => null
         };
     }

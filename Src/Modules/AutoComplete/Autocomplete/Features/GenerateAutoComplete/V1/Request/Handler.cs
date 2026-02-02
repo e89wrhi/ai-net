@@ -73,6 +73,6 @@ internal class GenerateAICompletionHandler : ICommandHandler<GenerateAutoComplet
         _dbContext.Add(session);
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        return new GenerateAICompletionResult(responseText, tokenUsage, costValue);
+        return new GenerateAutoCompleteCommandResult(responseText, tokenUsage, costValue);
     }
 }

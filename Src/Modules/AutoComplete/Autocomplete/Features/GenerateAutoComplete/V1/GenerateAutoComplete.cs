@@ -1,5 +1,5 @@
+using System.Security.Claims;
 using AI.Common.Web;
-using Duende.IdentityServer.EntityFramework.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -14,9 +14,12 @@ public class GenerateAutoCompleteEndpoint : IMinimalEndpoint
         builder.MapPost($"{EndpointConfig.BaseApiPath}/autocomplete/generate",
                 async (GenerateAutoCompleteRequestDto request, IMediator mediator, IHttpContextAccessor httpContextAccessor, CancellationToken cancellationToken) =>
                 {
-                    // In a real scenario, extract UserId from Claims
-                    // var userId = httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                    var userId = Guid.NewGuid(); // Mock User ID for now
+                    var userIdClaim = httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
+                    
+                    if (!Guid.TryParse(userIdClaim, out var userId))
+                    {
+                        return Results.Unauthorized();
+                    }
 
                     var command = new GenerateAutoCompleteCommand(userId, request.Prompt);
                     var result = await mediator.Send(command, cancellationToken);
@@ -30,6 +33,7 @@ public class GenerateAutoCompleteEndpoint : IMinimalEndpoint
             .WithApiVersionSet(builder.NewApiVersionSet("AutoComplete").Build())
             .Produces<GenerateAutoCompleteResponseDto>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
             .WithSummary("Generate Auto Complete")
             .WithDescription("Generates text completion using an AI model and stores the interaction history.")
             .WithOpenApi()

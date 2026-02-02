@@ -1,9 +1,4 @@
-﻿using AI.Common.Contracts.EventBus.Messages;
-using AI.Common.Core;
-using ChatBot.Events;
-using ChatBot.Features.DeleteChat.V1;
-using ChatBot.Features.SendMessage.V1;
-using ChatBot.Features.StartChat.V1;
+﻿using AI.Common.Core;
 
 namespace ChatBot;
 
@@ -13,9 +8,8 @@ public sealed class ChatEventMapper : IEventMapper
     {
         return @event switch
         {
-            ChatSessionStartedDomainEvent e => new ChatSessionStarted(e.SessionId.Value),
-            MessageRecievedDomainEvent e => new MessageRecieved(e.MessageId.Value),
-            MessageRespondedDomainEvent e => new MessageResponded(e.MessageId.Value),
+            // map to integration event here(if needed)
+            // DomainEvent e => new (e.Id.Value),
             _ => null
         };
     }
@@ -24,10 +18,8 @@ public sealed class ChatEventMapper : IEventMapper
     {
         return @event switch
         {
-            ChatSessionStartedDomainEvent e => new StartChatMongo(e.SessionId.Value, e.UserId.Value, e.Title, e.AiModelId, "Active", DateTime.UtcNow),
-            MessageRecievedDomainEvent e => new SendMessageMongo(e.SessionId.Value, e.MessageId.Value, e.Content, "User", e.TokenUsed, DateTime.UtcNow),
-            MessageRespondedDomainEvent e => new SendMessageMongo(e.SessionId.Value, e.MessageId.Value, e.Response, "AI", e.TokenUsed, DateTime.UtcNow),
-            ChatSessionDeletedDomainEvent e => new DeleteChatMongo(e.Id.Value),
+            // map domain events to internal commands to handle changes
+            // DomainEvent e => new MethodName(e.SessionId.Value),
             _ => null
         };
     }

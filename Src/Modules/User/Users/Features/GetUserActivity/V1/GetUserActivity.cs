@@ -1,22 +1,20 @@
-﻿using AI.Common.Caching;
+﻿using System.Security.Claims;
+using AI.Common.Caching;
 using AI.Common.Core;
 using AI.Common.Web;
 using Ardalis.GuardClauses;
 using User.Data;
 using User.Dtos;
 using User.Exceptions;
-using Duende.IdentityServer.EntityFramework.Entities;
 using Mapster;
 using MapsterMapper;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using MongoDB.Driver;
-using MongoDB.Driver.Linq;
+using Microsoft.EntityFrameworkCore;
 
 namespace User.Features.GetUserActivity.V1;
-
 
 public record GetUserActivity(Guid UserId) : IQuery<GetUserActivityResult>, ICacheRequest
 {
@@ -32,9 +30,16 @@ public class GetUserActivityEndpoint : IMinimalEndpoint
 {
     public IEndpointRouteBuilder MapEndpoint(IEndpointRouteBuilder builder)
     {
-        builder.MapGet($"{EndpointConfig.BaseApiPath}/users/{{userId}}/activities",
-                async (Guid userId, IMediator mediator, CancellationToken cancellationToken) =>
+        builder.MapGet($"{EndpointConfig.BaseApiPath}/users/activities",
+                async (IMediator mediator, IHttpContextAccessor httpContextAccessor, CancellationToken cancellationToken) =>
                 {
+                    var userIdClaim = httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
+                    
+                    if (!Guid.TryParse(userIdClaim, out var userId))
+                    {
+                        return Results.Unauthorized();
+                    }
+
                     var result = await mediator.Send(new GetUserActivity(userId), cancellationToken);
 
                     var response = result.Adapt<GetUserActivityResponseDto>();
@@ -45,9 +50,10 @@ public class GetUserActivityEndpoint : IMinimalEndpoint
             .WithName("GetUserActivity")
             .WithApiVersionSet(builder.NewApiVersionSet("User").Build())
             .Produces<GetUserActivityResponseDto>()
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .WithSummary("Get User Activity")
-            .WithDescription("Get User Activity")
+            .WithDescription("Gets the activity history for the currently authenticated user.")
             .WithOpenApi()
             .HasApiVersion(1.0);
 
@@ -58,12 +64,12 @@ public class GetUserActivityEndpoint : IMinimalEndpoint
 internal class GetUserActivityHandler : IQueryHandler<GetUserActivity, GetUserActivityResult>
 {
     private readonly IMapper _mapper;
-    private readonly UserReadDbContext _readDbContext;
+    private readonly UserDbContext _dbContext;
 
-    public GetUserActivityHandler(IMapper mapper, UserReadDbContext readDbContext)
+    public GetUserActivityHandler(IMapper mapper, UserDbContext dbContext)
     {
         _mapper = mapper;
-        _readDbContext = readDbContext;
+        _dbContext = dbContext;
     }
 
     public async Task<GetUserActivityResult> Handle(GetUserActivity request,
@@ -71,15 +77,21 @@ internal class GetUserActivityHandler : IQueryHandler<GetUserActivity, GetUserAc
     {
         Guard.Against.Null(request, nameof(request));
 
-        var user = await _readDbContext.User.AsQueryable()
-            .FirstOrDefaultAsync(x => x.Id == request.UserId, cancellationToken);
+        var activities = await _dbContext.Sessions
+            .Include(x => x.Actions)
+            .Where(x => x.UserId.Value == request.UserId)
+            .OrderByDescending(x => x.LastActivityAt)
+            .ToListAsync(cancellationToken);
 
-        if (user == null)
+        // Flatten sessions into activity DTOs
+        var activityDtos = activities.SelectMany(s => s.Actions.Select(a => new UserActivityDto
         {
-            throw new UserNotFoundException(request.UserId);
-        }
-
-        var activityDtos = _mapper.Map<IEnumerable<UserActivityDto>>(user.Activities);
+            Id = a.Id,
+            Module = "Internal", // This could be mapped from session if available
+            Action = a.ActionType,
+            TimeStamp = a.OccurredAt,
+            ResourceId = s.Id
+        })).ToList();
 
         return new GetUserActivityResult(activityDtos);
     }

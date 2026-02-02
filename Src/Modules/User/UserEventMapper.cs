@@ -1,12 +1,4 @@
-﻿using AI.Common.Contracts.EventBus.Messages;
-using AI.Common.Core;
-using AI.Contracts.EventBus.Messages;
-using User.Events;
-using User.Features.CreateUser.V1;
-using User.Features.ResetUsageCounters.V1;
-using User.Features.TrackActivity.V1;
-
-using User.Features.UpdateUser.V1;
+﻿using AI.Common.Core;
 
 
 namespace User;
@@ -19,8 +11,8 @@ public sealed class UserEventMapper : IEventMapper
     {
         return @event switch
         {
-            UserActivityTrackedDomainEvent e => new AI.Contracts.EventBus.Messages.UserActivityAdded(e.ActivityId.Value, e.UserId.Value, e.Module.ToString(), e.Action),
-            UserProfileUpdatedDomainEvent e => new AI.Contracts.EventBus.Messages.UserProfileUpdated(e.UserId.Value),
+            // map to integration event here(if needed)
+            // UserActivityTrackedDomainEvent e => new AI.Contracts.EventBus.Messages.UserActivityAdded(e.ActivityId.Value, e.UserId.Value, e.Module.ToString(), e.Action),
             _ => null
         };
     }
@@ -29,14 +21,9 @@ public sealed class UserEventMapper : IEventMapper
     {
         return @event switch
         {
-            UserActivityTrackedDomainEvent e => new TrackActivityMongo(e.ActivityId.Value, e.UserId.Value, e.Module.ToString(), e.Action, e.ResourceId, e.TimeStamp),
-            UserActivitySessionStartedDomainEvent e => new ResetUsageCountersMongo(e.UserId.Value),
-            UserCreatedDomainEvent e => new CreateUserMongo(e.UserId.Value, e.Username, e.Email),
-            UserProfileUpdatedDomainEvent e => new UpdateUserMongo(e.UserId.Value, e.FullName),
+            // map domain events to internal commands to handle changes
+            // DomainEvent e => new MethodName(e.SessionId.Value),
             _ => null
-
-
-
         };
     }
 }

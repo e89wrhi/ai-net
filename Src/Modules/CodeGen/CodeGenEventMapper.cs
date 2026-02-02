@@ -1,9 +1,4 @@
-﻿using AI.Common.Contracts.EventBus.CodeGens;
-using AI.Common.Core;
-using CodeGen.Events;
-using CodeGen.Features.DeleteCodeGen.V1;
-using CodeGen.Features.SendCodeGen.V1;
-using CodeGen.Features.StartCodeGen.V1;
+﻿using AI.Common.Core;
 
 namespace CodeGen;
 
@@ -13,9 +8,8 @@ public sealed class CodeGenEventMapper : IEventMapper
     {
         return @event switch
         {
-            CodeGenerationSessionStartedDomainEvent e => new CodeGenSessionStarted(e.SessionId.Value),
-            CodeGeneratedDomainEvent e => new CodeGenRecieved(e.CodeGenId.Value),
-            CodeGenRespondedDomainEvent e => new CodeGenResponded(e.CodeGenId.Value),
+            // map to integration event here(if needed)
+            // CodeGenerationSessionStartedDomainEvent e => new (e.Id.Value),
             _ => null
         };
     }
@@ -24,10 +18,8 @@ public sealed class CodeGenEventMapper : IEventMapper
     {
         return @event switch
         {
-            CodeGenerationSessionStartedDomainEvent e => new StartCodeGenMongo(e.SessionId.Value, e.UserId.Value, e.Title, e.AiModelId, "Active", DateTime.UtcNow),
-            CodeGeneratedDomainEvent e => new SendCodeGenMongo(e.SessionId.Value, e.CodeGenId.Value, e.Content, "User", e.TokenUsed, DateTime.UtcNow),
-            CodeGenRespondedDomainEvent e => new SendCodeGenMongo(e.SessionId.Value, e.CodeGenId.Value, e.Response, "AI", e.TokenUsed, DateTime.UtcNow),
-            CodeGenSessionDeletedDomainEvent e => new GenerateCodeMongo(e.Id.Value),
+            // map domain events to internal commands to handle changes
+            // DomainEvent e => new MethodName(e.SessionId.Value),
             _ => null
         };
     }

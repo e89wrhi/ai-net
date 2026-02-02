@@ -1,10 +1,4 @@
-﻿using AI.Common.Contracts.EventBus.Messages;
-using AI.Common.Core;
-using Payment.Events;
-using Payment.Features.CancelSubscription.V1;
-using Payment.Features.CreateSubscription.V1;
-using Payment.Features.GenerateInvoice.V1;
-using Payment.Features.RecordUsageCharge.V1;
+﻿using AI.Common.Core;
 
 namespace Payment;
 
@@ -14,9 +8,8 @@ public sealed class PaymentEventMapper : IEventMapper
     {
         return @event switch
         {
-            PaymentFailedDomainEvent e => new AI.Contracts.EventBus.Messages.SubscriptionCreated(e.SubscriptionId.Value),
-            PaymentSessionStartedDomainEvent e => new AI.Contracts.EventBus.Messages.InvoiceGenerated(e.InvoiceId.Value),
-            UsageChargedDomainEvent e => new AI.Contracts.EventBus.Messages.UsageCharged(e.ChargeId.Value),
+            // map to integration event here(if needed)
+            // PaymentFailedDomainEvent e => new AI.Contracts.EventBus.Messages.SubscriptionCreated(e.Id.Value),
             _ => null
         };
     }
@@ -25,10 +18,8 @@ public sealed class PaymentEventMapper : IEventMapper
     {
         return @event switch
         {
-            PaymentFailedDomainEvent e => new CreateSubscriptionMongo(e.SubscriptionId.Value, e.UserId.Value, e.Plan, e.Status, e.StartedAt, e.ExpiresAt),
-            PaymentCompletedDomainEvent e => new CancelSubscriptionMongo(e.SubscriptionId.Value, e.Status),
-            PaymentSessionStartedDomainEvent e => new GenerateInvoiceMongo(e.SubscriptionId.Value, e.InvoiceId.Value, e.Amount, e.Currency, e.Status, e.InvoiceNumber, e.IssuedAt),
-            UsageChargedDomainEvent e => new RecordUsageChargeMongo(e.SubscriptionId.Value, e.ChargeId.Value, e.Amount, e.Currency, e.Module, e.Description, e.CreatedAt),
+            // map domain events to internal commands to handle changes
+            // DomainEvent e => new MethodName(e.SessionId.Value),
             _ => null
         };
     }

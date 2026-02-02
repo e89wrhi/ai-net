@@ -1,24 +1,22 @@
-﻿using AI.Common.Caching;
+﻿using System.Security.Claims;
+using AI.Common.Caching;
 using AI.Common.Core;
 using AI.Common.Web;
 using Ardalis.GuardClauses;
 using Payment.Data;
 using Payment.Dtos;
 using Payment.Exceptions;
-using Duende.IdentityServer.EntityFramework.Entities;
 using Mapster;
 using MapsterMapper;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using MongoDB.Driver;
-using MongoDB.Driver.Linq;
+using Microsoft.EntityFrameworkCore;
 
 namespace Payment.Features.GetInvoices.V1;
 
-
-public record GetInvoices(Guid SubscriptionId) : IQuery<GetInvoicesResult>, ICacheRequest
+public record GetInvoices(Guid SubscriptionId, Guid UserId) : IQuery<GetInvoicesResult>, ICacheRequest
 {
     public string CacheKey => $"GetInvoices_{SubscriptionId}";
     public DateTime? AbsoluteExpirationRelativeToNow => DateTime.Now.AddHours(1);
@@ -33,9 +31,16 @@ public class GetInvoicesEndpoint : IMinimalEndpoint
     public IEndpointRouteBuilder MapEndpoint(IEndpointRouteBuilder builder)
     {
         builder.MapGet($"{EndpointConfig.BaseApiPath}/subscription/{{subscriptionId}}/invoices",
-                async (Guid subscriptionId, IMediator mediator, CancellationToken cancellationToken) =>
+                async (Guid subscriptionId, IMediator mediator, IHttpContextAccessor httpContextAccessor, CancellationToken cancellationToken) =>
                 {
-                    var result = await mediator.Send(new GetInvoices(subscriptionId), cancellationToken);
+                    var userIdClaim = httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
+                    
+                    if (!Guid.TryParse(userIdClaim, out var userId))
+                    {
+                        return Results.Unauthorized();
+                    }
+
+                    var result = await mediator.Send(new GetInvoices(subscriptionId, userId), cancellationToken);
 
                     var response = result.Adapt<GetInvoicesResponseDto>();
 
@@ -45,9 +50,11 @@ public class GetInvoicesEndpoint : IMinimalEndpoint
             .WithName("GetInvoices")
             .WithApiVersionSet(builder.NewApiVersionSet("Payment").Build())
             .Produces<GetInvoicesResponseDto>()
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status404NotFound)
             .WithSummary("Get Invoices")
-            .WithDescription("Get Invoices")
+            .WithDescription("Gets the invoices for a specific subscription, ensuring it belongs to the authenticated user.")
             .WithOpenApi()
             .HasApiVersion(1.0);
 
@@ -58,12 +65,12 @@ public class GetInvoicesEndpoint : IMinimalEndpoint
 internal class GetInvoicesHandler : IQueryHandler<GetInvoices, GetInvoicesResult>
 {
     private readonly IMapper _mapper;
-    private readonly PaymentReadDbContext _readDbContext;
+    private readonly PaymentDbContext _dbContext;
 
-    public GetInvoicesHandler(IMapper mapper, PaymentReadDbContext readDbContext)
+    public GetInvoicesHandler(IMapper mapper, PaymentDbContext dbContext)
     {
         _mapper = mapper;
-        _readDbContext = readDbContext;
+        _dbContext = dbContext;
     }
 
     public async Task<GetInvoicesResult> Handle(GetInvoices request,
@@ -71,8 +78,9 @@ internal class GetInvoicesHandler : IQueryHandler<GetInvoices, GetInvoicesResult
     {
         Guard.Against.Null(request, nameof(request));
 
-        var subscription = await _readDbContext.Subscription.AsQueryable()
-            .FirstOrDefaultAsync(x => x.Id == request.SubscriptionId, cancellationToken);
+        var subscription = await _dbContext.Subscriptions
+            .Include(x => x.Invoices)
+            .FirstOrDefaultAsync(x => x.Id == request.SubscriptionId && x.UserId == request.UserId, cancellationToken);
 
         if (subscription == null)
         {

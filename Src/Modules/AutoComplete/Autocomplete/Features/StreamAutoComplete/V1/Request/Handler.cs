@@ -1,4 +1,5 @@
 ﻿using AiOrchestration.ValueObjects;
+using Ardalis.GuardClauses;
 using AutoComplete.Data;
 using AutoComplete.Models;
 using AutoComplete.ValueObjects;
@@ -8,7 +9,6 @@ using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace AutoComplete.Features.StreamAutoComplete.V1;
-
 
 internal class StreamAICompletionHandler : IStreamRequestHandler<StreamAutoCompleteCommand, string>
 {
