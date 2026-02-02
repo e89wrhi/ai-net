@@ -1,14 +1,9 @@
-using AI.Common.Core;
 using AI.Common.Web;
-using Ardalis.GuardClauses;
-using Sentiment.Data;
-using Sentiment.Models;
-using Sentiment.ValueObjects;
+using Duende.IdentityServer.EntityFramework.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.AI;
 
 namespace Sentiment.Features.AnalyzeSentimentDetailed.V1;
 

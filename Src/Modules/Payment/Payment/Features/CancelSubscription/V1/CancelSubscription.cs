@@ -1,19 +1,12 @@
-﻿using AI.Common.Core;
-using AI.Common.Web;
-using Ardalis.GuardClauses;
-using Payment.Data;
-using Payment.ValueObjects;
+﻿using AI.Common.Web;
 using Duende.IdentityServer.EntityFramework.Entities;
 using FluentValidation;
 using Mapster;
 using MapsterMapper;
-using MassTransit;
-using MassTransit.Contracts;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using Payment.Exceptions;
 
 namespace Payment.Features.CancelSubscription.V1;
 

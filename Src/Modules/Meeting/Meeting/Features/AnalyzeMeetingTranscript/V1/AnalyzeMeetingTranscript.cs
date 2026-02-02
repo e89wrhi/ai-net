@@ -1,15 +1,9 @@
-using AI.Common.Core;
 using AI.Common.Web;
-using Ardalis.GuardClauses;
-using Meeting.Data;
-using Meeting.Models;
-using Meeting.ValueObjects;
-using Meeting.Enums;
+using Duende.IdentityServer.EntityFramework.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.AI;
 
 namespace Meeting.Features.AnalyzeMeetingTranscript.V1;
 

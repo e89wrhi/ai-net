@@ -1,17 +1,9 @@
-using System.Runtime.CompilerServices;
-using System.Text;
-using AI.Common.Core;
 using AI.Common.Web;
-using Ardalis.GuardClauses;
-using CodeGen.Data;
-using CodeGen.Enums;
-using CodeGen.Models;
-using CodeGen.ValueObjects;
+using Duende.IdentityServer.EntityFramework.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.AI;
 
 namespace CodeGen.Features.StreamGenerateCode.V1;
 

@@ -1,15 +1,9 @@
-﻿using AI.Common.Core;
-using AI.Common.Web;
-using Ardalis.GuardClauses;
-using ImageGen.Data;
-using ImageGen.Enums;
-using ImageGen.Models;
-using ImageGen.ValueObjects;
+﻿using AI.Common.Web;
+using Duende.IdentityServer.EntityFramework.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.AI;
 
 namespace ImageGen.Features.GenerateImage.V1;
 

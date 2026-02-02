@@ -1,15 +1,9 @@
-using AI.Common.Core;
 using AI.Common.Web;
-using Ardalis.GuardClauses;
-using ImageEdit.Data;
-using ImageEdit.Enums;
-using ImageEdit.Models;
-using ImageEdit.ValueObjects;
+using Duende.IdentityServer.EntityFramework.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.AI;
 
 namespace ImageEdit.Features.RemoveBackground.V1;
 

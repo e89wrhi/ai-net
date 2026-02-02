@@ -1,20 +1,12 @@
-﻿using AI.Common.Core;
-using AI.Common.Web;
-using Ardalis.GuardClauses;
-using LearningAssistant.Data;
-using LearningAssistant.ValueObjects;
+﻿using AI.Common.Web;
+using Duende.IdentityServer.EntityFramework.Entities;
 using FluentValidation;
 using Mapster;
 using MapsterMapper;
-using MassTransit;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using LearningAssistant.Exceptions;
-using Microsoft.EntityFrameworkCore;
-using LearningAssistant.Models;
-using Duende.IdentityServer.EntityFramework.Entities;
 
 namespace LearningAssistant.Features.SubmitQuiz.V1;
 

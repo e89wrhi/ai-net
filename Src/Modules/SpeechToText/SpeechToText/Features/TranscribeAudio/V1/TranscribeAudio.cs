@@ -1,14 +1,9 @@
-using AI.Common.Core;
 using AI.Common.Web;
-using Ardalis.GuardClauses;
-using SpeechToText.Data;
-using SpeechToText.Models;
-using SpeechToText.ValueObjects;
+using Duende.IdentityServer.EntityFramework.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.AI;
 
 namespace SpeechToText.Features.TranscribeAudio.V1;
 

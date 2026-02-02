@@ -1,14 +1,9 @@
-using AI.Common.Core;
 using AI.Common.Web;
-using Ardalis.GuardClauses;
-using ImageCaption.Data;
-using ImageCaption.Models;
-using ImageCaption.ValueObjects;
+using Duende.IdentityServer.EntityFramework.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.AI;
 
 namespace ImageCaption.Features.AnalyzeImage.V1;
 

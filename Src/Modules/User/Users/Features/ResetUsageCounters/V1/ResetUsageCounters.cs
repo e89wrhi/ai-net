@@ -1,24 +1,16 @@
-﻿using AI.Common.Core;
-using AI.Common.Web;
-using Ardalis.GuardClauses;
-using User.Data;
-using User.ValueObjects;
+﻿using AI.Common.Web;
 using Duende.IdentityServer.EntityFramework.Entities;
 using FluentValidation;
 using Mapster;
 using MapsterMapper;
-using MassTransit;
-using MassTransit.Contracts;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using User.Exceptions;
 
 namespace User.Features.ResetUsageCounters.V1;
 
-
-public class ResetUsageCounterEndpoint : IMinimalEndpoint
+public class ResetUsageCountersEndpoint : IMinimalEndpoint
 {
     public IEndpointRouteBuilder MapEndpoint(IEndpointRouteBuilder builder)
     {

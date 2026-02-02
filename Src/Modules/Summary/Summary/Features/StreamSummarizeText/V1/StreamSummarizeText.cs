@@ -1,17 +1,9 @@
-using System.Runtime.CompilerServices;
-using System.Text;
-using AI.Common.Core;
 using AI.Common.Web;
-using Ardalis.GuardClauses;
-using Summary.Data;
-using Summary.Models;
-using Summary.ValueObjects;
-using Summary.Enums;
+using Duende.IdentityServer.EntityFramework.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.AI;
 
 namespace Summary.Features.StreamSummarizeText.V1;
 

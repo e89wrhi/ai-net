@@ -2,7 +2,7 @@
 using AI.Common.Core;
 using AutoComplete.Events;
 using AutoComplete.Features.DeleteAutoComplete.V1;
-using AutoComplete.Features.GenerateAICompletion.V1;
+using AutoComplete.Features.GenerateAutoComplete.V1;
 
 namespace AutoComplete;
 

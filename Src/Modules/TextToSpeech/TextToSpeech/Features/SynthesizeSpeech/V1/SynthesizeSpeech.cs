@@ -1,15 +1,9 @@
-using AI.Common.Core;
 using AI.Common.Web;
-using Ardalis.GuardClauses;
-using TextToSpeech.Data;
-using TextToSpeech.Models;
-using TextToSpeech.ValueObjects;
-using TextToSpeech.Enums;
+using Duende.IdentityServer.EntityFramework.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.AI;
 
 namespace TextToSpeech.Features.SynthesizeSpeech.V1;
 
