@@ -2,7 +2,6 @@
 
 namespace ChatBot.Features.StartChat.V1;
 
-
 public class StartChatCommandValidator : AbstractValidator<StartChatCommand>
 {
     public StartChatCommandValidator()

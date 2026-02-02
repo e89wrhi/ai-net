@@ -2,7 +2,6 @@
 
 namespace Payment.Features.GenerateInvoice.V1;
 
-
 public class GenerateInvoiceCommandValidator : AbstractValidator<GenerateInvoiceCommand>
 {
     public GenerateInvoiceCommandValidator()

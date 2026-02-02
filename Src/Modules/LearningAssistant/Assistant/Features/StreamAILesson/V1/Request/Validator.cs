@@ -1,2 +1,12 @@
-﻿namespace LearningAssistant.Features.StreamAILesson.V1;
+﻿using FluentValidation;
 
+namespace LearningAssistant.Features.StreamAILesson.V1;
+
+public class StreamAILessonCommandValidator : AbstractValidator<StreamAILessonCommand>
+{
+    public StreamAILessonCommandValidator()
+    {
+        RuleFor(x => x.Topic).NotEmpty();
+        RuleFor(x => x.Level).NotEmpty();
+    }
+}

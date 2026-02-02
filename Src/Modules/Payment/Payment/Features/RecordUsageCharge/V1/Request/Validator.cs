@@ -2,7 +2,6 @@
 
 namespace Payment.Features.RecordUsageCharge.V1;
 
-
 public class RecordUsageChargeCommandValidator : AbstractValidator<RecordUsageChargeCommand>
 {
     public RecordUsageChargeCommandValidator()

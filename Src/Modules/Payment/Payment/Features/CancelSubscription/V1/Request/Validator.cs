@@ -2,7 +2,6 @@
 
 namespace Payment.Features.CancelSubscription.V1;
 
-
 public class CancelSubscriptionCommandValidator : AbstractValidator<CancelSubscriptionCommand>
 {
     public CancelSubscriptionCommandValidator()

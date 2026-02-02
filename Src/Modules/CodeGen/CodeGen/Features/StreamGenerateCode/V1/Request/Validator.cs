@@ -1,2 +1,12 @@
-﻿namespace CodeGen.Features.StreamGenerateCode.V1;
+﻿using FluentValidation;
 
+namespace CodeGen.Features.StreamGenerateCode.V1;
+
+public class StreamGenerateCodeCommandValidator : AbstractValidator<StreamGenerateCodeCommand>
+{
+    public StreamGenerateCodeCommandValidator()
+    {
+        RuleFor(x => x.Language).NotEmpty();
+        RuleFor(x => x.Prompt).NotEmpty();
+    }
+}

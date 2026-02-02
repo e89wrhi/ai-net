@@ -1,2 +1,11 @@
-﻿namespace User.Features.CreateUser.V1;
+﻿using FluentValidation;
 
+namespace User.Features.CreateUser.V1;
+
+public class CreateUserCommandValidator : AbstractValidator<CreateUserCommand>
+{
+    public CreateUserCommandValidator()
+    {
+        RuleFor(x => x.SessionId).NotEmpty();
+    }
+}

@@ -1,2 +1,13 @@
-﻿namespace Summary.Features.SummarizeTextWithAI.V1;
+﻿using FluentValidation;
 
+namespace Summary.Features.SummarizeTextWithAI.V1;
+
+public class SummarizeTextWithAICommandValidator : AbstractValidator<SummarizeTextWithAICommand>
+{
+    public SummarizeTextWithAICommandValidator()
+    {
+        RuleFor(x => x.Text).NotEmpty();
+        RuleFor(x => x.DetailLevel).NotEmpty();
+        RuleFor(x => x.Language).NotEmpty();
+    }
+}
