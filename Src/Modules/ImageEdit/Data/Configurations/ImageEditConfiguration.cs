@@ -17,7 +17,7 @@ public class ImageEditConfiguration : IEntityTypeConfiguration<ImageEditModel>
     public void Configure(EntityTypeBuilder<ImageEditModel> builder)
     {
 
-        builder.ToTable(nameof(ImageEditModel));
+        builder.ToTable("image_edits");
 
         builder.HasKey(r => r.Id);
         builder.Property(r => r.Id).ValueGeneratedNever()

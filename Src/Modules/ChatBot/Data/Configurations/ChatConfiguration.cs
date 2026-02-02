@@ -17,7 +17,7 @@ public class ChatConfiguration : IEntityTypeConfiguration<ChatSession>
     public void Configure(EntityTypeBuilder<ChatSession> builder)
     {
 
-        builder.ToTable(nameof(ChatSession));
+        builder.ToTable("chats");
 
         builder.HasKey(r => r.Id);
         builder.Property(r => r.Id).ValueGeneratedNever()

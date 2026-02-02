@@ -17,7 +17,7 @@ public class UserConfiguration : IEntityTypeConfiguration<UserActivitySession>
     public void Configure(EntityTypeBuilder<UserActivitySession> builder)
     {
 
-        builder.ToTable(nameof(UserActivitySession));
+        builder.ToTable("users");
 
         builder.HasKey(r => r.Id);
         builder.Property(r => r.Id).ValueGeneratedNever()

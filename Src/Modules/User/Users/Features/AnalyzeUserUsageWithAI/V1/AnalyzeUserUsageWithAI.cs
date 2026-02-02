@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.AI;
 using Microsoft.EntityFrameworkCore;
+using Duende.IdentityServer.EntityFramework.Entities;
 
 namespace User.Features.AnalyzeUserUsageWithAI.V1;
 

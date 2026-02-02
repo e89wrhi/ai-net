@@ -17,7 +17,7 @@ public class CodeDebugConfiguration : IEntityTypeConfiguration<CodeDebugSession>
     public void Configure(EntityTypeBuilder<CodeDebugSession> builder)
     {
 
-        builder.ToTable(nameof(CodeDebugSession));
+        builder.ToTable("code_debugs");
 
         builder.HasKey(r => r.Id);
         builder.Property(r => r.Id).ValueGeneratedNever()

@@ -17,7 +17,7 @@ public class SentimentConfiguration : IEntityTypeConfiguration<SentimentModel>
     public void Configure(EntityTypeBuilder<SentimentModel> builder)
     {
 
-        builder.ToTable(nameof(SentimentModel));
+        builder.ToTable("sentiments");
 
         builder.HasKey(r => r.Id);
         builder.Property(r => r.Id).ValueGeneratedNever()

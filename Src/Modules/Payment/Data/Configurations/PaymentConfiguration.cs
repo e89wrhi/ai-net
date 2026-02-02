@@ -17,7 +17,7 @@ public class PaymentConfiguration : IEntityTypeConfiguration<SubscriptionModel>
     public void Configure(EntityTypeBuilder<SubscriptionModel> builder)
     {
 
-        builder.ToTable(nameof(SubscriptionModel));
+        builder.ToTable("payments");
 
         builder.HasKey(r => r.Id);
         builder.Property(r => r.Id).ValueGeneratedNever()

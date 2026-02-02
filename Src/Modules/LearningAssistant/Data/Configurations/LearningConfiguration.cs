@@ -17,7 +17,7 @@ public class LearningConfiguration : IEntityTypeConfiguration<ProfileModel>
     public void Configure(EntityTypeBuilder<ProfileModel> builder)
     {
 
-        builder.ToTable(nameof(ProfileModel));
+        builder.ToTable("learnings");
 
         builder.HasKey(r => r.Id);
         builder.Property(r => r.Id).ValueGeneratedNever()

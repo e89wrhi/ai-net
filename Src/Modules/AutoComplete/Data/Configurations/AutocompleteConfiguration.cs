@@ -12,7 +12,7 @@ public class AutocompleteConfiguration : IEntityTypeConfiguration<AutoCompleteSe
     public void Configure(EntityTypeBuilder<AutoCompleteSession> builder)
     {
 
-        builder.ToTable(nameof(AutoCompleteSession));
+        builder.ToTable("autocompletes");
 
         builder.HasKey(r => r.Id);
         builder.Property(r => r.Id).ValueGeneratedNever()

@@ -17,7 +17,7 @@ public class MeetingConfiguration : IEntityTypeConfiguration<MeetingModel>
     public void Configure(EntityTypeBuilder<MeetingModel> builder)
     {
 
-        builder.ToTable(nameof(MeetingModel));
+        builder.ToTable("meetings");
 
         builder.HasKey(r => r.Id);
         builder.Property(r => r.Id).ValueGeneratedNever()

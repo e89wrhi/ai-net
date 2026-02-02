@@ -17,7 +17,7 @@ public class ImageGenConfiguration : IEntityTypeConfiguration<ImageGenModel>
     public void Configure(EntityTypeBuilder<ImageGenModel> builder)
     {
 
-        builder.ToTable(nameof(ImageGenModel));
+        builder.ToTable("image_gens");
 
         builder.HasKey(r => r.Id);
         builder.Property(r => r.Id).ValueGeneratedNever()

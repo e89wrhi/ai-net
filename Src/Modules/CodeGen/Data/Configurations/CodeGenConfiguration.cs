@@ -17,7 +17,7 @@ public class CodeGenConfiguration : IEntityTypeConfiguration<CodeGenModel>
     public void Configure(EntityTypeBuilder<CodeGenModel> builder)
     {
 
-        builder.ToTable(nameof(CodeGenModel));
+        builder.ToTable("code_gens");
 
         builder.HasKey(r => r.Id);
         builder.Property(r => r.Id).ValueGeneratedNever()

@@ -17,7 +17,7 @@ public class ResumeConfiguration : IEntityTypeConfiguration<ResumeModel>
     public void Configure(EntityTypeBuilder<ResumeModel> builder)
     {
 
-        builder.ToTable(nameof(ResumeModel));
+        builder.ToTable("resumes");
 
         builder.HasKey(r => r.Id);
         builder.Property(r => r.Id).ValueGeneratedNever()

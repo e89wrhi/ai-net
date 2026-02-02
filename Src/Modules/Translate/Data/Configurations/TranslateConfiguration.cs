@@ -17,7 +17,7 @@ public class TranslateConfiguration : IEntityTypeConfiguration<TranslateModel>
     public void Configure(EntityTypeBuilder<TranslateModel> builder)
     {
 
-        builder.ToTable(nameof(TranslateModel));
+        builder.ToTable("translations");
 
         builder.HasKey(r => r.Id);
         builder.Property(r => r.Id).ValueGeneratedNever()

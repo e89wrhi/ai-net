@@ -17,7 +17,7 @@ public class ImageConfiguration : IEntityTypeConfiguration<ImageModel>
     public void Configure(EntityTypeBuilder<ImageModel> builder)
     {
 
-        builder.ToTable(nameof(ImageModel));
+        builder.ToTable("image_captions");
 
         builder.HasKey(r => r.Id);
         builder.Property(r => r.Id).ValueGeneratedNever()

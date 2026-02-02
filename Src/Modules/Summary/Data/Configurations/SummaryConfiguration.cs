@@ -17,7 +17,7 @@ public class SummaryConfiguration : IEntityTypeConfiguration<SummaryModel>
     public void Configure(EntityTypeBuilder<SummaryModel> builder)
     {
 
-        builder.ToTable(nameof(SummaryModel));
+        builder.ToTable("summaries");
 
         builder.HasKey(r => r.Id);
         builder.Property(r => r.Id).ValueGeneratedNever()

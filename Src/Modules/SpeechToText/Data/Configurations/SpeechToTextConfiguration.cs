@@ -17,7 +17,7 @@ public class SpeechToTextConfiguration : IEntityTypeConfiguration<SpeechToTextMo
     public void Configure(EntityTypeBuilder<SpeechToTextModel> builder)
     {
 
-        builder.ToTable(nameof(SpeechToTextModel));
+        builder.ToTable("speech_to_texts");
 
         builder.HasKey(r => r.Id);
         builder.Property(r => r.Id).ValueGeneratedNever()
