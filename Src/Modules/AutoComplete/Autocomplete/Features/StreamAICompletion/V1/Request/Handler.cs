@@ -10,7 +10,7 @@ using System.Text;
 namespace AutoComplete.Features.StreamAICompletion.V1;
 
 
-internal class StreamAICompletionHandler : IStreamRequestHandler<StreamAICompletionCommand, string>
+internal class StreamAICompletionHandler : IStreamRequestHandler<StreamAutoCompleteCommand, string>
 {
     private readonly IChatClient _chatClient;
     private readonly AutocompleteDbContext _dbContext;
@@ -21,7 +21,7 @@ internal class StreamAICompletionHandler : IStreamRequestHandler<StreamAIComplet
         _dbContext = dbContext;
     }
 
-    public async IAsyncEnumerable<string> Handle(StreamAICompletionCommand request,
+    public async IAsyncEnumerable<string> Handle(StreamAutoCompleteCommand request,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         Guard.Against.NullOrEmpty(request.Prompt, nameof(request.Prompt));
@@ -43,7 +43,7 @@ internal class StreamAICompletionHandler : IStreamRequestHandler<StreamAIComplet
         await PersistInteractionAsync(request, fullResponseBuilder.ToString(), tokenCount, cancellationToken);
     }
 
-    private async Task PersistInteractionAsync(StreamAICompletionCommand request, string fullResponse, int tokenCount, CancellationToken cancellationToken)
+    private async Task PersistInteractionAsync(StreamAutoCompleteCommand request, string fullResponse, int tokenCount, CancellationToken cancellationToken)
     {
         try
         {

@@ -24,7 +24,7 @@ public class GenerateAICompletionEndpoint : IMinimalEndpoint
                     // var userId = httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                     var userId = Guid.NewGuid(); // Mock User ID for now
 
-                    var command = new GenerateAICompletionCommand(userId, request.Prompt);
+                    var command = new GenerateAutoCompleteCommand(userId, request.Prompt);
                     var result = await mediator.Send(command, cancellationToken);
 
                     var response = new GenerateAICompletionResponseDto(result.Completion, result.TokensUsed, result.EstimatedCost);

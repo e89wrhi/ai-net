@@ -2,7 +2,6 @@
 
 namespace AutoComplete.Features.GenerateAICompletion.V1;
 
+public record GenerateAutoCompleteCommand(Guid UserId, string Prompt) : ICommand<GenerateAutoCompleteCommandResult>;
 
-public record GenerateAICompletionCommand(Guid UserId, string Prompt) : ICommand<GenerateAICompletionCommandResult>;
-
-public record GenerateAICompletionCommandResult(string Completion, int TokensUsed, decimal EstimatedCost);
+public record GenerateAutoCompleteCommandResult(string Completion, int TokensUsed, decimal EstimatedCost);

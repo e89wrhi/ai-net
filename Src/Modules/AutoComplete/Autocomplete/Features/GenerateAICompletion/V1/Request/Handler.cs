@@ -9,7 +9,7 @@ using Microsoft.Extensions.AI;
 namespace AutoComplete.Features.GenerateAICompletion.V1;
 
 
-internal class GenerateAICompletionHandler : ICommandHandler<GenerateAICompletionCommand, GenerateAICompletionCommandResult>
+internal class GenerateAICompletionHandler : ICommandHandler<GenerateAutoCompleteCommand, GenerateAutoCompleteCommandResult>
 {
     private readonly IChatClient _chatClient;
     private readonly AutocompleteDbContext _dbContext;
@@ -20,7 +20,7 @@ internal class GenerateAICompletionHandler : ICommandHandler<GenerateAICompletio
         _dbContext = dbContext;
     }
 
-    public async Task<GenerateAICompletionCommandResult> Handle(GenerateAICompletionCommand request,
+    public async Task<GenerateAutoCompleteCommandResult> Handle(GenerateAutoCompleteCommand request,
         CancellationToken cancellationToken)
     {
         Guard.Against.NullOrEmpty(request.Prompt, nameof(request.Prompt));

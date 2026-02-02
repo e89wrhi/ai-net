@@ -3,8 +3,6 @@ using MassTransit;
 
 namespace LearningAssistant.Features.SubmitQuiz.V1;
 
-
-
 public record SubmitQuizCommand(Guid LessonId, Guid QuizId, double Score) : ICommand<SubmitQuizCommandResponse>
 {
     public Guid Id { get; init; } = NewId.NextGuid();

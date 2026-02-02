@@ -24,7 +24,7 @@ public class StreamAICompletionEndpoint : IMinimalEndpoint
                 {
                     // Mock User ID or extract from context
                     var userId = Guid.NewGuid();
-                    var command = new StreamAICompletionCommand(userId, request.Prompt);
+                    var command = new StreamAutoCompleteCommand(userId, request.Prompt);
                     
                     return mediator.CreateStream(command, cancellationToken);
                 })

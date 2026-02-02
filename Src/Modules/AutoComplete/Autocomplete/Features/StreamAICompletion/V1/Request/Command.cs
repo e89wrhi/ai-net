@@ -2,5 +2,4 @@
 
 namespace AutoComplete.Features.StreamAICompletion.V1;
 
-
-public record StreamAICompletionCommand(Guid UserId, string Prompt) : IStreamRequest<string>;
+public record StreamAutoCompleteCommand(Guid UserId, string Prompt) : IStreamRequest<string>;

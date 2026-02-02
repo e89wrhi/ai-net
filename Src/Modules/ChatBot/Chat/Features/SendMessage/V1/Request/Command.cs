@@ -3,7 +3,6 @@ using MassTransit;
 
 namespace ChatBot.Features.SendMessage.V1;
 
-
 public record SendMessageCommand(Guid SessionId, string Content, string Sender, int TokenUsed) : ICommand<SendMessageCommandResponse>
 {
     public Guid Id { get; init; } = NewId.NextGuid();
