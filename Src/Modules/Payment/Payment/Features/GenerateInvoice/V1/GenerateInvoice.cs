@@ -19,17 +19,6 @@ using Payment.Models;
 namespace Payment.Features.GenerateInvoice.V1;
 
 
-public record GenerateInvoiceCommand(Guid SubscriptionId, decimal Amount, string Currency, string LineItems) : ICommand<GenerateInvoiceCommandResponse>
-{
-    public Guid Id { get; init; } = NewId.NextGuid();
-}
-
-public record GenerateInvoiceCommandResponse(Guid Id);
-
-public record GenerateInvoiceRequest(Guid SubscriptionId, decimal Amount, string Currency, string LineItems);
-
-public record GenerateInvoiceRequestResponse(Guid Id);
-
 public class GenerateInvoiceEndpoint : IMinimalEndpoint
 {
     public IEndpointRouteBuilder MapEndpoint(IEndpointRouteBuilder builder)
@@ -57,50 +46,6 @@ public class GenerateInvoiceEndpoint : IMinimalEndpoint
             .HasApiVersion(1.0);
 
         return builder;
-    }
-}
-
-public class GenerateInvoiceCommandValidator : AbstractValidator<GenerateInvoiceCommand>
-{
-    public GenerateInvoiceCommandValidator()
-    {
-        RuleFor(x => x.SubscriptionId).NotEmpty();
-        RuleFor(x => x.Amount).GreaterThan(0);
-    }
-}
-
-internal class GenerateInvoiceHandler : IRequestHandler<GenerateInvoiceCommand, GenerateInvoiceCommandResponse>
-{
-    private readonly PaymentDbContext _dbContext;
-
-    public GenerateInvoiceHandler(PaymentDbContext dbContext)
-    {
-        _dbContext = dbContext;
-    }
-
-    public async Task<GenerateInvoiceCommandResponse> Handle(GenerateInvoiceCommand request, CancellationToken cancellationToken)
-    {
-        Guard.Against.Null(request, nameof(request));
-
-        var subscription = await _dbContext.Subscriptions.FindAsync(new object[] { SubscriptionId.Of(request.SubscriptionId) }, cancellationToken);
-
-        if (subscription == null)
-        {
-            throw new SubscriptionNotFoundException(request.SubscriptionId);
-        }
-
-        var invoiceNumber = $"INV-{subscription.Id.Value.ToString().Substring(0, 8)}-{DateTime.UtcNow:yyyyMMdd}";
-        var invoice = Invoice.Create(
-            InvoiceId.Of(NewId.NextGuid()),
-            invoiceNumber,
-            Money.Of(request.Amount),
-            CurrencyCode.Of(request.Currency));
-
-        subscription.AddInvoice(invoice);
-
-        await _dbContext.SaveChangesAsync(cancellationToken);
-        
-        return new GenerateInvoiceCommandResponse(invoice.Id.Value);
     }
 }
 

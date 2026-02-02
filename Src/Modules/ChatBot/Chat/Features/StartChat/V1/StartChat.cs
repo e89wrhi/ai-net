@@ -17,17 +17,6 @@ using Microsoft.AspNetCore.Routing;
 
 namespace ChatBot.Features.StartChat.V1;
 
-public record StartChatCommand(Guid UserId, string Title, string AiModelId) : ICommand<StartChatCommandResponse>
-{
-    public Guid Id { get; init; } = NewId.NextGuid();
-}
-
-public record StartChatCommandResponse(Guid Id);
-
-public record StartChatRequest(Guid UserId, string Title, string AiModelId);
-
-public record StartChatRequestResponse(Guid Id);
-
 public class StartChatEndpoint : IMinimalEndpoint
 {
     public IEndpointRouteBuilder MapEndpoint(IEndpointRouteBuilder builder)
@@ -57,40 +46,3 @@ public class StartChatEndpoint : IMinimalEndpoint
         return builder;
     }
 }
-
-public class StartChatCommandValidator : AbstractValidator<StartChatCommand>
-{
-    public StartChatCommandValidator()
-    {
-        RuleFor(x => x.UserId).NotEmpty();
-        RuleFor(x => x.Title).NotEmpty();
-        RuleFor(x => x.AiModelId).NotEmpty();
-    }
-}
-
-internal class StartChatHandler : IRequestHandler<StartChatCommand, StartChatCommandResponse>
-{
-    private readonly ChatDbContext _dbContext;
-
-    public StartChatHandler(ChatDbContext dbContext)
-    {
-        _dbContext = dbContext;
-    }
-
-    public async Task<StartChatCommandResponse> Handle(StartChatCommand request, CancellationToken cancellationToken)
-    {
-        Guard.Against.Null(request, nameof(request));
-
-        var chat = ChatSession.Create(
-            SessionId.Of(NewId.NextGuid()),
-            UserId.Of(request.UserId),
-            request.Title,
-            request.AiModelId);
-
-        await _dbContext.Chats.AddAsync(chat, cancellationToken);
-        await _dbContext.SaveChangesAsync(cancellationToken);
-        
-        return new StartChatCommandResponse(chat.Id.Value);
-    }
-}
-

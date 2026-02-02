@@ -16,8 +16,6 @@ using Microsoft.Extensions.AI;
 
 namespace ChatBot.Features.StreamAiResponse.V1;
 
-public record StreamAiResponseCommand(Guid SessionId) : IStreamRequest<string>;
-
 public class StreamAiResponseEndpoint : IMinimalEndpoint
 {
     public IEndpointRouteBuilder MapEndpoint(IEndpointRouteBuilder builder)
@@ -41,8 +39,6 @@ public class StreamAiResponseEndpoint : IMinimalEndpoint
         return builder;
     }
 }
-
-public record StreamAiResponseRequestDto(Guid SessionId);
 
 internal class StreamAiResponseHandler : IStreamRequestHandler<StreamAiResponseCommand, string>
 {

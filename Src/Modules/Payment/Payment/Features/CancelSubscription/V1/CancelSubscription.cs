@@ -18,17 +18,6 @@ using Payment.Exceptions;
 namespace Payment.Features.CancelSubscription.V1;
 
 
-public record CancelSubscriptionCommand(Guid SubscriptionId) : ICommand<CancelSubscriptionCommandResponse>
-{
-    public Guid Id { get; init; } = NewId.NextGuid();
-}
-
-public record CancelSubscriptionCommandResponse(Guid Id);
-
-public record CancelSubscriptionRequest(Guid SubscriptionId);
-
-public record CancelSubscriptionRequestResponse(Guid Id);
-
 public class CancelSubscriptionEndpoint : IMinimalEndpoint
 {
     public IEndpointRouteBuilder MapEndpoint(IEndpointRouteBuilder builder)
@@ -58,40 +47,3 @@ public class CancelSubscriptionEndpoint : IMinimalEndpoint
         return builder;
     }
 }
-
-public class CancelSubscriptionCommandValidator : AbstractValidator<CancelSubscriptionCommand>
-{
-    public CancelSubscriptionCommandValidator()
-    {
-        RuleFor(x => x.SubscriptionId).NotEmpty();
-    }
-}
-
-internal class CancelSubscriptionHandler : IRequestHandler<CancelSubscriptionCommand, CancelSubscriptionCommandResponse>
-{
-    private readonly PaymentDbContext _dbContext;
-
-    public CancelSubscriptionHandler(PaymentDbContext dbContext)
-    {
-        _dbContext = dbContext;
-    }
-
-    public async Task<CancelSubscriptionCommandResponse> Handle(CancelSubscriptionCommand request, CancellationToken cancellationToken)
-    {
-        Guard.Against.Null(request, nameof(request));
-
-        var subscription = await _dbContext.Subscriptions.FindAsync(new object[] { SubscriptionId.Of(request.SubscriptionId) }, cancellationToken);
-
-        if (subscription == null)
-        {
-            throw new SubscriptionNotFoundException(request.SubscriptionId);
-        }
-
-        subscription.Cancel();
-
-        await _dbContext.SaveChangesAsync(cancellationToken);
-        
-        return new CancelSubscriptionCommandResponse(subscription.Id.Value);
-    }
-}
-

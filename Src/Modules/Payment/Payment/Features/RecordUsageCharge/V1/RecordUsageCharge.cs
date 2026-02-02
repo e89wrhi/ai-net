@@ -19,17 +19,6 @@ using Payment.Models;
 namespace Payment.Features.RecordUsageCharge.V1;
 
 
-public record RecordUsageChargeCommand(Guid SubscriptionId, string TokenUsed, string Description, decimal Cost, string Currency, string Module) : ICommand<RecordUsageChargeCommandResponse>
-{
-    public Guid Id { get; init; } = NewId.NextGuid();
-}
-
-public record RecordUsageChargeCommandResponse(Guid Id);
-
-public record RecordUsageChargeRequest(Guid SubscriptionId, string TokenUsed, string Description, decimal Cost, string Currency, string Module);
-
-public record RecordUsageChargeRequestResponse(Guid Id);
-
 public class RecordUsageChargeEndpoint : IMinimalEndpoint
 {
     public IEndpointRouteBuilder MapEndpoint(IEndpointRouteBuilder builder)
@@ -59,50 +48,3 @@ public class RecordUsageChargeEndpoint : IMinimalEndpoint
         return builder;
     }
 }
-
-public class RecordUsageChargeCommandValidator : AbstractValidator<RecordUsageChargeCommand>
-{
-    public RecordUsageChargeCommandValidator()
-    {
-        RuleFor(x => x.SubscriptionId).NotEmpty();
-        RuleFor(x => x.Cost).GreaterThanOrEqualTo(0);
-    }
-}
-
-internal class RecordUsageChargeHandler : IRequestHandler<RecordUsageChargeCommand, RecordUsageChargeCommandResponse>
-{
-    private readonly PaymentDbContext _dbContext;
-
-    public RecordUsageChargeHandler(PaymentDbContext dbContext)
-    {
-        _dbContext = dbContext;
-    }
-
-    public async Task<RecordUsageChargeCommandResponse> Handle(RecordUsageChargeCommand request, CancellationToken cancellationToken)
-    {
-        Guard.Against.Null(request, nameof(request));
-
-        var subscription = await _dbContext.Subscriptions.FindAsync(new object[] { SubscriptionId.Of(request.SubscriptionId) }, cancellationToken);
-
-        if (subscription == null)
-        {
-            throw new SubscriptionNotFoundException(request.SubscriptionId);
-        }
-
-        var charge = UsageCharge.Create(
-            PaymentId.Of(NewId.NextGuid()),
-            subscription.Id,
-            subscription.UserId,
-            request.TokenUsed,
-            request.Description,
-            Money.Of(request.Cost),
-            request.Module);
-
-        subscription.AddCharge(charge);
-
-        await _dbContext.SaveChangesAsync(cancellationToken);
-        
-        return new RecordUsageChargeCommandResponse(charge.Id.Value);
-    }
-}
-

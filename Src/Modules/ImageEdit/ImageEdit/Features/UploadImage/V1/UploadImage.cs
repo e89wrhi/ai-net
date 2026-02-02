@@ -17,17 +17,6 @@ using Microsoft.AspNetCore.Routing;
 
 namespace ImageEdit.Features.StartImageEdit.V1;
 
-public record StartImageEditCommand(Guid UserId, string Title, string AiModelId) : ICommand<StartImageEditCommandResponse>
-{
-    public Guid Id { get; init; } = NewId.NextGuid();
-}
-
-public record StartImageEditCommandResponse(Guid Id);
-
-public record StartImageEditRequest(Guid UserId, string Title, string AiModelId);
-
-public record StartImageEditRequestResponse(Guid Id);
-
 public class StartImageEditEndpoint : IMinimalEndpoint
 {
     public IEndpointRouteBuilder MapEndpoint(IEndpointRouteBuilder builder)
@@ -57,40 +46,3 @@ public class StartImageEditEndpoint : IMinimalEndpoint
         return builder;
     }
 }
-
-public class StartImageEditCommandValidator : AbstractValidator<StartImageEditCommand>
-{
-    public StartImageEditCommandValidator()
-    {
-        RuleFor(x => x.UserId).NotEmpty();
-        RuleFor(x => x.Title).NotEmpty();
-        RuleFor(x => x.AiModelId).NotEmpty();
-    }
-}
-
-internal class StartImageEditHandler : IRequestHandler<StartImageEditCommand, StartImageEditCommandResponse>
-{
-    private readonly ImageEditDbContext _dbContext;
-
-    public StartImageEditHandler(ImageEditDbContext dbContext)
-    {
-        _dbContext = dbContext;
-    }
-
-    public async Task<StartImageEditCommandResponse> Handle(StartImageEditCommand request, CancellationToken cancellationToken)
-    {
-        Guard.Against.Null(request, nameof(request));
-
-        var imageedit = ImageEditModel.Create(
-            SessionId.Of(NewId.NextGuid()),
-            UserId.Of(request.UserId),
-            request.Title,
-            request.AiModelId);
-
-        await _dbContext.ImageEdits.AddAsync(imageedit, cancellationToken);
-        await _dbContext.SaveChangesAsync(cancellationToken);
-        
-        return new StartImageEditCommandResponse(imageedit.Id.Value);
-    }
-}
-

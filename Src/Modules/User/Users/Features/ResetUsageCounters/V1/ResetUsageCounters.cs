@@ -18,17 +18,6 @@ using User.Exceptions;
 namespace User.Features.ResetUsageCounters.V1;
 
 
-public record ResetUsageCounterCommand(Guid UserId) : ICommand<ResetUsageCounterCommandResponse>
-{
-    public Guid Id { get; init; } = NewId.NextGuid();
-}
-
-public record ResetUsageCounterCommandResponse(Guid Id);
-
-public record ResetUsageCounterRequest(Guid UserId);
-
-public record ResetUsageCounterRequestResponse(Guid Id);
-
 public class ResetUsageCounterEndpoint : IMinimalEndpoint
 {
     public IEndpointRouteBuilder MapEndpoint(IEndpointRouteBuilder builder)
@@ -56,42 +45,6 @@ public class ResetUsageCounterEndpoint : IMinimalEndpoint
             .HasApiVersion(1.0);
 
         return builder;
-    }
-}
-
-public class ResetUsageCounterCommandValidator : AbstractValidator<ResetUsageCounterCommand>
-{
-    public ResetUsageCounterCommandValidator()
-    {
-        RuleFor(x => x.UserId).NotEmpty();
-    }
-}
-
-internal class ResetUsageCounterHandler : IRequestHandler<ResetUsageCounterCommand, ResetUsageCounterCommandResponse>
-{
-    private readonly UserDbContext _dbContext;
-
-    public ResetUsageCounterHandler(UserDbContext dbContext)
-    {
-        _dbContext = dbContext;
-    }
-
-    public async Task<ResetUsageCounterCommandResponse> Handle(ResetUsageCounterCommand request, CancellationToken cancellationToken)
-    {
-        Guard.Against.Null(request, nameof(request));
-
-        var user = await _dbContext.Users.FindAsync(new object[] { UserId.Of(request.UserId) }, cancellationToken);
-
-        if (user == null)
-        {
-            throw new UserNotFoundException(request.UserId);
-        }
-
-        user.ResetUsages();
-
-        await _dbContext.SaveChangesAsync(cancellationToken);
-        
-        return new ResetUsageCounterCommandResponse(user.Id.Value);
     }
 }
 

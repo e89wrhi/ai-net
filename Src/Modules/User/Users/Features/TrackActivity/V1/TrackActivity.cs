@@ -20,17 +20,6 @@ using User.Models;
 namespace User.Features.TrackActivity.V1;
 
 
-public record TrackActivityCommand(Guid UserId, TrackedModule Module, string Action, Guid ResourceId, string IpAddress, string UserAgent) : ICommand<TrackActivityCommandResponse>
-{
-    public Guid Id { get; init; } = NewId.NextGuid();
-}
-
-public record TrackActivityCommandResponse(Guid Id);
-
-public record TrackActivityRequest(Guid UserId, TrackedModule Module, string Action, Guid ResourceId);
-
-public record TrackActivityRequestResponse(Guid Id);
-
 public class TrackActivityEndpoint : IMinimalEndpoint
 {
     public IEndpointRouteBuilder MapEndpoint(IEndpointRouteBuilder builder)
@@ -68,52 +57,6 @@ public class TrackActivityEndpoint : IMinimalEndpoint
             .HasApiVersion(1.0);
 
         return builder;
-    }
-}
-
-public class TrackActivityCommandValidator : AbstractValidator<TrackActivityCommand>
-{
-    public TrackActivityCommandValidator()
-    {
-        RuleFor(x => x.UserId).NotEmpty();
-        RuleFor(x => x.Action).NotEmpty();
-    }
-}
-
-internal class TrackActivityHandler : IRequestHandler<TrackActivityCommand, TrackActivityCommandResponse>
-{
-    private readonly UserDbContext _dbContext;
-
-    public TrackActivityHandler(UserDbContext dbContext)
-    {
-        _dbContext = dbContext;
-    }
-
-    public async Task<TrackActivityCommandResponse> Handle(TrackActivityCommand request, CancellationToken cancellationToken)
-    {
-        Guard.Against.Null(request, nameof(request));
-
-        var user = await _dbContext.Users.FindAsync(new object[] { UserId.Of(request.UserId) }, cancellationToken);
-
-        if (user == null)
-        {
-            throw new UserNotFoundException(request.UserId);
-        }
-
-        var activity = User.UserActivity.Create(
-            UserAnalyticsId.Of(NewId.NextGuid()),
-            user.Id,
-            request.Module,
-            request.Action,
-            request.ResourceId,
-            request.IpAddress,
-            request.UserAgent);
-
-        user.TrackActivity(activity);
-
-        await _dbContext.SaveChangesAsync(cancellationToken);
-
-        return new TrackActivityCommandResponse(activity.Id.Value);
     }
 }
 
