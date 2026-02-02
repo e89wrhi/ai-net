@@ -9,7 +9,7 @@ using System.Collections.Generic;
 
 public static class InitialData
 {
-    public static List<MeetingModel> Meetings { get; } = new()
+    public static List<MeetingAnalysisSession> Meetings { get; } = new()
     {
         MeetingModel.Create(MeetingId.Of(Guid.Parse("ca8fad5b-d9cb-469f-a165-708677289510")), "0f8fad5b-d9cb-469f-a165-70867728950e", ValueObjects.MeetingAnalysisConfiguration.Of("Weekly Sync"), AudioSource.Of("recordings/weekly_sync.mp3"))
     };

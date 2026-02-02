@@ -1,21 +1,14 @@
 ﻿using AI.Common.EFCore;
-using ChatBot.Models;
-using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
-using MongoDB.Driver;
-using MongoDB.Driver.Linq;
 
 namespace ChatBot.Data.Seed;
 
 public class ChatDataSeeder(
-    ChatDbContext eventDbContext,
-    ChatReadDbContext eventReadDbContext,
-    IMapper mapper
-) : IDataSeeder
+    ChatDbContext dbContext) : IDataSeeder
 {
     public async Task SeedAllAsync()
     {
-        var pendingMigrations = await eventDbContext.Database.GetPendingMigrationsAsync();
+        var pendingMigrations = await dbContext.Database.GetPendingMigrationsAsync();
 
         if (!pendingMigrations.Any())
         {
@@ -25,15 +18,10 @@ public class ChatDataSeeder(
 
     private async Task SeedChatAsync()
     {
-        if (!await EntityFrameworkQueryableExtensions.AnyAsync(eventDbContext.Chats))
+        if (!await dbContext.Chats.AnyAsync())
         {
-            await eventDbContext.Chats.AddRangeAsync(InitialData.Chats);
-            await eventDbContext.SaveChangesAsync();
-
-            if (!await MongoQueryable.AnyAsync(eventReadDbContext.Chats.AsQueryable()))
-            {
-                await eventReadDbContext.Chats.InsertManyAsync(mapper.Map<List<ChatSessionReadModel>>(InitialData.Chats));
-            }
+            await dbContext.Chats.AddRangeAsync(InitialData.Chats);
+            await dbContext.SaveChangesAsync();
         }
     }
 }

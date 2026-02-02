@@ -1,21 +1,15 @@
 ﻿using AI.Common.EFCore;
-using User.Models;
-using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
-using MongoDB.Driver;
-using MongoDB.Driver.Linq;
 
 namespace User.Data.Seed;
 
 public class UserDataSeeder(
-    UserDbContext eventDbContext,
-    UserReadDbContext eventReadDbContext,
-    IMapper mapper
+    UserDbContext dbContext
 ) : IDataSeeder
 {
     public async Task SeedAllAsync()
     {
-        var pendingMigrations = await eventDbContext.Database.GetPendingMigrationsAsync();
+        var pendingMigrations = await dbContext.Database.GetPendingMigrationsAsync();
 
         if (!pendingMigrations.Any())
         {
@@ -25,15 +19,10 @@ public class UserDataSeeder(
 
     private async Task SeedUserAsync()
     {
-        if (!await EntityFrameworkQueryableExtensions.AnyAsync(eventDbContext.Users))
+        if (!await dbContext.Sessions.AnyAsync())
         {
-            await eventDbContext.Users.AddRangeAsync(InitialData.Users);
-            await eventDbContext.SaveChangesAsync();
-
-            if (!await MongoQueryable.AnyAsync(eventReadDbContext.User.AsQueryable()))
-            {
-                await eventReadDbContext.User.InsertManyAsync(mapper.Map<List<UserAnalyticsReadModel>>(InitialData.Users));
-            }
+            await dbContext.Sessions.AddRangeAsync(InitialData.Users);
+            await dbContext.SaveChangesAsync();
         }
     }
 }

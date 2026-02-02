@@ -1,21 +1,15 @@
 ﻿using AI.Common.EFCore;
-using ImageEdit.Models;
-using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
-using MongoDB.Driver;
-using MongoDB.Driver.Linq;
 
 namespace ImageEdit.Data.Seed;
 
 public class ImageEditDataSeeder(
-    ImageEditDbContext eventDbContext,
-    ImageEditReadDbContext eventReadDbContext,
-    IMapper mapper
+    ImageEditDbContext dbContext
 ) : IDataSeeder
 {
     public async Task SeedAllAsync()
     {
-        var pendingMigrations = await eventDbContext.Database.GetPendingMigrationsAsync();
+        var pendingMigrations = await dbContext.Database.GetPendingMigrationsAsync();
 
         if (!pendingMigrations.Any())
         {
@@ -25,15 +19,10 @@ public class ImageEditDataSeeder(
 
     private async Task SeedImageEditAsync()
     {
-        if (!await EntityFrameworkQueryableExtensions.AnyAsync(eventDbContext.ImageEdits))
+        if (!await dbContext.Sessions.AnyAsync())
         {
-            await eventDbContext.ImageEdits.AddRangeAsync(InitialData.ImageEdits);
-            await eventDbContext.SaveChangesAsync();
-
-            if (!await MongoQueryable.AnyAsync(eventReadDbContext.ImageEdits.AsQueryable()))
-            {
-                await eventReadDbContext.ImageEdits.InsertManyAsync(mapper.Map<List<ImageEditSessionReadModel>>(InitialData.ImageEdits));
-            }
+            await dbContext.Sessions.AddRangeAsync(InitialData.ImageEdits);
+            await dbContext.SaveChangesAsync();
         }
     }
 }

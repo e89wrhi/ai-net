@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 public static class InitialData
 {
-    public static List<ImageModel> Images { get; } = new()
+    public static List<ImageCaptionSession> Images { get; } = new()
     {
         ImageModel.Create(ImageCaptionResultId.Of(Guid.Parse("9a8fad5b-d9cb-469f-a165-70867728950c")), "0f8fad5b-d9cb-469f-a165-70867728950e", ValueObjects.CaptionConfidence.Of("uploads/img1.jpg", "filename.jpg"), 1920, 1080, 500000, "jpg"),
         ImageModel.Create(ImageCaptionResultId.Of(Guid.Parse("aa8fad5b-d9cb-469f-a165-70867728950d")), "0f8fad5b-d9cb-469f-a165-70867728950e", ValueObjects.CaptionConfidence.Of("uploads/img2.png", "filename.png"), 800, 600, 200000, "png")

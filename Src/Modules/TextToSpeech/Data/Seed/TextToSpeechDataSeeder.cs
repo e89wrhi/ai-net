@@ -1,21 +1,15 @@
 ﻿using AI.Common.EFCore;
-using TextToSpeech.Models;
-using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
-using MongoDB.Driver;
-using MongoDB.Driver.Linq;
 
 namespace TextToSpeech.Data.Seed;
 
 public class TextToSpeechDataSeeder(
-    TextToSpeechDbContext eventDbContext,
-    TextToSpeechReadDbContext eventReadDbContext,
-    IMapper mapper
+    TextToSpeechDbContext dbContext
 ) : IDataSeeder
 {
     public async Task SeedAllAsync()
     {
-        var pendingMigrations = await eventDbContext.Database.GetPendingMigrationsAsync();
+        var pendingMigrations = await dbContext.Database.GetPendingMigrationsAsync();
 
         if (!pendingMigrations.Any())
         {
@@ -25,15 +19,10 @@ public class TextToSpeechDataSeeder(
 
     private async Task SeedTextToSpeechAsync()
     {
-        if (!await EntityFrameworkQueryableExtensions.AnyAsync(eventDbContext.TextToSpeechs))
+        if (!await dbContext.Sessions.AnyAsync())
         {
-            await eventDbContext.TextToSpeechs.AddRangeAsync(InitialData.TextToSpeechs);
-            await eventDbContext.SaveChangesAsync();
-
-            if (!await MongoQueryable.AnyAsync(eventReadDbContext.TextToSpeechs.AsQueryable()))
-            {
-                await eventReadDbContext.TextToSpeechs.InsertManyAsync(mapper.Map<List<TextToSpeechSessionReadModel>>(InitialData.TextToSpeechs));
-            }
+            await dbContext.Sessions.AddRangeAsync(InitialData.TextToSpeechs);
+            await dbContext.SaveChangesAsync();
         }
     }
 }

@@ -1,21 +1,15 @@
 ﻿using AI.Common.EFCore;
-using ImageCaption.Models;
-using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
-using MongoDB.Driver;
-using MongoDB.Driver.Linq;
 
 namespace ImageCaption.Data.Seed;
 
 public class ImageDataSeeder(
-    ImageCaptionDbContext eventDbContext,
-    ImageCaptionReadDbContext eventReadDbContext,
-    IMapper mapper
+    ImageCaptionDbContext dbContext
 ) : IDataSeeder
 {
     public async Task SeedAllAsync()
     {
-        var pendingMigrations = await eventDbContext.Database.GetPendingMigrationsAsync();
+        var pendingMigrations = await dbContext.Database.GetPendingMigrationsAsync();
 
         if (!pendingMigrations.Any())
         {
@@ -25,15 +19,10 @@ public class ImageDataSeeder(
 
     private async Task SeedImageAsync()
     {
-        if (!await EntityFrameworkQueryableExtensions.AnyAsync(eventDbContext.Images))
+        if (!await dbContext.Sessions.AnyAsync())
         {
-            await eventDbContext.Images.AddRangeAsync(InitialData.Images);
-            await eventDbContext.SaveChangesAsync();
-
-            if (!await MongoQueryable.AnyAsync(eventReadDbContext.Image.AsQueryable()))
-            {
-                await eventReadDbContext.Image.InsertManyAsync(mapper.Map<List<ImageCaptionReadModel>>(InitialData.Images));
-            }
+            await dbContext.Sessions.AddRangeAsync(InitialData.Images);
+            await dbContext.SaveChangesAsync();
         }
     }
 }

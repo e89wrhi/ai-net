@@ -9,7 +9,7 @@ using System.Collections.Generic;
 
 public static class InitialData
 {
-    public static List<ResumeModel> Resumes { get; } = new()
+    public static List<ResumeAnalysisSession> Resumes { get; } = new()
     {
         ResumeModel.Create(ResumeId.Of(Guid.Parse("ea8fad5b-d9cb-469f-a165-708677289512")), "0f8fad5b-d9cb-469f-a165-70867728950e", ValueObjects.ResumeAnalysisConfiguration.Of("John Doe"), ValueObjects.ResumeFile.Of("resumes/john_doe_resume.pdf", "filename.pdf"))
     };

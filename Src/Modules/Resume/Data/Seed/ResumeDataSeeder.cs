@@ -1,21 +1,15 @@
 ﻿using AI.Common.EFCore;
-using Resume.Models;
-using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
-using MongoDB.Driver;
-using MongoDB.Driver.Linq;
 
 namespace Resume.Data.Seed;
 
 public class ResumeDataSeeder(
-    ResumeDbContext eventDbContext,
-    ResumeReadDbContext eventReadDbContext,
-    IMapper mapper
+    ResumeDbContext dbContext
 ) : IDataSeeder
 {
     public async Task SeedAllAsync()
     {
-        var pendingMigrations = await eventDbContext.Database.GetPendingMigrationsAsync();
+        var pendingMigrations = await dbContext.Database.GetPendingMigrationsAsync();
 
         if (!pendingMigrations.Any())
         {
@@ -25,15 +19,10 @@ public class ResumeDataSeeder(
 
     private async Task SeedResumeAsync()
     {
-        if (!await EntityFrameworkQueryableExtensions.AnyAsync(eventDbContext.Resumes))
+        if (!await dbContext.Sessions.AnyAsync())
         {
-            await eventDbContext.Resumes.AddRangeAsync(InitialData.Resumes);
-            await eventDbContext.SaveChangesAsync();
-
-            if (!await MongoQueryable.AnyAsync(eventReadDbContext.Resume.AsQueryable()))
-            {
-                await eventReadDbContext.Resume.InsertManyAsync(mapper.Map<List<ResumeAnalysisReadModel>>(InitialData.Resumes));
-            }
+            await dbContext.Sessions.AddRangeAsync(InitialData.Resumes);
+            await dbContext.SaveChangesAsync();
         }
     }
 }

@@ -1,21 +1,15 @@
 ﻿using AI.Common.EFCore;
-using LearningAssistant.Models;
-using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
-using MongoDB.Driver;
-using MongoDB.Driver.Linq;
 
 namespace LearningAssistant.Data.Seed;
 
 public class ProfileDataSeeder(
-    LearningDbContext eventDbContext,
-    LearningReadDbContext eventReadDbContext,
-    IMapper mapper
+    LearningDbContext dbContext
 ) : IDataSeeder
 {
     public async Task SeedAllAsync()
     {
-        var pendingMigrations = await eventDbContext.Database.GetPendingMigrationsAsync();
+        var pendingMigrations = await dbContext.Database.GetPendingMigrationsAsync();
 
         if (!pendingMigrations.Any())
         {
@@ -25,15 +19,10 @@ public class ProfileDataSeeder(
 
     private async Task SeedAssistantAsync()
     {
-        if (!await EntityFrameworkQueryableExtensions.AnyAsync(eventDbContext.Profiles))
+        if (!await dbContext.Sessions.AnyAsync())
         {
-            await eventDbContext.Profiles.AddRangeAsync(InitialData.Profiles);
-            await eventDbContext.SaveChangesAsync();
-
-            if (!await MongoQueryable.AnyAsync(eventReadDbContext.Profiles.AsQueryable()))
-            {
-                await eventReadDbContext.Profiles.InsertManyAsync(mapper.Map<List<LearningSessionReadModel>>(InitialData.Profiles));
-            }
+            await dbContext.Sessions.AddRangeAsync(InitialData.Profiles);
+            await dbContext.SaveChangesAsync();
         }
     }
 }

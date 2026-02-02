@@ -1,21 +1,15 @@
 ﻿using AI.Common.EFCore;
-using Summary.Models;
-using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
-using MongoDB.Driver;
-using MongoDB.Driver.Linq;
 
 namespace Summary.Data.Seed;
 
 public class SummaryDataSeeder(
-    SummaryDbContext eventDbContext,
-    SummaryReadDbContext eventReadDbContext,
-    IMapper mapper
+    SummaryDbContext dbContext
 ) : IDataSeeder
 {
     public async Task SeedAllAsync()
     {
-        var pendingMigrations = await eventDbContext.Database.GetPendingMigrationsAsync();
+        var pendingMigrations = await dbContext.Database.GetPendingMigrationsAsync();
 
         if (!pendingMigrations.Any())
         {
@@ -25,15 +19,10 @@ public class SummaryDataSeeder(
 
     private async Task SeedSummaryAsync()
     {
-        if (!await EntityFrameworkQueryableExtensions.AnyAsync(eventDbContext.Summarys))
+        if (!await dbContext.Sessions.AnyAsync())
         {
-            await eventDbContext.Summarys.AddRangeAsync(InitialData.Summarys);
-            await eventDbContext.SaveChangesAsync();
-
-            if (!await MongoQueryable.AnyAsync(eventReadDbContext.Summarys.AsQueryable()))
-            {
-                await eventReadDbContext.Summarys.InsertManyAsync(mapper.Map<List<TextSummaryReadModel>>(InitialData.Summarys));
-            }
+            await dbContext.Sessions.AddRangeAsync(InitialData.Summarys);
+            await dbContext.SaveChangesAsync();
         }
     }
 }

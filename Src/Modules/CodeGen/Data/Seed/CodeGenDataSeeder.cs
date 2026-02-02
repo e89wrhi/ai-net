@@ -1,21 +1,15 @@
 ﻿using AI.Common.EFCore;
-using CodeGen.Models;
-using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
-using MongoDB.Driver;
-using MongoDB.Driver.Linq;
 
 namespace CodeGen.Data.Seed;
 
 public class CodeGenDataSeeder(
-    CodeGenDbContext eventDbContext,
-    CodeGenReadDbContext eventReadDbContext,
-    IMapper mapper
+    CodeGenDbContext dbContext
 ) : IDataSeeder
 {
     public async Task SeedAllAsync()
     {
-        var pendingMigrations = await eventDbContext.Database.GetPendingMigrationsAsync();
+        var pendingMigrations = await dbContext.Database.GetPendingMigrationsAsync();
 
         if (!pendingMigrations.Any())
         {
@@ -25,15 +19,10 @@ public class CodeGenDataSeeder(
 
     private async Task SeedCodeGenAsync()
     {
-        if (!await EntityFrameworkQueryableExtensions.AnyAsync(eventDbContext.CodeGens))
+        if (!await dbContext.Sessions.AnyAsync())
         {
-            await eventDbContext.CodeGens.AddRangeAsync(InitialData.CodeGens);
-            await eventDbContext.SaveChangesAsync();
-
-            if (!await MongoQueryable.AnyAsync(eventReadDbContext.CodeGens.AsQueryable()))
-            {
-                await eventReadDbContext.CodeGens.InsertManyAsync(mapper.Map<List<CodeGenerationReadModel>>(InitialData.CodeGens));
-            }
+            await dbContext.Sessions.AddRangeAsync(InitialData.CodeGens);
+            await dbContext.SaveChangesAsync();
         }
     }
 }

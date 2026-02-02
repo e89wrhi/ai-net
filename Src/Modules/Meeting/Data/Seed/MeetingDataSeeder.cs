@@ -1,21 +1,15 @@
 ﻿using AI.Common.EFCore;
-using Meeting.Models;
-using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
-using MongoDB.Driver;
-using MongoDB.Driver.Linq;
 
 namespace Meeting.Data.Seed;
 
 public class MeetingDataSeeder(
-    MeetingDbContext eventDbContext,
-    MeetingReadDbContext eventReadDbContext,
-    IMapper mapper
+    MeetingDbContext dbContext
 ) : IDataSeeder
 {
     public async Task SeedAllAsync()
     {
-        var pendingMigrations = await eventDbContext.Database.GetPendingMigrationsAsync();
+        var pendingMigrations = await dbContext.Database.GetPendingMigrationsAsync();
 
         if (!pendingMigrations.Any())
         {
@@ -25,15 +19,10 @@ public class MeetingDataSeeder(
 
     private async Task SeedMeetingAsync()
     {
-        if (!await EntityFrameworkQueryableExtensions.AnyAsync(eventDbContext.Meetings))
+        if (!await dbContext.Sessions.AnyAsync())
         {
-            await eventDbContext.Meetings.AddRangeAsync(InitialData.Meetings);
-            await eventDbContext.SaveChangesAsync();
-
-            if (!await MongoQueryable.AnyAsync(eventReadDbContext.Meeting.AsQueryable()))
-            {
-                await eventReadDbContext.Meeting.InsertManyAsync(mapper.Map<List<MeetingAnalysisSessionReadModel>>(InitialData.Meetings));
-            }
+            await dbContext.Sessions.AddRangeAsync(InitialData.Meetings);
+            await dbContext.SaveChangesAsync();
         }
     }
 }

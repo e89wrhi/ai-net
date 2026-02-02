@@ -1,21 +1,15 @@
 ﻿using AI.Common.EFCore;
-using Payment.Models;
-using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
-using MongoDB.Driver;
-using MongoDB.Driver.Linq;
 
 namespace Payment.Data.Seed;
 
 public class PaymentDataSeeder(
-    PaymentDbContext eventDbContext,
-    PaymentReadDbContext eventReadDbContext,
-    IMapper mapper
+    PaymentDbContext dbContext
 ) : IDataSeeder
 {
     public async Task SeedAllAsync()
     {
-        var pendingMigrations = await eventDbContext.Database.GetPendingMigrationsAsync();
+        var pendingMigrations = await dbContext.Database.GetPendingMigrationsAsync();
 
         if (!pendingMigrations.Any())
         {
@@ -25,15 +19,10 @@ public class PaymentDataSeeder(
 
     private async Task SeedPaymentAsync()
     {
-        if (!await EntityFrameworkQueryableExtensions.AnyAsync(eventDbContext.Subscriptions))
+        if (!await dbContext.Sessions.AnyAsync())
         {
-            await eventDbContext.Subscriptions.AddRangeAsync(InitialData.Subscriptions);
-            await eventDbContext.SaveChangesAsync();
-
-            if (!await MongoQueryable.AnyAsync(eventReadDbContext.Subscription.AsQueryable()))
-            {
-                await eventReadDbContext.Subscription.InsertManyAsync(mapper.Map<List<SubscriptionReadModel>>(InitialData.Subscriptions));
-            }
+            await dbContext.Subscriptions.AddRangeAsync(InitialData.Subscriptions);
+            await dbContext.SaveChangesAsync();
         }
     }
 }

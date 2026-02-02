@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 public static class InitialData
 {
-    public static List<ProfileModel> Profiles { get; } = new()
+    public static List<LearningSession> Profiles { get; } = new()
     {
         ProfileModel.Create(ActivityId.Of(Guid.Parse("ba8fad5b-d9cb-469f-a165-70867728950f")), "0f8fad5b-d9cb-469f-a165-70867728950e", "Visual", "Beginner")
     };

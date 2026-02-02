@@ -1,21 +1,15 @@
 ﻿using AI.Common.EFCore;
-using Translate.Models;
-using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
-using MongoDB.Driver;
-using MongoDB.Driver.Linq;
 
 namespace Translate.Data.Seed;
 
 public class TranslateDataSeeder(
-    TranslateDbContext eventDbContext,
-    TranslateReadDbContext eventReadDbContext,
-    IMapper mapper
+    TranslateDbContext dbContext
 ) : IDataSeeder
 {
     public async Task SeedAllAsync()
     {
-        var pendingMigrations = await eventDbContext.Database.GetPendingMigrationsAsync();
+        var pendingMigrations = await dbContext.Database.GetPendingMigrationsAsync();
 
         if (!pendingMigrations.Any())
         {
@@ -25,15 +19,10 @@ public class TranslateDataSeeder(
 
     private async Task SeedTranslateAsync()
     {
-        if (!await EntityFrameworkQueryableExtensions.AnyAsync(eventDbContext.Translates))
+        if (!await dbContext.Sessions.AnyAsync())
         {
-            await eventDbContext.Translates.AddRangeAsync(InitialData.Translates);
-            await eventDbContext.SaveChangesAsync();
-
-            if (!await MongoQueryable.AnyAsync(eventReadDbContext.Translates.AsQueryable()))
-            {
-                await eventReadDbContext.Translates.InsertManyAsync(mapper.Map<List<TranslationSessionReadModel>>(InitialData.Translates));
-            }
+            await dbContext.Sessions.AddRangeAsync(InitialData.Translates);
+            await dbContext.SaveChangesAsync();
         }
     }
 }
