@@ -20,7 +20,7 @@ public class StreamAICompletionEndpoint : IMinimalEndpoint
     public IEndpointRouteBuilder MapEndpoint(IEndpointRouteBuilder builder)
     {
         builder.MapPost($"{EndpointConfig.BaseApiPath}/autocomplete/stream",
-                (StreamAICompletionRequestDto request, IMediator mediator, CancellationToken cancellationToken) =>
+                (StreamAutoCompleteRequestDto request, IMediator mediator, CancellationToken cancellationToken) =>
                 {
                     // Mock User ID or extract from context
                     var userId = Guid.NewGuid();

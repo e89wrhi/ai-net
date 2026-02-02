@@ -18,7 +18,7 @@ public class GenerateAICompletionEndpoint : IMinimalEndpoint
     public IEndpointRouteBuilder MapEndpoint(IEndpointRouteBuilder builder)
     {
         builder.MapPost($"{EndpointConfig.BaseApiPath}/autocomplete/generate",
-                async (GenerateAICompletionRequestDto request, IMediator mediator, IHttpContextAccessor httpContextAccessor, CancellationToken cancellationToken) =>
+                async (GenerateAutoCompleteRequestDto request, IMediator mediator, IHttpContextAccessor httpContextAccessor, CancellationToken cancellationToken) =>
                 {
                     // In a real scenario, extract UserId from Claims
                     // var userId = httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -27,14 +27,14 @@ public class GenerateAICompletionEndpoint : IMinimalEndpoint
                     var command = new GenerateAutoCompleteCommand(userId, request.Prompt);
                     var result = await mediator.Send(command, cancellationToken);
 
-                    var response = new GenerateAICompletionResponseDto(result.Completion, result.TokensUsed, result.EstimatedCost);
+                    var response = new GenerateAutoCompleteResponseDto(result.Completion, result.TokensUsed, result.EstimatedCost);
 
                     return Results.Ok(response);
                 })
             .RequireAuthorization(nameof(ApiScope))
             .WithName("GenerateAICompletion")
             .WithApiVersionSet(builder.NewApiVersionSet("AutoComplete").Build())
-            .Produces<GenerateAICompletionResponseDto>()
+            .Produces<GenerateAutoCompleteResponseDto>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .WithSummary("Generate AI Completion")
             .WithDescription("Generates text completion using an AI model and stores the interaction history.")

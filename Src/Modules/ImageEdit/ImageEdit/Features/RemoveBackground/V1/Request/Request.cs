@@ -2,4 +2,3 @@
 
 public record RemoveBackgroundRequestDto(string ImageUrlOrBase64);
 public record RemoveBackgroundResponseDto(Guid SessionId, Guid ResultId, string ResultImageUrl);
-

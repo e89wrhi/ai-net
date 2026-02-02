@@ -2,4 +2,3 @@
 
 public record ReGenerateCodeRequestDto(Guid SessionId, string Instruction);
 public record ReGenerateCodeResponseDto(Guid ResultId, string Code);
-

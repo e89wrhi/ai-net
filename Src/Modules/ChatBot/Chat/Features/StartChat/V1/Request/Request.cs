@@ -2,5 +2,4 @@
 
 
 public record StartChatRequest(Guid UserId, string Title, string AiModelId);
-
 public record StartChatRequestResponse(Guid Id);
