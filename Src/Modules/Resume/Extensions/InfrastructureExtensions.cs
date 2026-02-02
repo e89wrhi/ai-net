@@ -1,16 +1,11 @@
 ﻿using AI.Common.EFCore;
 using AI.Common.Mapster;
-using AI.Common.Mongo;
 using AI.Common.Web;
-using Resume;
-using Resume.Data;
-using Resume.Data.Seed;
-using Resume.Extensions;
-using Resume.GrpcServer.Services;
 using FluentValidation;
-using MassTransit.Contracts;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Resume.Data;
+using Resume.Data.Seed;
 
 namespace Resume.Extensions;
 
@@ -25,7 +20,6 @@ public static class InfrastructureExtensions
         builder.Services.AddCustomMapster(typeof(ResumeRoot).Assembly);
         builder.AddCustomDbContext<ResumeDbContext>(nameof(Resume));
         builder.Services.AddScoped<IDataSeeder, ResumeDataSeeder>();
-        builder.AddMongoDbContext<ResumeReadDbContext>();
 
         builder.Services.AddCustomMediatR();
 

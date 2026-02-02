@@ -1,17 +1,11 @@
 ﻿using AI.Common.EFCore;
 using AI.Common.Mapster;
-using AI.Common.Mongo;
 using AI.Common.Web;
-using Sentiment;
-using Sentiment.Data;
-using Sentiment.Data.Seed;
-using Sentiment.Extensions;
-using Sentiment.GrpcServer.Services;
 using FluentValidation;
-using MassTransit.Contracts;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using Grpc.AspNetCore;
+using Sentiment.Data;
+using Sentiment.Data.Seed;
 
 namespace Sentiment.Extensions;
 
@@ -26,7 +20,6 @@ public static class InfrastructureExtensions
         builder.Services.AddCustomMapster(typeof(SentimentRoot).Assembly);
         builder.AddCustomDbContext<SentimentDbContext>(nameof(Sentiment));
         builder.Services.AddScoped<IDataSeeder, SentimentDataSeeder>();
-        builder.AddMongoDbContext<SentimentReadDbContext>();
 
         builder.Services.AddCustomMediatR();
 

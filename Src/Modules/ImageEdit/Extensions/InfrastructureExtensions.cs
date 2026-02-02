@@ -1,17 +1,11 @@
 ﻿using AI.Common.EFCore;
 using AI.Common.Mapster;
-using AI.Common.Mongo;
 using AI.Common.Web;
-using ImageEdit;
+using FluentValidation;
 using ImageEdit.Data;
 using ImageEdit.Data.Seed;
-using ImageEdit.Extensions;
-using ImageEdit.GrpcServer.Services;
-using FluentValidation;
-using MassTransit.Contracts;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using Grpc.AspNetCore;
 
 namespace ImageEdit.Extensions;
 
@@ -26,7 +20,6 @@ public static class InfrastructureExtensions
         builder.Services.AddCustomMapster(typeof(ImageEditRoot).Assembly);
         builder.AddCustomDbContext<ImageEditDbContext>(nameof(ImageEdit));
         builder.Services.AddScoped<IDataSeeder, ImageEditDataSeeder>();
-        builder.AddMongoDbContext<ImageEditReadDbContext>();
 
         builder.Services.AddCustomMediatR();
 

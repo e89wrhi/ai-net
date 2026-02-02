@@ -1,17 +1,11 @@
 ﻿using AI.Common.EFCore;
 using AI.Common.Mapster;
-using AI.Common.Mongo;
 using AI.Common.Web;
-using CodeGen;
 using CodeGen.Data;
 using CodeGen.Data.Seed;
-using CodeGen.Extensions;
-using CodeGen.GrpcServer.Services;
 using FluentValidation;
-using MassTransit.Contracts;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using Grpc.AspNetCore;
 
 namespace CodeGen.Extensions;
 
@@ -26,7 +20,6 @@ public static class InfrastructureExtensions
         builder.Services.AddCustomMapster(typeof(CodeGenRoot).Assembly);
         builder.AddCustomDbContext<CodeGenDbContext>(nameof(CodeGen));
         builder.Services.AddScoped<IDataSeeder, CodeGenDataSeeder>();
-        builder.AddMongoDbContext<CodeGenReadDbContext>();
 
         builder.Services.AddCustomMediatR();
 

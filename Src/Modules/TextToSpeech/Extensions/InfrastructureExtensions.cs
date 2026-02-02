@@ -1,17 +1,11 @@
 ﻿using AI.Common.EFCore;
 using AI.Common.Mapster;
-using AI.Common.Mongo;
 using AI.Common.Web;
-using TextToSpeech;
-using TextToSpeech.Data;
-using TextToSpeech.Data.Seed;
-using TextToSpeech.Extensions;
-using TextToSpeech.GrpcServer.Services;
 using FluentValidation;
-using MassTransit.Contracts;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using Grpc.AspNetCore;
+using TextToSpeech.Data;
+using TextToSpeech.Data.Seed;
 
 namespace TextToSpeech.Extensions;
 
@@ -26,7 +20,6 @@ public static class InfrastructureExtensions
         builder.Services.AddCustomMapster(typeof(TextToSpeechRoot).Assembly);
         builder.AddCustomDbContext<TextToSpeechDbContext>(nameof(TextToSpeech));
         builder.Services.AddScoped<IDataSeeder, TextToSpeechDataSeeder>();
-        builder.AddMongoDbContext<TextToSpeechReadDbContext>();
 
         builder.Services.AddCustomMediatR();
 

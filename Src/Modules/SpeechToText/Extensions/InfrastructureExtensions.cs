@@ -1,17 +1,11 @@
 ﻿using AI.Common.EFCore;
 using AI.Common.Mapster;
-using AI.Common.Mongo;
 using AI.Common.Web;
-using SpeechToText;
-using SpeechToText.Data;
-using SpeechToText.Data.Seed;
-using SpeechToText.Extensions;
-using SpeechToText.GrpcServer.Services;
 using FluentValidation;
-using MassTransit.Contracts;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using Grpc.AspNetCore;
+using SpeechToText.Data;
+using SpeechToText.Data.Seed;
 
 namespace SpeechToText.Extensions;
 
@@ -26,7 +20,6 @@ public static class InfrastructureExtensions
         builder.Services.AddCustomMapster(typeof(SpeechToTextRoot).Assembly);
         builder.AddCustomDbContext<SpeechToTextDbContext>(nameof(SpeechToText));
         builder.Services.AddScoped<IDataSeeder, SpeechToTextDataSeeder>();
-        builder.AddMongoDbContext<SpeechToTextReadDbContext>();
 
         builder.Services.AddCustomMediatR();
 

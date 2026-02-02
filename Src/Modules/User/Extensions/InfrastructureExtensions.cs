@@ -1,16 +1,11 @@
 ﻿using AI.Common.EFCore;
 using AI.Common.Mapster;
-using AI.Common.Mongo;
 using AI.Common.Web;
-using User;
-using User.Data;
-using User.Data.Seed;
-using User.Extensions;
-using User.GrpcServer.Services;
 using FluentValidation;
-using MassTransit.Contracts;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using User.Data;
+using User.Data.Seed;
 
 namespace User.Extensions;
 
@@ -25,7 +20,6 @@ public static class InfrastructureExtensions
         builder.Services.AddCustomMapster(typeof(UserRoot).Assembly);
         builder.AddCustomDbContext<UserDbContext>(nameof(User));
         builder.Services.AddScoped<IDataSeeder, UserDataSeeder>();
-        builder.AddMongoDbContext<UserReadDbContext>();
 
         builder.Services.AddCustomMediatR();
 

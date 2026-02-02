@@ -1,17 +1,11 @@
 ﻿using AI.Common.EFCore;
 using AI.Common.Mapster;
-using AI.Common.Mongo;
 using AI.Common.Web;
-using ImageGen;
+using FluentValidation;
 using ImageGen.Data;
 using ImageGen.Data.Seed;
-using ImageGen.Extensions;
-using ImageGen.GrpcServer.Services;
-using FluentValidation;
-using MassTransit.Contracts;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using Grpc.AspNetCore;
 
 namespace ImageGen.Extensions;
 
@@ -26,7 +20,6 @@ public static class InfrastructureExtensions
         builder.Services.AddCustomMapster(typeof(ImageGenRoot).Assembly);
         builder.AddCustomDbContext<ImageGenDbContext>(nameof(ImageGen));
         builder.Services.AddScoped<IDataSeeder, ImageGenDataSeeder>();
-        builder.AddMongoDbContext<ImageGenReadDbContext>();
 
         builder.Services.AddCustomMediatR();
 

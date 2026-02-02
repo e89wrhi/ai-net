@@ -1,14 +1,9 @@
 ﻿using AI.Common.EFCore;
 using AI.Common.Mapster;
-using AI.Common.Mongo;
 using AI.Common.Web;
-using LearningAssistant;
+using FluentValidation;
 using LearningAssistant.Data;
 using LearningAssistant.Data.Seed;
-using LearningAssistant.Extensions;
-using LearningAssistant.GrpcServer.Services;
-using FluentValidation;
-using MassTransit.Contracts;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -25,7 +20,6 @@ public static class InfrastructureExtensions
         builder.Services.AddCustomMapster(typeof(AssistantRoot).Assembly);
         builder.AddCustomDbContext<LearningDbContext>(nameof(Assistant));
         builder.Services.AddScoped<IDataSeeder, ProfileDataSeeder>();
-        builder.AddMongoDbContext<LearningReadDbContext>();
 
         builder.Services.AddCustomMediatR();
 

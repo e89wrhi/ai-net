@@ -1,14 +1,9 @@
 ﻿using AI.Common.EFCore;
 using AI.Common.Mapster;
-using AI.Common.Mongo;
 using AI.Common.Web;
-using ImageCaption;
+using FluentValidation;
 using ImageCaption.Data;
 using ImageCaption.Data.Seed;
-using ImageCaption.Extensions;
-using ImageCaption.GrpcServer.Services;
-using FluentValidation;
-using MassTransit.Contracts;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -25,7 +20,6 @@ public static class InfrastructureExtensions
         builder.Services.AddCustomMapster(typeof(ImageRoot).Assembly);
         builder.AddCustomDbContext<ImageCaptionDbContext>(nameof(Image));
         builder.Services.AddScoped<IDataSeeder, ImageDataSeeder>();
-        builder.AddMongoDbContext<ImageCaptionReadDbContext>();
 
         builder.Services.AddCustomMediatR();
 

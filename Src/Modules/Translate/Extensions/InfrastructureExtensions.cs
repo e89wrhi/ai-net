@@ -1,17 +1,11 @@
 ﻿using AI.Common.EFCore;
 using AI.Common.Mapster;
-using AI.Common.Mongo;
 using AI.Common.Web;
-using Translate;
-using Translate.Data;
-using Translate.Data.Seed;
-using Translate.Extensions;
-using Translate.GrpcServer.Services;
 using FluentValidation;
-using MassTransit.Contracts;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using Grpc.AspNetCore;
+using Translate.Data;
+using Translate.Data.Seed;
 
 namespace Translate.Extensions;
 
@@ -26,7 +20,6 @@ public static class InfrastructureExtensions
         builder.Services.AddCustomMapster(typeof(TranslateRoot).Assembly);
         builder.AddCustomDbContext<TranslateDbContext>(nameof(Translate));
         builder.Services.AddScoped<IDataSeeder, TranslateDataSeeder>();
-        builder.AddMongoDbContext<TranslateReadDbContext>();
 
         builder.Services.AddCustomMediatR();
 

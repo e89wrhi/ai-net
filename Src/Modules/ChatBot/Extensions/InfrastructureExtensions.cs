@@ -1,17 +1,11 @@
 ﻿using AI.Common.EFCore;
 using AI.Common.Mapster;
-using AI.Common.Mongo;
 using AI.Common.Web;
-using ChatBot;
 using ChatBot.Data;
 using ChatBot.Data.Seed;
-using ChatBot.Extensions;
-using ChatBot.GrpcServer.Services;
 using FluentValidation;
-using MassTransit.Contracts;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using Grpc.AspNetCore;
 
 namespace ChatBot.Extensions;
 
@@ -26,7 +20,6 @@ public static class InfrastructureExtensions
         builder.Services.AddCustomMapster(typeof(ChatRoot).Assembly);
         builder.AddCustomDbContext<ChatDbContext>(nameof(ChatBot));
         builder.Services.AddScoped<IDataSeeder, ChatDataSeeder>();
-        builder.AddMongoDbContext<ChatReadDbContext>();
 
         builder.Services.AddCustomMediatR();
 
