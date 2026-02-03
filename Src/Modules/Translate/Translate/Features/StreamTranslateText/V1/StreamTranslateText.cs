@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using System.Security.Claims;
+using System.Threading;
 
 namespace Translate.Features.StreamTranslateText.V1;
 
@@ -13,7 +14,8 @@ public class StreamTranslateTextEndpoint : IMinimalEndpoint
     public IEndpointRouteBuilder MapEndpoint(IEndpointRouteBuilder builder)
     {
         builder.MapPost($"{EndpointConfig.BaseApiPath}/translate/translate-stream",
-                (StreamTranslateTextRequestDto request, IMediator mediator, IHttpContextAccessor httpContextAccessor) =>
+                (StreamTranslateTextRequestDto request, IMediator mediator, 
+                IHttpContextAccessor httpContextAccessor, CancellationToken cancellationToken) =>
                 {
                     // current user id
                     var userIdClaim = httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -23,7 +25,8 @@ public class StreamTranslateTextEndpoint : IMinimalEndpoint
                         return Results.Unauthorized();
                     }
 
-                    return mediator.CreateStream(new StreamTranslateTextCommand(request.Text, request.SourceLanguage, request.TargetLanguage, request.DetailLevel), cancellationToken);
+                    var command = new StreamTranslateTextCommand(request.Text, request.SourceLanguage, request.TargetLanguage, request.DetailLevel);
+                    return Results.Ok(mediator.CreateStream(command, cancellationToken));
                 })
             .RequireAuthorization(nameof(ApiScope))
             .WithName("StreamTranslateText")

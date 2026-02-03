@@ -4,6 +4,7 @@ using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using System.Security.Claims;
 
 namespace CodeGen.Features.StreamGenerateCode.V1;
 
@@ -22,7 +23,8 @@ public class StreamGenerateCodeEndpoint : IMinimalEndpoint
                         return Results.Unauthorized();
                     }
 
-                    return mediator.CreateStream(new StreamGenerateCodeCommand(request.Prompt, request.Language), cancellationToken);
+                    var command = new StreamGenerateCodeCommand(request.Prompt, request.Language);
+                    return Results.Ok(mediator.CreateStream(command, cancellationToken));
                 })
             .RequireAuthorization(nameof(ApiScope))
             .WithName("StreamGenerateCode")

@@ -4,6 +4,7 @@ using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using System.Security.Claims;
 
 namespace SpeechToText.Features.StreamTranscribeAudio.V1;
 
@@ -22,7 +23,8 @@ public class StreamTranscribeAudioEndpoint : IMinimalEndpoint
                         return Results.Unauthorized();
                     }
 
-                    return mediator.CreateStream(new StreamTranscribeAudioCommand(request.AudioUrl, request.Language), cancellationToken);
+                    var command = new StreamTranscribeAudioCommand(request.AudioUrl, request.Language);
+                    return Results.Ok(mediator.CreateStream(command, cancellationToken));
                 })
             .RequireAuthorization(nameof(ApiScope))
             .WithName("StreamTranscribeAudio")

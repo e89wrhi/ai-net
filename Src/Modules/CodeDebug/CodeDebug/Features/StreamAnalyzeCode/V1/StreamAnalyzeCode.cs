@@ -4,6 +4,7 @@ using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using System.Security.Claims;
 
 namespace CodeDebug.Features.StreamAnalyzeCode.V1;
 
@@ -22,7 +23,8 @@ public class StreamAnalyzeCodeEndpoint : IMinimalEndpoint
                         return Results.Unauthorized();
                     }
 
-                    return mediator.CreateStream(new StreamAnalyzeCodeCommand(request.Code, request.Language), cancellationToken);
+                    var command = new StreamAnalyzeCodeCommand(request.Code, request.Language);
+                    return Results.Ok(mediator.CreateStream(command, cancellationToken));
                 })
             .RequireAuthorization(nameof(ApiScope))
             .WithName("StreamAnalyzeCode")

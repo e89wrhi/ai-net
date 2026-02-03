@@ -28,14 +28,13 @@ public class StreamAutoCompleteEndpoint : IMinimalEndpoint
 
                     var command = new StreamAutoCompleteCommand(userId, request.Prompt);
                     
-                    return mediator.CreateStream(command, cancellationToken);
+                    return Results.Ok(mediator.CreateStream(command, cancellationToken));
                 })
             .RequireAuthorization(nameof(ApiScope))
             .WithName("StreamAutoComplete")
             .WithApiVersionSet(builder.NewApiVersionSet("AutoComplete").Build())
             .Produces<IAsyncEnumerable<string>>()
             .ProducesProblem(StatusCodes.Status400BadRequest).ProducesProblem(StatusCodes.Status401Unauthorized)
-            .ProducesProblem(StatusCodes.Status401Unauthorized)
             .WithSummary("Stream AI Completion")
             .WithDescription("Streams text completion using an AI model.")
             .WithOpenApi()

@@ -4,6 +4,7 @@ using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using System.Security.Claims;
 
 namespace ChatBot.Features.StreamResponse.V1;
 
@@ -25,14 +26,14 @@ public class StreamResponseEndpoint : IMinimalEndpoint
                         return Results.Unauthorized();
                     }
 
-                    return mediator.CreateStream(new StreamAiResponseCommand(request.SessionId), cancellationToken);
+                    var command = new StreamAiResponseCommand(request.SessionId);
+                    return Results.Ok(mediator.CreateStream(command, cancellationToken));
                 })
             .RequireAuthorization(nameof(ApiScope))
             .WithName("StreamResponse")
             .WithApiVersionSet(builder.NewApiVersionSet("Chat").Build())
             .Produces<IAsyncEnumerable<string>>()
             .ProducesProblem(StatusCodes.Status400BadRequest).ProducesProblem(StatusCodes.Status401Unauthorized)
-            .ProducesProblem(StatusCodes.Status404NotFound)
             .WithSummary("Stream AI Response")
             .WithDescription("Streams the AI response for the given chat session.")
             .WithOpenApi()

@@ -4,6 +4,7 @@ using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using System.Security.Claims;
 
 namespace Meeting.Features.StreamMeetingAnalysis.V1;
 
@@ -22,7 +23,8 @@ public class StreamMeetingAnalysisEndpoint : IMinimalEndpoint
                         return Results.Unauthorized();
                     }
 
-                    return mediator.CreateStream(new StreamMeetingAnalysisCommand(request.Transcript), cancellationToken);
+                    var command = new StreamMeetingAnalysisCommand(request.Transcript);
+                    return Results.Ok(mediator.CreateStream(command, cancellationToken));
                 })
             .RequireAuthorization(nameof(ApiScope))
             .WithName("StreamMeetingAnalysis")

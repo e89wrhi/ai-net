@@ -4,6 +4,7 @@ using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using System.Security.Claims;
 
 namespace Summary.Features.StreamSummarizeText.V1;
 
@@ -22,7 +23,8 @@ public class StreamSummarizeTextEndpoint : IMinimalEndpoint
                         return Results.Unauthorized();
                     }
 
-                    return mediator.CreateStream(new StreamSummarizeTextCommand(request.Text, request.DetailLevel, request.Language), cancellationToken);
+                    var command = new StreamSummarizeTextCommand(request.Text, request.DetailLevel, request.Language);
+                    return Results.Ok(mediator.CreateStream(command, cancellationToken));
                 })
             .RequireAuthorization(nameof(ApiScope))
             .WithName("StreamSummarizeText")

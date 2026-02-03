@@ -4,6 +4,7 @@ using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using System.Security.Claims;
 
 namespace LearningAssistant.Features.StreamLesson.V1;
 
@@ -22,7 +23,8 @@ public class StreamLessonEndpoint : IMinimalEndpoint
                         return Results.Unauthorized();
                     }
 
-                    return mediator.CreateStream(new StreamAILessonCommand(request.Topic, request.Level), cancellationToken);
+                    var command = new StreamAILessonCommand(request.Topic, request.Level);
+                    return Results.Ok(mediator.CreateStream(command, cancellationToken));
                 })
             .RequireAuthorization(nameof(ApiScope))
             .WithName("StreamLesson")
