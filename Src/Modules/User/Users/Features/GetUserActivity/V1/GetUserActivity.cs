@@ -1,30 +1,13 @@
-﻿using System.Security.Claims;
-using AI.Common.Caching;
-using AI.Common.Core;
-using AI.Common.Web;
-using Ardalis.GuardClauses;
-using User.Data;
-using User.Dtos;
-using User.Exceptions;
+﻿using AI.Common.Web;
+using Duende.IdentityServer.EntityFramework.Entities;
 using Mapster;
-using MapsterMapper;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace User.Features.GetUserActivity.V1;
-
-public record GetUserActivity(Guid UserId) : IQuery<GetUserActivityResult>, ICacheRequest
-{
-    public string CacheKey => $"GetUserActivity_{UserId}";
-    public DateTime? AbsoluteExpirationRelativeToNow => DateTime.Now.AddHours(1);
-}
-
-public record GetUserActivityResult(IEnumerable<UserActivityDto> UserActivityDtos);
-
-public record GetUserActivityResponseDto(IEnumerable<UserActivityDto> UserActivityDtos);
 
 public class GetUserActivityEndpoint : IMinimalEndpoint
 {
@@ -58,42 +41,6 @@ public class GetUserActivityEndpoint : IMinimalEndpoint
             .HasApiVersion(1.0);
 
         return builder;
-    }
-}
-
-internal class GetUserActivityHandler : IQueryHandler<GetUserActivity, GetUserActivityResult>
-{
-    private readonly IMapper _mapper;
-    private readonly UserDbContext _dbContext;
-
-    public GetUserActivityHandler(IMapper mapper, UserDbContext dbContext)
-    {
-        _mapper = mapper;
-        _dbContext = dbContext;
-    }
-
-    public async Task<GetUserActivityResult> Handle(GetUserActivity request,
-        CancellationToken cancellationToken)
-    {
-        Guard.Against.Null(request, nameof(request));
-
-        var activities = await _dbContext.Sessions
-            .Include(x => x.Actions)
-            .Where(x => x.UserId.Value == request.UserId)
-            .OrderByDescending(x => x.LastActivityAt)
-            .ToListAsync(cancellationToken);
-
-        // Flatten sessions into activity DTOs
-        var activityDtos = activities.SelectMany(s => s.Actions.Select(a => new UserActivityDto
-        {
-            Id = a.Id,
-            Module = "Internal", // This could be mapped from session if available
-            Action = a.ActionType,
-            TimeStamp = a.OccurredAt,
-            ResourceId = s.Id
-        })).ToList();
-
-        return new GetUserActivityResult(activityDtos);
     }
 }
 
