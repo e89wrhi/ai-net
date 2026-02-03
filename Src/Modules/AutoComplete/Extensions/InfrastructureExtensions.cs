@@ -13,6 +13,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Grpc.AspNetCore;
 using Microsoft.Extensions.AI;
 using AutoComplete.Services;
+using AiOrchestration.Extensions;
+
 
 namespace AutoComplete.Extensions;
 
@@ -31,9 +33,13 @@ public static class InfrastructureExtensions
 
         builder.Services.AddCustomMediatR();
 
+        // Register AI Orchestration
+        builder.Services.AddAiOrchestration();
+
         // Register AI Chat Client
         // In a real scenario, this would be configured with a real provider (e.g. OpenAI, Llama)
         builder.Services.AddSingleton<IChatClient, SimulatedChatClient>();
+
 
         return builder;
     }

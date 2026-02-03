@@ -1,4 +1,6 @@
-﻿using AiOrchestration.ValueObjects;
+﻿using AiOrchestration.Services;
+using AiOrchestration.Models;
+using AiOrchestration.ValueObjects;
 using Ardalis.GuardClauses;
 using AutoComplete.Data;
 using AutoComplete.Models;
@@ -12,12 +14,12 @@ namespace AutoComplete.Features.StreamAutoComplete.V1;
 
 internal class StreamAICompletionHandler : IStreamRequestHandler<StreamAutoCompleteCommand, string>
 {
-    private readonly IChatClient _chatClient;
+    private readonly IAiOrchestrator _orchestrator;
     private readonly AutocompleteDbContext _dbContext;
 
-    public StreamAICompletionHandler(IChatClient chatClient, AutocompleteDbContext dbContext)
+    public StreamAICompletionHandler(IAiOrchestrator orchestrator, AutocompleteDbContext dbContext)
     {
-        _chatClient = chatClient;
+        _orchestrator = orchestrator;
         _dbContext = dbContext;
     }
 
@@ -26,10 +28,15 @@ internal class StreamAICompletionHandler : IStreamRequestHandler<StreamAutoCompl
     {
         Guard.Against.NullOrEmpty(request.Prompt, nameof(request.Prompt));
 
+        // Use orchestrator to get the best client for this request
+        // Here we could pass specific criteria like: new ModelCriteria { MaxCostPerToken = 0.00001m }
+        var client = await _orchestrator.GetClientAsync(cancellationToken: cancellationToken);
+
         var fullResponseBuilder = new StringBuilder();
         int tokenCount = 0;
 
-        await foreach (var update in _chatClient.CompleteStreamingAsync(request.Prompt, cancellationToken: cancellationToken))
+        await foreach (var update in client.CompleteStreamingAsync(request.Prompt, cancellationToken: cancellationToken))
+
         {
             if (!string.IsNullOrEmpty(update.Text))
             {
@@ -40,16 +47,17 @@ internal class StreamAICompletionHandler : IStreamRequestHandler<StreamAutoCompl
         }
 
         // Persist after streaming finishes
-        await PersistInteractionAsync(request, fullResponseBuilder.ToString(), tokenCount, cancellationToken);
+        await PersistInteractionAsync(request, fullResponseBuilder.ToString(), tokenCount, client, cancellationToken);
     }
 
-    private async Task PersistInteractionAsync(StreamAutoCompleteCommand request, string fullResponse, int tokenCount, CancellationToken cancellationToken)
+    private async Task PersistInteractionAsync(StreamAutoCompleteCommand request, string fullResponse, int tokenCount, IChatClient client, CancellationToken cancellationToken)
     {
         try
         {
             var sessionId = AutoCompleteId.Of(Guid.NewGuid());
             var userId = UserId.Of(request.UserId);
-            var modelId = ModelId.Of(_chatClient.Metadata.ModelId ?? "stream-model");
+            var modelId = ModelId.Of(client.Metadata.ModelId ?? "stream-model");
+
             var config = AutoCompleteConfiguration.Of("streaming");
 
             var session = AutoCompleteSession.Create(sessionId, userId, modelId, config);

@@ -1,4 +1,6 @@
 ﻿using AI.Common.Core;
+using AiOrchestration.Services;
+using AiOrchestration.Models;
 using AiOrchestration.ValueObjects;
 using Ardalis.GuardClauses;
 using AutoComplete.Data;
@@ -11,12 +13,12 @@ namespace AutoComplete.Features.GenerateAutoComplete.V1;
 
 internal class GenerateAICompletionHandler : ICommandHandler<GenerateAutoCompleteCommand, GenerateAutoCompleteCommandResult>
 {
-    private readonly IChatClient _chatClient;
+    private readonly IAiOrchestrator _orchestrator;
     private readonly AutocompleteDbContext _dbContext;
 
-    public GenerateAICompletionHandler(IChatClient chatClient, AutocompleteDbContext dbContext)
+    public GenerateAICompletionHandler(IAiOrchestrator orchestrator, AutocompleteDbContext dbContext)
     {
-        _chatClient = chatClient;
+        _orchestrator = orchestrator;
         _dbContext = dbContext;
     }
 
@@ -25,13 +27,17 @@ internal class GenerateAICompletionHandler : ICommandHandler<GenerateAutoComplet
     {
         Guard.Against.NullOrEmpty(request.Prompt, nameof(request.Prompt));
 
+        // Use orchestrator to get the best client
+        var chatClient = await _orchestrator.GetClientAsync(cancellationToken: cancellationToken);
+
         // 1. Call AI Model
-        var chatCompletion = await _chatClient.CompleteAsync(request.Prompt, cancellationToken: cancellationToken);
-        var responseText = chatCompletion.Message.Text ?? string.Empty;
+        var chatCompletion = await chatClient.GetResponseAsync(request.Prompt, cancellationToken: cancellationToken);
+        var responseText = chatCompletion.Choices[0].Text ?? string.Empty;
 
         // 2. Calculate Metadata
         // Use usage data from the provider if available, otherwise estimate
         var tokenUsage = chatCompletion.Usage?.TotalTokenCount ?? (request.Prompt.Length + responseText.Length) / 4;
+
 
         // Simple cost estimation logic (example: $0.002 per 1k tokens)
         var costValue = (decimal)(tokenUsage * 0.000002);
@@ -41,8 +47,9 @@ internal class GenerateAICompletionHandler : ICommandHandler<GenerateAutoComplet
         var userId = UserId.Of(request.UserId);
 
         // Use ModelId from metadata or fallback
-        var modelIdStr = _chatClient.Metadata.ModelId ?? "default-model";
+        var modelIdStr = chatClient.Metadata.ModelId ?? "default-model";
         var modelId = ModelId.Of(modelIdStr);
+
 
         var config = AutoCompleteConfiguration.Of("standard");
 

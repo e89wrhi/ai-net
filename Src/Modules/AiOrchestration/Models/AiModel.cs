@@ -29,26 +29,6 @@ public record AiModel : Aggregate<ModelId>
             CreatedAt = DateTime.UtcNow,
             IsActive = true
         };
-
-        model.AddDomainEvent(new AiOrchestration.Events.AiModelCreatedDomainEvent(id, name, provider));
         return model;
-    }
-
-    public void Update(string name, string description, string capabilities)
-    {
-        Name = name;
-        Description = description;
-        Capabilities = capabilities;
-        LastModified = DateTime.UtcNow;
-
-        AddDomainEvent(new AiOrchestration.Events.AiModelUpdatedDomainEvent(Id, name));
-    }
-
-    public void ChangeStatus(bool isActive)
-    {
-        IsActive = isActive;
-        LastModified = DateTime.UtcNow;
-
-        AddDomainEvent(new AiOrchestration.Events.AiModelStatusChangedDomainEvent(Id, isActive));
     }
 }

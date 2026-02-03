@@ -7,9 +7,9 @@ public class SimulatedChatClient : IChatClient
 {
     public ChatClientMetadata Metadata => new("Simulated", new Uri("http://localhost"));
 
-    public TService? GetService<TService>(object? key = null) where TService : class => this as TService;
+    public object? GetService(Type serviceType, object? serviceKey = null) => this.GetType() == serviceType ? this : null;
 
-    public async Task<ChatCompletion> CompleteAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<ChatResponse> GetResponseAsync(IEnumerable<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
         var lastMessage = chatMessages.LastOrDefault();
         var prompt = lastMessage?.Text ?? "No prompt";
@@ -17,20 +17,21 @@ public class SimulatedChatClient : IChatClient
         // Real usecase simulation: provide autocomplete suggestions
         var suggestions = $"Here are some suggestions based on '{prompt}':\n1. {prompt} extended\n2. {prompt} refined\n3. {prompt} alternative";
 
-        return new ChatCompletion(new[] { new ChatMessage(ChatRole.Assistant, suggestions) });
+        return new ChatResponse(new[] { new ChatMessage(ChatRole.Assistant, suggestions) });
     }
 
-    public async IAsyncEnumerable<StreamingChatCompletionUpdate> CompleteStreamingAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(IEnumerable<ChatMessage> chatMessages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-         var lastMessage = chatMessages.LastOrDefault();
+        var lastMessage = chatMessages.LastOrDefault();
         var prompt = lastMessage?.Text ?? "No prompt";
 
-        yield return new StreamingChatCompletionUpdate { Text = "Simulated " };
+        yield return new ChatResponseUpdate { Text = "Simulated " };
         await Task.Delay(10, cancellationToken);
-        yield return new StreamingChatCompletionUpdate { Text = "Suggestion " };
+        yield return new ChatResponseUpdate { Text = "Suggestion " };
         await Task.Delay(10, cancellationToken);
-        yield return new StreamingChatCompletionUpdate { Text = $"for: {prompt}" };
+        yield return new ChatResponseUpdate { Text = $"for: {prompt}" };
     }
+
 
     public void Dispose()
     {
