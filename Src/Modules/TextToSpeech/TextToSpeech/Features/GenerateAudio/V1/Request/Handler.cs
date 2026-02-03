@@ -5,6 +5,8 @@ using TextToSpeech.Data;
 using TextToSpeech.Enums;
 using TextToSpeech.Models;
 using TextToSpeech.ValueObjects;
+using Ardalis.GuardClauses;
+using AiOrchestration.Services;
 
 namespace TextToSpeech.Features.GenerateAudio.V1;
 
@@ -12,9 +14,9 @@ namespace TextToSpeech.Features.GenerateAudio.V1;
 internal class GenerateAudioWithAIHandler : ICommandHandler<GenerateAudioWithAICommand, GenerateAudioWithAICommandResult>
 {
     private readonly TextToSpeechDbContext _dbContext;
-    private readonly IChatClient _chatClient;
+    private readonly IAiOrchestrator _chatClient;
 
-    public GenerateAudioWithAIHandler(TextToSpeechDbContext dbContext, IChatClient chatClient)
+    public GenerateAudioWithAIHandler(TextToSpeechDbContext dbContext, IAiOrchestrator chatClient)
     {
         _dbContext = dbContext;
         _chatClient = chatClient;

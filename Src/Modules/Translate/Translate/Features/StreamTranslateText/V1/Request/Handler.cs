@@ -1,4 +1,6 @@
-﻿using AiOrchestration.ValueObjects;
+﻿using AiOrchestration.Services;
+using AiOrchestration.ValueObjects;
+using Ardalis.GuardClauses;
 using MediatR;
 using Microsoft.Extensions.AI;
 using System.Runtime.CompilerServices;
@@ -13,9 +15,9 @@ namespace Translate.Features.StreamTranslateText.V1;
 internal class StreamTranslateTextHandler : IStreamRequestHandler<StreamTranslateTextCommand, string>
 {
     private readonly TranslateDbContext _dbContext;
-    private readonly IChatClient _chatClient;
+    private readonly IAiOrchestrator _chatClient;
 
-    public StreamTranslateTextHandler(TranslateDbContext dbContext, IChatClient chatClient)
+    public StreamTranslateTextHandler(TranslateDbContext dbContext, IAiOrchestrator chatClient)
     {
         _dbContext = dbContext;
         _chatClient = chatClient;
@@ -35,7 +37,10 @@ internal class StreamTranslateTextHandler : IStreamRequestHandler<StreamTranslat
         var fullTranslationBuilder = new StringBuilder();
         int tokenEstimate = 0;
 
-        await foreach (var update in _chatClient.CompleteStreamingAsync(messages, cancellationToken: cancellationToken))
+        // Use chatClient to get the best client
+        var chatClient = await _chatClient.GetClientAsync(cancellationToken: cancellationToken);
+        var response = await chatClient.GetResponseAsync(messages, cancellationToken: cancellationToken);
+        foreach (var update in response.Messages)
         {
             if (!string.IsNullOrEmpty(update.Text))
             {
@@ -55,7 +60,8 @@ internal class StreamTranslateTextHandler : IStreamRequestHandler<StreamTranslat
         {
             var sessionId = TranslateId.Of(Guid.NewGuid());
             var userId = UserId.Of(Guid.NewGuid());
-            var modelId = ModelId.Of(_chatClient.Metadata.ModelId ?? "translate-stream-model");
+            var chatClient = await _chatClient.GetClientAsync(cancellationToken: cancellationToken);
+            var modelId = ModelId.Of(chatClient.Metadata.ModelId ?? "translate-stream-model");
             var config = new TranslationConfiguration(
                 LanguageCode.Of(request.SourceLanguage),
                 LanguageCode.Of(request.TargetLanguage),

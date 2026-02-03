@@ -5,6 +5,8 @@ using Meeting.Models;
 using Meeting.ValueObjects;
 using Microsoft.Extensions.AI;
 using System.Runtime.CompilerServices;
+using Ardalis.GuardClauses;
+using AiOrchestration.Services;
 using System.Text;
 
 namespace Meeting.Features.StreamMeetingAnalysis.V1;
@@ -13,9 +15,9 @@ namespace Meeting.Features.StreamMeetingAnalysis.V1;
 internal class StreamMeetingAnalysisHandler : IStreamRequestHandler<StreamMeetingAnalysisCommand, string>
 {
     private readonly MeetingDbContext _dbContext;
-    private readonly IChatClient _chatClient;
+    private readonly IAiOrchestrator _chatClient;
 
-    public StreamMeetingAnalysisHandler(MeetingDbContext dbContext, IChatClient chatClient)
+    public StreamMeetingAnalysisHandler(MeetingDbContext dbContext, IAiOrchestrator chatClient)
     {
         _dbContext = dbContext;
         _chatClient = chatClient;
@@ -35,7 +37,10 @@ internal class StreamMeetingAnalysisHandler : IStreamRequestHandler<StreamMeetin
         var fullAnalysisBuilder = new StringBuilder();
         int tokenEstimate = 0;
 
-        await foreach (var update in _chatClient.CompleteStreamingAsync(messages, cancellationToken: cancellationToken))
+        // Use chatClient to get the best client
+        var chatClient = await _chatClient.GetClientAsync(cancellationToken: cancellationToken);
+        var response = await chatClient.GetResponseAsync(messages, cancellationToken: cancellationToken);
+        foreach (var update in response.Messages)
         {
             if (!string.IsNullOrEmpty(update.Text))
             {

@@ -3,6 +3,8 @@ using AiOrchestration.ValueObjects;
 using Microsoft.Extensions.AI;
 using SpeechToText.Data;
 using SpeechToText.Models;
+using Ardalis.GuardClauses;
+using AiOrchestration.Services;
 using SpeechToText.ValueObjects;
 
 namespace SpeechToText.Features.TranscribeAudio.V1;
@@ -11,9 +13,9 @@ namespace SpeechToText.Features.TranscribeAudio.V1;
 internal class TranscribeAudioHandler : ICommandHandler<TranscribeAudioCommand, TranscribeAudioCommandResult>
 {
     private readonly SpeechToTextDbContext _dbContext;
-    private readonly IChatClient _chatClient;
+    private readonly IAiOrchestrator _chatClient;
 
-    public TranscribeAudioHandler(SpeechToTextDbContext dbContext, IChatClient chatClient)
+    public TranscribeAudioHandler(SpeechToTextDbContext dbContext, IAiOrchestrator chatClient)
     {
         _dbContext = dbContext;
         _chatClient = chatClient;
@@ -31,8 +33,10 @@ internal class TranscribeAudioHandler : ICommandHandler<TranscribeAudioCommand, 
             new ChatMessage(ChatRole.User, $"Please transcribe the audio at this URL: {request.AudioUrl} in language: {request.Language}")
         };
 
-        var completion = await _chatClient.CompleteAsync(messages, cancellationToken: cancellationToken);
-        var transcriptText = completion.Message.Text ?? "Transcription failed.";
+        // Use chatClient to get the best client
+        var chatClient = await _chatClient.GetClientAsync(cancellationToken: cancellationToken);
+        var completion = await chatClient.GetResponseAsync(messages, cancellationToken: cancellationToken);
+        var transcriptText = completion.Messages[0].Text ?? "Transcription failed.";
 
         // Persist
         var sessionId = SpeechToTextId.Of(Guid.NewGuid());
@@ -54,6 +58,6 @@ internal class TranscribeAudioHandler : ICommandHandler<TranscribeAudioCommand, 
         _dbContext.Sessions.Add(session);
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        return new TranscribeAudioResult(sessionId.Value, resultId.Value, transcriptText);
+        return new TranscribeAudioCommandResult(sessionId.Value, resultId.Value, transcriptText);
     }
 }

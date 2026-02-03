@@ -4,6 +4,8 @@ using Microsoft.Extensions.AI;
 using Sentiment.Data;
 using Sentiment.Models;
 using Sentiment.ValueObjects;
+using Ardalis.GuardClauses;
+using AiOrchestration.Services;
 
 namespace Sentiment.Features.AnalyzeSentimentDetailed.V1;
 
@@ -11,9 +13,9 @@ namespace Sentiment.Features.AnalyzeSentimentDetailed.V1;
 internal class AnalyzeSentimentDetailedHandler : ICommandHandler<AnalyzeSentimentDetailedCommand, AnalyzeSentimentDetailedCommandResult>
 {
     private readonly SentimentDbContext _dbContext;
-    private readonly IChatClient _chatClient;
+    private readonly IAiOrchestrator _chatClient;
 
-    public AnalyzeSentimentDetailedHandler(SentimentDbContext dbContext, IChatClient chatClient)
+    public AnalyzeSentimentDetailedHandler(SentimentDbContext dbContext, IAiOrchestrator chatClient)
     {
         _dbContext = dbContext;
         _chatClient = chatClient;
@@ -31,8 +33,10 @@ internal class AnalyzeSentimentDetailedHandler : ICommandHandler<AnalyzeSentimen
             new ChatMessage(ChatRole.User, request.Text)
         };
 
-        var completion = await _chatClient.CompleteAsync(messages, cancellationToken: cancellationToken);
-        var responseJson = completion.Message.Text ?? "{\"sentiment\": \"Neutral\", \"score\": 0.0, \"explanation\": \"Unparseable response\"}";
+        // Use chatClient to get the best client
+        var chatClient = await _chatClient.GetClientAsync(cancellationToken: cancellationToken);
+        var completion = await chatClient.GetResponseAsync(messages, cancellationToken: cancellationToken);
+        var responseJson = completion.Messages[0].Text ?? "{\"sentiment\": \"Neutral\", \"score\": 0.0, \"explanation\": \"Unparseable response\"}";
 
         // Very crude JSON parsing for demonstration, in a real app use a JSON serializer
         string sentiment = "Neutral";

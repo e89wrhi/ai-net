@@ -53,18 +53,19 @@ public class AiOrchestrator : IAiOrchestrator
 internal class ChatClientMetadataWrapper : IChatClient
 {
     private readonly IChatClient _innerClient;
-    private readonly string _modelId;
+    private readonly ChatClientMetadata _metadata;
 
     public ChatClientMetadataWrapper(IChatClient innerClient, string modelId)
     {
         _innerClient = innerClient;
-        _modelId = modelId;
+        var innerMetadata = innerClient.Metadata;
+        _metadata = new ChatClientMetadata(
+            innerMetadata?.ProviderName ?? "UnknownProvider",
+            innerMetadata?.Uri,
+            modelId);
     }
 
-    public ChatClientMetadata Metadata => ((dynamic)_innerClient).Metadata;
-
-
-
+    public ChatClientMetadata Metadata => _metadata;
 
     public Task<ChatResponse> GetResponseAsync(IEnumerable<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
         => _innerClient.GetResponseAsync(chatMessages, options, cancellationToken);
@@ -72,10 +73,14 @@ internal class ChatClientMetadataWrapper : IChatClient
     public IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(IEnumerable<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
         => _innerClient.GetStreamingResponseAsync(chatMessages, options, cancellationToken);
 
-    public object? GetService(Type serviceType, object? serviceKey = null)
-        => _innerClient.GetService(serviceType, serviceKey);
+    public object? GetService(Type serviceType, object? key = null) =>
+        key is not null ? null :
+        serviceType == typeof(ChatClientMetadata) ? _metadata :
+        serviceType?.IsInstanceOfType(this) is true ? this :
+        _innerClient.GetService(serviceType, key);
 
     public void Dispose() => _innerClient.Dispose();
 }
+
 
 

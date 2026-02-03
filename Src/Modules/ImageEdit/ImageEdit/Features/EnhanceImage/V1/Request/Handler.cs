@@ -4,6 +4,8 @@ using ImageEdit.Data;
 using ImageEdit.Enums;
 using ImageEdit.Models;
 using ImageEdit.ValueObjects;
+using Ardalis.GuardClauses;
+using AiOrchestration.Services;
 using Microsoft.Extensions.AI;
 
 namespace ImageEdit.Features.EnhanceImage.V1;
@@ -12,9 +14,9 @@ namespace ImageEdit.Features.EnhanceImage.V1;
 internal class AIEnhanceImageHandler : ICommandHandler<AIEnhanceImageCommand, AIEnhanceImageCommandResult>
 {
     private readonly ImageEditDbContext _dbContext;
-    private readonly IChatClient _chatClient;
+    private readonly IAiOrchestrator _chatClient;
 
-    public AIEnhanceImageHandler(ImageEditDbContext dbContext, IChatClient chatClient)
+    public AIEnhanceImageHandler(ImageEditDbContext dbContext, IAiOrchestrator chatClient)
     {
         _dbContext = dbContext;
         _chatClient = chatClient;
@@ -38,7 +40,9 @@ internal class AIEnhanceImageHandler : ICommandHandler<AIEnhanceImageCommand, AI
             })
         };
 
-        var completion = await _chatClient.CompleteAsync(messages, cancellationToken: cancellationToken);
+        // Use chatClient to get the best client
+        var chatClient = await _chatClient.GetClientAsync(cancellationToken: cancellationToken);
+        var completion = await chatClient.GetResponseAsync(messages, cancellationToken: cancellationToken);
 
         // Mock result: Usually the model would return an image URL or bytes.
         // We'll return a placeholder that represents the "edited" version.

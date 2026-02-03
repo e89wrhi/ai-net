@@ -4,15 +4,17 @@ using Meeting.Data;
 using Meeting.Models;
 using Meeting.ValueObjects;
 using Microsoft.Extensions.AI;
+using Ardalis.GuardClauses;
+using AiOrchestration.Services;
 
 namespace Meeting.Features.AnalyzeMeetingTranscript.V1;
 
 internal class AnalyzeMeetingTranscriptHandler : ICommandHandler<AnalyzeMeetingTranscriptCommand, AnalyzeMeetingTranscriptCommandResult>
 {
     private readonly MeetingDbContext _dbContext;
-    private readonly IChatClient _chatClient;
+    private readonly IAiOrchestrator _chatClient;
 
-    public AnalyzeMeetingTranscriptHandler(MeetingDbContext dbContext, IChatClient chatClient)
+    public AnalyzeMeetingTranscriptHandler(MeetingDbContext dbContext, IAiOrchestrator chatClient)
     {
         _dbContext = dbContext;
         _chatClient = chatClient;
@@ -30,8 +32,10 @@ internal class AnalyzeMeetingTranscriptHandler : ICommandHandler<AnalyzeMeetingT
             new ChatMessage(ChatRole.User, $"Transcript:\n{request.Transcript}")
         };
 
-        var completion = await _chatClient.CompleteAsync(messages, cancellationToken: cancellationToken);
-        var summaryText = completion.Message.Text ?? "Failed to analyze transcript.";
+        // Use chatClient to get the best client
+        var chatClient = await _chatClient.GetClientAsync(cancellationToken: cancellationToken);
+        var completion = await chatClient.GetResponseAsync(messages, cancellationToken: cancellationToken);
+        var summaryText = completion.Messages[0].Text ?? "Failed to analyze transcript.";
 
         // Persist
         var meetingId = MeetingId.Of(Guid.NewGuid());
@@ -55,7 +59,7 @@ internal class AnalyzeMeetingTranscriptHandler : ICommandHandler<AnalyzeMeetingT
         _dbContext.Sessions.Add(session);
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        return new AnalyzeMeetingTranscriptResult(meetingId.Value, transcriptId.Value, summaryText);
+        return new AnalyzeMeetingTranscriptCommandResult(meetingId.Value, transcriptId.Value, summaryText);
     }
 }
 

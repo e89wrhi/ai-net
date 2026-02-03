@@ -1,4 +1,5 @@
-﻿using AI.Common.Core;
+﻿using System.Runtime.CompilerServices;
+using AI.Common.Core;
 using AiOrchestration.Services;
 using AiOrchestration.Models;
 using AiOrchestration.ValueObjects;
@@ -13,12 +14,12 @@ namespace AutoComplete.Features.GenerateAutoComplete.V1;
 
 internal class GenerateAICompletionHandler : ICommandHandler<GenerateAutoCompleteCommand, GenerateAutoCompleteCommandResult>
 {
-    private readonly IAiOrchestrator _orchestrator;
+    private readonly IAiOrchestrator _chatClient;
     private readonly AutocompleteDbContext _dbContext;
 
-    public GenerateAICompletionHandler(IAiOrchestrator orchestrator, AutocompleteDbContext dbContext)
+    public GenerateAICompletionHandler(IAiOrchestrator chatClient, AutocompleteDbContext dbContext)
     {
-        _orchestrator = orchestrator;
+        _chatClient = chatClient;
         _dbContext = dbContext;
     }
 
@@ -27,14 +28,14 @@ internal class GenerateAICompletionHandler : ICommandHandler<GenerateAutoComplet
     {
         Guard.Against.NullOrEmpty(request.Prompt, nameof(request.Prompt));
 
-        // Use orchestrator to get the best client
-        var chatClient = await _orchestrator.GetClientAsync(cancellationToken: cancellationToken);
+        // Use chatClient to get the best client
+        var chatClient = await _chatClient.GetClientAsync(cancellationToken: cancellationToken);
 
-        // 1. Call AI Model
+        //  Call AI Model
         var chatCompletion = await chatClient.GetResponseAsync(request.Prompt, cancellationToken: cancellationToken);
-        var responseText = chatCompletion.Choices[0].Text ?? string.Empty;
+        var responseText = chatCompletion.Messages[0].Text ?? string.Empty;
 
-        // 2. Calculate Metadata
+        // Calculate Metadata
         // Use usage data from the provider if available, otherwise estimate
         var tokenUsage = chatCompletion.Usage?.TotalTokenCount ?? (request.Prompt.Length + responseText.Length) / 4;
 
@@ -42,16 +43,24 @@ internal class GenerateAICompletionHandler : ICommandHandler<GenerateAutoComplet
         // Simple cost estimation logic (example: $0.002 per 1k tokens)
         var costValue = (decimal)(tokenUsage * 0.000002);
 
-        // 3. Persist Interaction
+        // Persist Interaction
         var sessionId = AutoCompleteId.Of(Guid.NewGuid());
         var userId = UserId.Of(request.UserId);
 
-        // Use ModelId from metadata or fallback
-        var modelIdStr = chatClient.Metadata.ModelId ?? "default-model";
+        // Use metadata from the client (following the example's GetService pattern)
+        var clientMetadata = chatClient.GetService(typeof(ChatClientMetadata)) as ChatClientMetadata ?? chatClient.Metadata;
+        var modelIdStr = clientMetadata.ModelId ?? "default-model";
+        var providerName = clientMetadata.ProviderName;
+        
         var modelId = ModelId.Of(modelIdStr);
 
 
-        var config = AutoCompleteConfiguration.Of("standard");
+        var config = new AutoCompleteConfiguration()
+        {
+            MaxTokens = tokenUsage,
+            Mode = Enums.CompletionMode.Text,
+            Temperature = temperature,
+        };
 
         // Create Session Aggregate
         var session = AutoCompleteSession.Create(sessionId, userId, modelId, config);
@@ -80,6 +89,7 @@ internal class GenerateAICompletionHandler : ICommandHandler<GenerateAutoComplet
         _dbContext.Add(session);
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        return new GenerateAutoCompleteCommandResult(responseText, tokenUsage, costValue);
+        return new GenerateAutoCompleteCommandResult(responseText, tokenUsage, costValue, modelIdStr, providerName);
     }
 }
+

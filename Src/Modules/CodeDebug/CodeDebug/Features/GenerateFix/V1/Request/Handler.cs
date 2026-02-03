@@ -2,6 +2,8 @@
 using CodeDebug.Data;
 using CodeDebug.Exceptions;
 using CodeDebug.ValueObjects;
+using Ardalis.GuardClauses;
+using AiOrchestration.Services;
 using Microsoft.Extensions.AI;
 
 namespace CodeDebug.Features.GenerateFix.V1;
@@ -10,9 +12,9 @@ namespace CodeDebug.Features.GenerateFix.V1;
 internal class GenerateFixHandler : ICommandHandler<GenerateFixCommand, GenerateFixCommandResult>
 {
     private readonly CodeDebugDbContext _dbContext;
-    private readonly IChatClient _chatClient;
+    private readonly IAiOrchestrator _chatClient;
 
-    public GenerateFixHandler(CodeDebugDbContext dbContext, IChatClient chatClient)
+    public GenerateFixHandler(CodeDebugDbContext dbContext, IAiOrchestrator chatClient)
     {
         _dbContext = dbContext;
         _chatClient = chatClient;
@@ -47,8 +49,10 @@ internal class GenerateFixHandler : ICommandHandler<GenerateFixCommand, Generate
              new(ChatRole.User, prompt)
         };
 
-        var completion = await _chatClient.CompleteAsync(messages, cancellationToken: cancellationToken);
-        var response = completion.Message.Text ?? "";
+        // Use chatClient to get the best client
+        var chatClient = await _chatClient.GetClientAsync(cancellationToken: cancellationToken);
+        var completion = await chatClient.GetResponseAsync(messages, cancellationToken: cancellationToken);
+        var response = completion.Messages[0].Text ?? "";
 
         // Heuristic split of Code vs Explanation (assuming markdown code blocks)
         var fixedCode = response;
@@ -86,6 +90,6 @@ internal class GenerateFixHandler : ICommandHandler<GenerateFixCommand, Generate
         // We could create a "FixedReport" or track fixes in the session.
         // For now, just return.
 
-        return new GenerateFixResult(fixedCode, explanation);
+        return new GenerateFixCommandResult(fixedCode, explanation);
     }
 }

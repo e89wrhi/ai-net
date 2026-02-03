@@ -2,6 +2,8 @@
 using AiOrchestration.ValueObjects;
 using LearningAssistant.Data;
 using LearningAssistant.Models;
+using Ardalis.GuardClauses;
+using AiOrchestration.Services;
 using LearningAssistant.ValueObjects;
 using Microsoft.Extensions.AI;
 
@@ -11,9 +13,9 @@ namespace LearningAssistant.Features.GenerateQuiz.V1;
 internal class GenerateAIQuizHandler : ICommandHandler<GenerateAIQuizCommand, GenerateAIQuizCommandResult>
 {
     private readonly LearningDbContext _dbContext;
-    private readonly IChatClient _chatClient;
+    private readonly IAiOrchestrator _chatClient;
 
-    public GenerateAIQuizHandler(LearningDbContext dbContext, IChatClient chatClient)
+    public GenerateAIQuizHandler(LearningDbContext dbContext, IAiOrchestrator chatClient)
     {
         _dbContext = dbContext;
         _chatClient = chatClient;
@@ -31,8 +33,10 @@ internal class GenerateAIQuizHandler : ICommandHandler<GenerateAIQuizCommand, Ge
             new ChatMessage(ChatRole.User, "Generate the quiz now.")
         };
 
-        var completion = await _chatClient.CompleteAsync(messages, cancellationToken: cancellationToken);
-        var quizText = completion.Message.Text ?? "Failed to generate quiz.";
+        // Use chatClient to get the best client
+        var chatClient = await _chatClient.GetClientAsync(cancellationToken: cancellationToken);
+        var completion = await chatClient.GetResponseAsync(messages, cancellationToken: cancellationToken);
+        var quizText = completion.Messages[0].Text ?? "Failed to generate quiz.";
 
         // Persist
         var sessionId = LearningId.Of(Guid.NewGuid());
@@ -55,6 +59,6 @@ internal class GenerateAIQuizHandler : ICommandHandler<GenerateAIQuizCommand, Ge
         _dbContext.Sessions.Add(session);
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        return new GenerateAIQuizResult(sessionId.Value, activityId.Value, quizText);
+        return new GenerateAIQuizCommandResult(sessionId.Value, activityId.Value, quizText);
     }
 }

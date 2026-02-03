@@ -4,6 +4,8 @@ using ChatBot.Data;
 using ChatBot.Enums;
 using ChatBot.Exceptions;
 using ChatBot.ValueObjects;
+using Ardalis.GuardClauses;
+using AiOrchestration.Services;
 using Microsoft.Extensions.AI;
 
 namespace ChatBot.Features.GenerateResponse.V1;
@@ -12,9 +14,9 @@ namespace ChatBot.Features.GenerateResponse.V1;
 internal class GenerateAiResponseHandler : ICommandHandler<GenerateAiResponseCommand, GenerateAiResponseCommandResult>
 {
     private readonly ChatDbContext _dbContext;
-    private readonly IChatClient _chatClient;
+    private readonly IAiOrchestrator _chatClient;
 
-    public GenerateAiResponseHandler(ChatDbContext dbContext, IChatClient chatClient)
+    public GenerateAiResponseHandler(ChatDbContext dbContext, IAiOrchestrator chatClient)
     {
         _dbContext = dbContext;
         _chatClient = chatClient;
@@ -81,8 +83,11 @@ internal class GenerateAiResponseHandler : ICommandHandler<GenerateAiResponseCom
             chatMessages.Add(new Microsoft.Extensions.AI.ChatMessage(ChatRole.System, $"You are a helpful assistant for session: {chat.Title}"));
         }
 
-        var completion = await _chatClient.CompleteAsync(chatMessages, cancellationToken: cancellationToken);
-        var responseContent = completion.Message.Text ?? "I'm sorry, I couldn't generate a response.";
+        // Use chatClient to get the best client
+        var chatClient = await _chatClient.GetClientAsync(cancellationToken: cancellationToken);
+
+        var completion = await chatClient.GetResponseAsync(chatMessages, cancellationToken: cancellationToken);
+        var responseContent = completion.Messages[0].Text ?? "I'm sorry, I couldn't generate a response.";
 
         // Create Response Message
         var messageId = MessageId.Of(Guid.NewGuid());
@@ -100,6 +105,6 @@ internal class GenerateAiResponseHandler : ICommandHandler<GenerateAiResponseCom
         chat.AddMessage(aiMessage);
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        return new GenerateAiResponseResult(messageId.Value, responseContent);
+        return new GenerateAiResponseCommandResult(messageId.Value, responseContent);
     }
 }

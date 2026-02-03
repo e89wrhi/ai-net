@@ -5,16 +5,27 @@ namespace AutoComplete.Services;
 
 public class SimulatedChatClient : IChatClient
 {
-    public ChatClientMetadata Metadata => new("Simulated", new Uri("http://localhost"));
+    private readonly ChatClientMetadata _metadata;
 
-    public object? GetService(Type serviceType, object? serviceKey = null) => this.GetType() == serviceType ? this : null;
+    public SimulatedChatClient()
+    {
+        _metadata = new ChatClientMetadata("SimulatedChatClient", new Uri("http://localhost"), "simulated-model");
+    }
+
+    public ChatClientMetadata Metadata => _metadata;
+
+    public object? GetService(Type serviceType, object? key = null) =>
+        key is not null ? null :
+        serviceType == typeof(ChatClientMetadata) ? _metadata :
+        serviceType?.IsInstanceOfType(this) is true ? this :
+        null;
 
     public async Task<ChatResponse> GetResponseAsync(
         IEnumerable<ChatMessage> chatMessages, 
         ChatOptions? options = null, 
         CancellationToken cancellationToken = default)
     {
-        await Task.Delay(0);
+        await Task.Delay(10, cancellationToken);
         var lastMessage = chatMessages.LastOrDefault();
         var prompt = lastMessage?.Text ?? "No prompt";
 
@@ -44,3 +55,4 @@ public class SimulatedChatClient : IChatClient
         // No-op
     }
 }
+

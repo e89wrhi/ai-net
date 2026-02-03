@@ -3,6 +3,8 @@ using AiOrchestration.ValueObjects;
 using ImageCaption.Data;
 using ImageCaption.Models;
 using ImageCaption.ValueObjects;
+using Ardalis.GuardClauses;
+using AiOrchestration.Services;
 using Microsoft.Extensions.AI;
 
 namespace ImageCaption.Features.AnalyzeImage.V1;
@@ -10,9 +12,9 @@ namespace ImageCaption.Features.AnalyzeImage.V1;
 internal class AnalyzeImageHandler : ICommandHandler<AnalyzeImageCommand, AnalyzeImageCommandResult>
 {
     private readonly ImageCaptionDbContext _dbContext;
-    private readonly IChatClient _chatClient;
+    private readonly IAiOrchestrator _chatClient;
 
-    public AnalyzeImageHandler(ImageCaptionDbContext dbContext, IChatClient chatClient)
+    public AnalyzeImageHandler(ImageCaptionDbContext dbContext, IAiOrchestrator chatClient)
     {
         _dbContext = dbContext;
         _chatClient = chatClient;
@@ -43,8 +45,10 @@ internal class AnalyzeImageHandler : ICommandHandler<AnalyzeImageCommand, Analyz
             new ChatMessage(ChatRole.User, contents)
         };
 
-        var completion = await _chatClient.CompleteAsync(messages, cancellationToken: cancellationToken);
-        var analysisText = completion.Message.Text ?? "Unable to analyze image.";
+        // Use chatClient to get the best client
+        var chatClient = await _chatClient.GetClientAsync(cancellationToken: cancellationToken);
+        var completion = await chatClient.GetResponseAsync(messages, cancellationToken: cancellationToken);
+        var analysisText = completion.Messages[0].Text ?? "Unable to analyze image.";
 
         // Persist
         var sessionId = ImageCaptionId.Of(Guid.NewGuid());
@@ -67,7 +71,7 @@ internal class AnalyzeImageHandler : ICommandHandler<AnalyzeImageCommand, Analyz
         _dbContext.Sessions.Add(session);
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        return new AnalyzeImageResult(sessionId.Value, resultId.Value, analysisText);
+        return new AnalyzeImageCommandResult(sessionId.Value, resultId.Value, analysisText);
     }
 }
 

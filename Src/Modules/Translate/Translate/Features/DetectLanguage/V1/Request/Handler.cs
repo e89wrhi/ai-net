@@ -1,4 +1,6 @@
 ﻿using AI.Common.Core;
+using AiOrchestration.Services;
+using Ardalis.GuardClauses;
 using Microsoft.Extensions.AI;
 
 namespace Translate.Features.DetectLanguage.V1;
@@ -6,9 +8,9 @@ namespace Translate.Features.DetectLanguage.V1;
 
 internal class DetectLanguageHandler : ICommandHandler<DetectLanguageCommand, DetectLanguageCommandResult>
 {
-    private readonly IChatClient _chatClient;
+    private readonly IAiOrchestrator _chatClient;
 
-    public DetectLanguageHandler(IChatClient chatClient)
+    public DetectLanguageHandler(IAiOrchestrator chatClient)
     {
         _chatClient = chatClient;
     }
@@ -25,8 +27,10 @@ internal class DetectLanguageHandler : ICommandHandler<DetectLanguageCommand, De
             new ChatMessage(ChatRole.User, request.Text)
         };
 
-        var completion = await _chatClient.CompleteAsync(messages, cancellationToken: cancellationToken);
-        var responseText = completion.Message.Text ?? "unknown, 0.0";
+        // Use chatClient to get the best client
+        var chatClient = await _chatClient.GetClientAsync(cancellationToken: cancellationToken);
+        var completion = await chatClient.GetResponseAsync(messages, cancellationToken: cancellationToken);
+        var responseText = completion.Messages[0].Text ?? "unknown, 0.0";
 
         var parts = responseText.Split(',');
         var langCode = parts[0].Trim();
@@ -36,6 +40,6 @@ internal class DetectLanguageHandler : ICommandHandler<DetectLanguageCommand, De
             confidence = parsedConfidence;
         }
 
-        return new DetectLanguageResult(langCode, confidence);
+        return new DetectLanguageCommandResult(langCode, confidence);
     }
 }

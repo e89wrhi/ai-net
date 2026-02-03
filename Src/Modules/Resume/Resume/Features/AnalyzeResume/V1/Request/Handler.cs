@@ -4,6 +4,8 @@ using Microsoft.Extensions.AI;
 using Resume.Data;
 using Resume.Models;
 using Resume.ValueObjects;
+using Ardalis.GuardClauses;
+using AiOrchestration.Services;
 
 namespace Resume.Features.AnalyzeResume.V1;
 
@@ -11,9 +13,9 @@ namespace Resume.Features.AnalyzeResume.V1;
 internal class AnalyzeResumeWithAIHandler : ICommandHandler<AnalyzeResumeWithAICommand, AnalyzeResumeWithAICommandResult>
 {
     private readonly ResumeDbContext _dbContext;
-    private readonly IChatClient _chatClient;
+    private readonly IAiOrchestrator _chatClient;
 
-    public AnalyzeResumeWithAIHandler(ResumeDbContext dbContext, IChatClient chatClient)
+    public AnalyzeResumeWithAIHandler(ResumeDbContext dbContext, IAiOrchestrator chatClient)
     {
         _dbContext = dbContext;
         _chatClient = chatClient;
@@ -31,8 +33,10 @@ internal class AnalyzeResumeWithAIHandler : ICommandHandler<AnalyzeResumeWithAIC
             new ChatMessage(ChatRole.User, $"Resume Content:\n{request.ResumeContent}")
         };
 
-        var completion = await _chatClient.CompleteAsync(messages, cancellationToken: cancellationToken);
-        var responseText = completion.Message.Text ?? "Failed to analyze resume.";
+        // Use chatClient to get the best client
+        var chatClient = await _chatClient.GetClientAsync(cancellationToken: cancellationToken);
+        var completion = await chatClient.GetResponseAsync(messages, cancellationToken: cancellationToken);
+        var responseText = completion.Messages[0].Text ?? "Failed to analyze resume.";
 
         // Simple parsing for score (mocking better extraction)
         double score = 85.0; // Default or parsed

@@ -5,6 +5,8 @@ using SpeechToText.Data;
 using SpeechToText.Models;
 using SpeechToText.ValueObjects;
 using System.Runtime.CompilerServices;
+using Ardalis.GuardClauses;
+using AiOrchestration.Services;
 using System.Text;
 
 namespace SpeechToText.Features.StreamTranscribeAudio.V1;
@@ -13,9 +15,9 @@ namespace SpeechToText.Features.StreamTranscribeAudio.V1;
 internal class StreamTranscribeAudioHandler : IStreamRequestHandler<StreamTranscribeAudioCommand, string>
 {
     private readonly SpeechToTextDbContext _dbContext;
-    private readonly IChatClient _chatClient;
+    private readonly IAiOrchestrator _chatClient;
 
-    public StreamTranscribeAudioHandler(SpeechToTextDbContext dbContext, IChatClient chatClient)
+    public StreamTranscribeAudioHandler(SpeechToTextDbContext dbContext, IAiOrchestrator chatClient)
     {
         _dbContext = dbContext;
         _chatClient = chatClient;
@@ -34,7 +36,10 @@ internal class StreamTranscribeAudioHandler : IStreamRequestHandler<StreamTransc
         var fullTranscriptBuilder = new StringBuilder();
         int tokenEstimate = 0;
 
-        await foreach (var update in _chatClient.CompleteStreamingAsync(messages, cancellationToken: cancellationToken))
+        // Use chatClient to get the best client
+        var chatClient = await _chatClient.GetClientAsync(cancellationToken: cancellationToken);
+        var response = await chatClient.GetResponseAsync(messages, cancellationToken: cancellationToken);
+        foreach (var update in response.Messages)
         {
             if (!string.IsNullOrEmpty(update.Text))
             {

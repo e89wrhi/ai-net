@@ -1,5 +1,7 @@
 ﻿using AI.Common.Core;
+using AiOrchestration.Services;
 using AiOrchestration.ValueObjects;
+using Ardalis.GuardClauses;
 using Microsoft.Extensions.AI;
 using Translate.Data;
 using Translate.Models;
@@ -11,12 +13,12 @@ namespace Translate.Features.TranslateText.V1;
 internal class TranslateTextWithAIHandler : ICommandHandler<TranslateTextWithAICommand, TranslateTextWithAICommandResult>
 {
     private readonly TranslateDbContext _dbContext;
-    private readonly IChatClient _chatClient;
+    private readonly IAiOrchestrator _orchestrator;
 
-    public TranslateTextWithAIHandler(TranslateDbContext dbContext, IChatClient chatClient)
+    public TranslateTextWithAIHandler(TranslateDbContext dbContext, IAiOrchestrator orchestrator)
     {
         _dbContext = dbContext;
-        _chatClient = chatClient;
+        _orchestrator = orchestrator;
     }
 
     public async Task<TranslateTextWithAICommandResult> Handle(TranslateTextWithAICommand request, CancellationToken cancellationToken)
@@ -31,13 +33,15 @@ internal class TranslateTextWithAIHandler : ICommandHandler<TranslateTextWithAIC
             new ChatMessage(ChatRole.User, prompt)
         };
 
-        var completion = await _chatClient.CompleteAsync(messages, cancellationToken: cancellationToken);
-        var translatedText = completion.Message.Text ?? "Translation failed.";
+        // Use orchestrator to get the best client
+        var orchestrator = await _orchestrator.GetClientAsync(cancellationToken: cancellationToken);
+        var completion = await orchestrator.GetResponseAsync(messages, cancellationToken: cancellationToken);
+        var translatedText = completion.Messages[0].Text ?? "Translation failed.";
 
         // Persist
         var sessionId = TranslateId.Of(Guid.NewGuid());
         var userId = UserId.Of(Guid.NewGuid());
-        var modelId = ModelId.Of(_chatClient.Metadata.ModelId ?? "translate-model");
+        var modelId = ModelId.Of(_orchestrator.Metadata.ModelId ?? "translate-model");
         var config = new TranslationConfiguration(
             LanguageCode.Of(request.SourceLanguage),
             LanguageCode.Of(request.TargetLanguage),

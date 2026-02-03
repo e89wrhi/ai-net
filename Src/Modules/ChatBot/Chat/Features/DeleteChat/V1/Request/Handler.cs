@@ -1,6 +1,8 @@
 ﻿using ChatBot.Data;
 using ChatBot.Exceptions;
 using ChatBot.ValueObjects;
+using Ardalis.GuardClauses;
+using AiOrchestration.Services;
 using MediatR;
 
 namespace ChatBot.Features.DeleteChat.V1;

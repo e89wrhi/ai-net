@@ -4,6 +4,8 @@ using ImageGen.Data;
 using ImageGen.Models;
 using ImageGen.ValueObjects;
 using Microsoft.Extensions.AI;
+using Ardalis.GuardClauses;
+using AiOrchestration.Services;
 
 namespace ImageGen.Features.GenerateImage.V1;
 
@@ -11,9 +13,9 @@ namespace ImageGen.Features.GenerateImage.V1;
 internal class GenerateImageHandler : ICommandHandler<GenerateImageCommand, GenerateImageCommandResult>
 {
     private readonly ImageGenDbContext _dbContext;
-    private readonly IChatClient _chatClient;
+    private readonly IAiOrchestrator _chatClient;
 
-    public GenerateImageHandler(ImageGenDbContext dbContext, IChatClient chatClient)
+    public GenerateImageHandler(ImageGenDbContext dbContext, IAiOrchestrator chatClient)
     {
         _dbContext = dbContext;
         _chatClient = chatClient;
@@ -26,13 +28,16 @@ internal class GenerateImageHandler : ICommandHandler<GenerateImageCommand, Gene
         // Use ChatClient to "acknowledge" the generation or log intent
         var messages = new List<ChatMessage>
         {
-            new ChatMessage(ChatRole.System, "You are an image generation orchestrator."),
+            new ChatMessage(ChatRole.System, "You are an image generation chatClient."),
             new ChatMessage(ChatRole.User, $"Generate an image with prompt: {request.Prompt}. Style: {request.Style}, Size: {request.Size}")
         };
 
+        // Use chatClient to get the best client
+        var chatClient = await _chatClient.GetClientAsync(cancellationToken: cancellationToken);
+
         // This is a placeholder for real image generation call
         // In a real scenario, you'd use a dedicated IImageClient or similar
-        var completion = await _chatClient.CompleteAsync(messages, cancellationToken: cancellationToken);
+        var completion = await chatClient.GetResponseAsync(messages, cancellationToken: cancellationToken);
 
         // Mock Image URL
         var imageUrl = $"https://generated-images.com/{Guid.NewGuid()}.png";

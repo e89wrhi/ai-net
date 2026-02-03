@@ -3,6 +3,8 @@ using ChatBot.Exceptions;
 using ChatBot.ValueObjects;
 using MassTransit;
 using MediatR;
+using Ardalis.GuardClauses;
+using AiOrchestration.Services;
 
 namespace ChatBot.Features.SendMessage.V1;
 

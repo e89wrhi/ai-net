@@ -4,6 +4,8 @@ using Microsoft.Extensions.AI;
 using Summary.Data;
 using Summary.Models;
 using Summary.ValueObjects;
+using Ardalis.GuardClauses;
+using AiOrchestration.Services;
 
 namespace Summary.Features.SummarizeText.V1;
 
@@ -11,9 +13,9 @@ namespace Summary.Features.SummarizeText.V1;
 internal class SummarizeTextWithAIHandler : ICommandHandler<SummarizeTextWithAICommand, SummarizeTextWithAICommandResult>
 {
     private readonly SummaryDbContext _dbContext;
-    private readonly IChatClient _chatClient;
+    private readonly IAiOrchestrator _chatClient;
 
-    public SummarizeTextWithAIHandler(SummaryDbContext dbContext, IChatClient chatClient)
+    public SummarizeTextWithAIHandler(SummaryDbContext dbContext, IAiOrchestrator chatClient)
     {
         _dbContext = dbContext;
         _chatClient = chatClient;
@@ -31,8 +33,10 @@ internal class SummarizeTextWithAIHandler : ICommandHandler<SummarizeTextWithAIC
             new ChatMessage(ChatRole.User, prompt)
         };
 
-        var completion = await _chatClient.CompleteAsync(messages, cancellationToken: cancellationToken);
-        var summaryText = completion.Message.Text ?? "Summary generation failed.";
+        // Use chatClient to get the best client
+        var chatClient = await _chatClient.GetClientAsync(cancellationToken: cancellationToken);
+        var completion = await chatClient.GetResponseAsync(messages, cancellationToken: cancellationToken);
+        var summaryText = completion.Messages[0].Text ?? "Summary generation failed.";
 
         // Persist
         var sessionId = SummaryId.Of(Guid.NewGuid());
@@ -53,6 +57,6 @@ internal class SummarizeTextWithAIHandler : ICommandHandler<SummarizeTextWithAIC
         _dbContext.Sessions.Add(session);
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        return new SummarizeTextWithAIResult(sessionId.Value, resultId.Value, summaryText);
+        return new SummarizeTextWithAICommandResult(sessionId.Value, resultId.Value, summaryText);
     }
 }

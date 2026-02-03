@@ -4,6 +4,8 @@ using CodeGen.Enums;
 using CodeGen.Models;
 using CodeGen.ValueObjects;
 using MediatR;
+using Ardalis.GuardClauses;
+using AiOrchestration.Services;
 using Microsoft.Extensions.AI;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -14,9 +16,9 @@ namespace CodeGen.Features.StreamGenerateCode.V1;
 internal class StreamGenerateCodeHandler : IStreamRequestHandler<StreamGenerateCodeCommand, string>
 {
     private readonly CodeGenDbContext _dbContext;
-    private readonly IChatClient _chatClient;
+    private readonly IAiOrchestrator _chatClient;
 
-    public StreamGenerateCodeHandler(CodeGenDbContext dbContext, IChatClient chatClient)
+    public StreamGenerateCodeHandler(CodeGenDbContext dbContext, IAiOrchestrator chatClient)
     {
         _dbContext = dbContext;
         _chatClient = chatClient;
@@ -36,7 +38,10 @@ internal class StreamGenerateCodeHandler : IStreamRequestHandler<StreamGenerateC
         var fullCodeBuilder = new StringBuilder();
         int tokenEstimate = 0;
 
-        await foreach (var update in _chatClient.CompleteStreamingAsync(messages, cancellationToken: cancellationToken))
+        // Use chatClient to get the best client
+        var chatClient = await _chatClient.GetClientAsync(cancellationToken: cancellationToken);
+        var response = await chatClient.GetResponseAsync(messages, cancellationToken: cancellationToken);
+        foreach (var update in response.Messages)
         {
             if (!string.IsNullOrEmpty(update.Text))
             {

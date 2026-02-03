@@ -5,6 +5,8 @@ using Summary.Data;
 using Summary.Models;
 using Summary.ValueObjects;
 using System.Runtime.CompilerServices;
+using Ardalis.GuardClauses;
+using AiOrchestration.Services;
 using System.Text;
 
 namespace Summary.Features.StreamSummarizeText.V1;
@@ -13,9 +15,9 @@ namespace Summary.Features.StreamSummarizeText.V1;
 internal class StreamSummarizeTextHandler : IStreamRequestHandler<StreamSummarizeTextCommand, string>
 {
     private readonly SummaryDbContext _dbContext;
-    private readonly IChatClient _chatClient;
+    private readonly IAiOrchestrator _chatClient;
 
-    public StreamSummarizeTextHandler(SummaryDbContext dbContext, IChatClient chatClient)
+    public StreamSummarizeTextHandler(SummaryDbContext dbContext, IAiOrchestrator chatClient)
     {
         _dbContext = dbContext;
         _chatClient = chatClient;
@@ -35,7 +37,10 @@ internal class StreamSummarizeTextHandler : IStreamRequestHandler<StreamSummariz
         var fullSummaryBuilder = new StringBuilder();
         int tokenEstimate = 0;
 
-        await foreach (var update in _chatClient.CompleteStreamingAsync(messages, cancellationToken: cancellationToken))
+        // Use chatClient to get the best client
+        var chatClient = await _chatClient.GetClientAsync(cancellationToken: cancellationToken);
+        var response = await chatClient.GetResponseAsync(messages, cancellationToken: cancellationToken);
+        foreach (var update in response.Messages)
         {
             if (!string.IsNullOrEmpty(update.Text))
             {

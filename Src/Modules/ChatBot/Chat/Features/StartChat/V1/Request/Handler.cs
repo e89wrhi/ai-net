@@ -1,6 +1,8 @@
 ﻿using ChatBot.Data;
 using ChatBot.Models;
 using ChatBot.ValueObjects;
+using Ardalis.GuardClauses;
+using AiOrchestration.Services;
 using MassTransit;
 using MediatR;
 

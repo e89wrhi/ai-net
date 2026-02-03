@@ -4,6 +4,9 @@ using Microsoft.Extensions.AI;
 using TextToSpeech.Data;
 using TextToSpeech.Models;
 using TextToSpeech.ValueObjects;
+using TextToSpeech.Services;
+using Ardalis.GuardClauses;
+using AiOrchestration.Services;
 
 namespace TextToSpeech.Features.SynthesizeSpeech.V1;
 
@@ -11,9 +14,9 @@ namespace TextToSpeech.Features.SynthesizeSpeech.V1;
 internal class SynthesizeSpeechHandler : ICommandHandler<SynthesizeSpeechCommand, SynthesizeSpeechCommandResult>
 {
     private readonly TextToSpeechDbContext _dbContext;
-    private readonly IChatClient _chatClient;
+    private readonly IAiOrchestrator _chatClient;
 
-    public SynthesizeSpeechHandler(TextToSpeechDbContext dbContext, IChatClient chatClient)
+    public SynthesizeSpeechHandler(TextToSpeechDbContext dbContext, IAiOrchestrator chatClient)
     {
         _dbContext = dbContext;
         _chatClient = chatClient;
@@ -26,11 +29,13 @@ internal class SynthesizeSpeechHandler : ICommandHandler<SynthesizeSpeechCommand
         // Use IChatClient to orchestrate or log the synthesis intent
         var messages = new List<ChatMessage>
         {
-            new ChatMessage(ChatRole.System, "You are a speech synthesis orchestrator."),
+            new ChatMessage(ChatRole.System, "You are a speech synthesis chatClient."),
             new ChatMessage(ChatRole.User, $"Synthesize this text using {request.Voice} voice at {request.Speed} speed in {request.Language}: {request.Text}")
         };
 
-        var completion = await _chatClient.CompleteAsync(messages, cancellationToken: cancellationToken);
+        // Use chatClient to get the best client
+        var chatClient = await _chatClient.GetClientAsync(cancellationToken: cancellationToken);
+        var completion = await chatClient.GetResponseAsync(messages, cancellationToken: cancellationToken);
 
         // Mock Audio URL (In real implementation, this would call a TTS service like OpenAI TTS or Azure Speech)
         var audioUrl = $"https://ai-audio-storage.com/{Guid.NewGuid()}.mp3";

@@ -3,6 +3,8 @@ using AiOrchestration.ValueObjects;
 using ImageGen.Data;
 using ImageGen.Models;
 using ImageGen.ValueObjects;
+using Ardalis.GuardClauses;
+using AiOrchestration.Services;
 using Microsoft.Extensions.AI;
 
 namespace ImageGen.Features.ReGenerateImage.V1;
@@ -10,9 +12,9 @@ namespace ImageGen.Features.ReGenerateImage.V1;
 internal class ReGenerateImageHandler : ICommandHandler<ReGenerateImageCommand, ReGenerateImageCommandResult>
 {
     private readonly ImageGenDbContext _dbContext;
-    private readonly IChatClient _chatClient;
+    private readonly IAiOrchestrator _chatClient;
 
-    public ReGenerateImageHandler(ImageGenDbContext dbContext, IChatClient chatClient)
+    public ReGenerateImageHandler(ImageGenDbContext dbContext, IAiOrchestrator chatClient)
     {
         _dbContext = dbContext;
         _chatClient = chatClient;
@@ -20,16 +22,16 @@ internal class ReGenerateImageHandler : ICommandHandler<ReGenerateImageCommand, 
 
     public async Task<ReGenerateImageCommandResult> Handle(ReGenerateImageCommand request, CancellationToken cancellationToken)
     {
-        // 1. Load Session
+        // Load Session
         var session = await _dbContext.Sessions.FindAsync(new object[] { CodeGenId.Of(request.SessionId) }, cancellationToken);
         if (session == null) throw new ImageGen.Exceptions.ImageGenNotFoundException(request.SessionId);
 
-        // 2. Load context
+        // Load context
         await _dbContext.Entry(session).Collection(s => s.Results).LoadAsync(cancellationToken);
         var lastResult = session.Results.OrderByDescending(r => r.GeneratedAt).FirstOrDefault();
         if (lastResult == null) throw new ImageGen.Exceptions.ImageGenResultNotFoundException(Guid.Empty);
 
-        // 3. Orchestrate re-generation
+        // Orchestrate re-generation
         var messages = new List<ChatMessage>
         {
             new ChatMessage(ChatRole.System, "You are an image generation refiner."),
@@ -37,12 +39,14 @@ internal class ReGenerateImageHandler : ICommandHandler<ReGenerateImageCommand, 
             new ChatMessage(ChatRole.User, $"Refinement Instruction: {request.Instruction}")
         };
 
-        var completion = await _chatClient.CompleteAsync(messages, cancellationToken: cancellationToken);
+        // Use chatClient to get the best client
+        var chatClient = await _chatClient.GetClientAsync(cancellationToken: cancellationToken);
+        var completion = await chatClient.GetResponseAsync(messages, cancellationToken: cancellationToken);
 
         // Mock refined Image URL
         var imageUrl = $"https://generated-images.com/{Guid.NewGuid()}_refined.png";
 
-        // 4. Update
+        // Update
         var resultId = ImageGenResultId.Of(Guid.NewGuid());
         var promptVo = ImageGenerationPrompt.Of(request.Instruction);
         var imageVo = GeneratedImage.Of(imageUrl);

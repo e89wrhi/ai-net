@@ -2,6 +2,8 @@
 using AiOrchestration.ValueObjects;
 using ImageCaption.Data;
 using ImageCaption.Models;
+using Ardalis.GuardClauses;
+using AiOrchestration.Services;
 using ImageCaption.ValueObjects;
 using Microsoft.Extensions.AI;
 
@@ -11,9 +13,9 @@ namespace ImageCaption.Features.CaptionImage.V1;
 internal class AIImageCaptionHandler : ICommandHandler<AIImageCaptionCommand, AIImageCaptionCommandResult>
 {
     private readonly ImageCaptionDbContext _dbContext;
-    private readonly IChatClient _chatClient;
+    private readonly IAiOrchestrator _chatClient;
 
-    public AIImageCaptionHandler(ImageCaptionDbContext dbContext, IChatClient chatClient)
+    public AIImageCaptionHandler(ImageCaptionDbContext dbContext, IAiOrchestrator chatClient)
     {
         _dbContext = dbContext;
         _chatClient = chatClient;
@@ -48,8 +50,10 @@ internal class AIImageCaptionHandler : ICommandHandler<AIImageCaptionCommand, AI
             new ChatMessage(ChatRole.User, contents)
         };
 
-        var completion = await _chatClient.CompleteAsync(messages, cancellationToken: cancellationToken);
-        var captionText = completion.Message.Text ?? "Unable to generate caption.";
+        // Use chatClient to get the best client
+        var chatClient = await _chatClient.GetClientAsync(cancellationToken: cancellationToken);
+        var completion = await chatClient.GetResponseAsync(messages, cancellationToken: cancellationToken);
+        var captionText = completion.Messages[0].Text ?? "Unable to generate caption.";
 
         // Persist
         var sessionId = ImageCaptionId.Of(Guid.NewGuid());
@@ -72,6 +76,6 @@ internal class AIImageCaptionHandler : ICommandHandler<AIImageCaptionCommand, AI
         _dbContext.Sessions.Add(session);
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        return new AIImageCaptionResult(sessionId.Value, resultId.Value, captionText);
+        return new AIImageCaptionCommandResult(sessionId.Value, resultId.Value, captionText);
     }
 }

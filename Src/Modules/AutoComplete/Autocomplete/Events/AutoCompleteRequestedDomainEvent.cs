@@ -8,4 +8,4 @@ public record AutoCompleteRequestedDomainEvent(
     AutoCompleteRequestId RequestId, 
     string Prompt, 
     string Response,
-    int TokensUsed) : IDomainEvent;
+    long TokensUsed) : IDomainEvent;

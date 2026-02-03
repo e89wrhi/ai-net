@@ -4,6 +4,8 @@ using Microsoft.Extensions.AI;
 using Sentiment.Data;
 using Sentiment.Models;
 using Sentiment.ValueObjects;
+using Ardalis.GuardClauses;
+using AiOrchestration.Services;
 
 namespace Sentiment.Features.AnalyzeSentiment.V1;
 
@@ -11,9 +13,9 @@ namespace Sentiment.Features.AnalyzeSentiment.V1;
 internal class AnalyzeSentimentWithAIHandler : ICommandHandler<AnalyzeSentimentWithAICommand, AnalyzeSentimentWithAICommandResult>
 {
     private readonly SentimentDbContext _dbContext;
-    private readonly IChatClient _chatClient;
+    private readonly IAiOrchestrator _chatClient;
 
-    public AnalyzeSentimentWithAIHandler(SentimentDbContext dbContext, IChatClient chatClient)
+    public AnalyzeSentimentWithAIHandler(SentimentDbContext dbContext, IAiOrchestrator chatClient)
     {
         _dbContext = dbContext;
         _chatClient = chatClient;
@@ -31,8 +33,10 @@ internal class AnalyzeSentimentWithAIHandler : ICommandHandler<AnalyzeSentimentW
             new ChatMessage(ChatRole.User, request.Text)
         };
 
-        var completion = await _chatClient.CompleteAsync(messages, cancellationToken: cancellationToken);
-        var responseText = completion.Message.Text ?? "Neutral, 0.0";
+        // Use chatClient to get the best client
+        var chatClient = await _chatClient.GetClientAsync(cancellationToken: cancellationToken);
+        var completion = await chatClient.GetResponseAsync(messages, cancellationToken: cancellationToken);
+        var responseText = completion.Messages[0].Text ?? "Neutral, 0.0";
 
         // Parse "Sentiment, Score"
         var parts = responseText.Split(',');
@@ -63,6 +67,6 @@ internal class AnalyzeSentimentWithAIHandler : ICommandHandler<AnalyzeSentimentW
         _dbContext.Sessions.Add(session);
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        return new AnalyzeSentimentWithAIResult(sessionId.Value, resultId.Value, sentimentStr, score);
+        return new AnalyzeSentimentWithAICommandResult(sessionId.Value, resultId.Value, sentimentStr, score);
     }
 }

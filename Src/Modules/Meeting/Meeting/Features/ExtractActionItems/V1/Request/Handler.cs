@@ -4,6 +4,8 @@ using Meeting.Data;
 using Meeting.Models;
 using Meeting.ValueObjects;
 using Microsoft.Extensions.AI;
+using Ardalis.GuardClauses;
+using AiOrchestration.Services;
 
 namespace Meeting.Features.ExtractActionItems.V1;
 
@@ -11,9 +13,9 @@ namespace Meeting.Features.ExtractActionItems.V1;
 internal class ExtractActionItemsHandler : ICommandHandler<ExtractActionItemsCommand, ExtractActionItemsCommandResult>
 {
     private readonly MeetingDbContext _dbContext;
-    private readonly IChatClient _chatClient;
+    private readonly IAiOrchestrator _chatClient;
 
-    public ExtractActionItemsHandler(MeetingDbContext dbContext, IChatClient chatClient)
+    public ExtractActionItemsHandler(MeetingDbContext dbContext, IAiOrchestrator chatClient)
     {
         _dbContext = dbContext;
         _chatClient = chatClient;
@@ -29,8 +31,10 @@ internal class ExtractActionItemsHandler : ICommandHandler<ExtractActionItemsCom
             new ChatMessage(ChatRole.User, $"Transcript:\n{request.Transcript}")
         };
 
-        var completion = await _chatClient.CompleteAsync(messages, cancellationToken: cancellationToken);
-        var actionItems = completion.Message.Text ?? "No action items found.";
+        // Use chatClient to get the best client
+        var chatClient = await _chatClient.GetClientAsync(cancellationToken: cancellationToken);
+        var completion = await chatClient.GetResponseAsync(messages, cancellationToken: cancellationToken);
+        var actionItems = completion.Messages[0].Text ?? "No action items found.";
 
         // Persist
         var meetingId = MeetingId.Of(Guid.NewGuid());
@@ -52,6 +56,6 @@ internal class ExtractActionItemsHandler : ICommandHandler<ExtractActionItemsCom
         _dbContext.Sessions.Add(session);
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        return new ExtractActionItemsResult(meetingId.Value, actionItems);
+        return new ExtractActionItemsCommandResult(meetingId.Value, actionItems);
     }
 }

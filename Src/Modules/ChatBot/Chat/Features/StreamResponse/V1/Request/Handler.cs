@@ -3,6 +3,8 @@ using ChatBot.Data;
 using ChatBot.Enums;
 using ChatBot.Exceptions;
 using ChatBot.Models;
+using Ardalis.GuardClauses;
+using AiOrchestration.Services;
 using ChatBot.ValueObjects;
 using MediatR;
 using Microsoft.Extensions.AI;
@@ -15,9 +17,9 @@ namespace ChatBot.Features.StreamResponse.V1;
 internal class StreamAiResponseHandler : IStreamRequestHandler<StreamAiResponseCommand, string>
 {
     private readonly ChatDbContext _dbContext;
-    private readonly IChatClient _chatClient;
+    private readonly IAiOrchestrator _chatClient;
 
-    public StreamAiResponseHandler(ChatDbContext dbContext, IChatClient chatClient)
+    public StreamAiResponseHandler(ChatDbContext dbContext, IAiOrchestrator chatClient)
     {
         _dbContext = dbContext;
         _chatClient = chatClient;
@@ -43,7 +45,10 @@ internal class StreamAiResponseHandler : IStreamRequestHandler<StreamAiResponseC
         var fullResponseBuilder = new StringBuilder();
         int tokenEstimate = 0;
 
-        await foreach (var update in _chatClient.CompleteStreamingAsync(chatMessages, cancellationToken: cancellationToken))
+        // Use chatClient to get the best client
+        var chatClient = await _chatClient.GetClientAsync(cancellationToken: cancellationToken);
+        var response = await chatClient.GetResponseAsync(chatMessages, cancellationToken: cancellationToken);
+        foreach (var update in response.Messages)
         {
             if (!string.IsNullOrEmpty(update.Text))
             {

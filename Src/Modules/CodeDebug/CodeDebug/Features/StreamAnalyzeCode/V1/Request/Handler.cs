@@ -4,6 +4,8 @@ using CodeDebug.Models;
 using CodeDebug.ValueObjects;
 using MediatR;
 using Microsoft.Extensions.AI;
+using Ardalis.GuardClauses;
+using AiOrchestration.Services;
 using System.Runtime.CompilerServices;
 using System.Text;
 
@@ -12,9 +14,9 @@ namespace CodeDebug.Features.StreamAnalyzeCode.V1;
 internal class StreamAnalyzeCodeHandler : IStreamRequestHandler<StreamAnalyzeCodeCommand, string>
 {
     private readonly CodeDebugDbContext _dbContext;
-    private readonly IChatClient _chatClient;
+    private readonly IAiOrchestrator _chatClient;
 
-    public StreamAnalyzeCodeHandler(CodeDebugDbContext dbContext, IChatClient chatClient)
+    public StreamAnalyzeCodeHandler(CodeDebugDbContext dbContext, IAiOrchestrator chatClient)
     {
         _dbContext = dbContext;
         _chatClient = chatClient;
@@ -34,7 +36,10 @@ internal class StreamAnalyzeCodeHandler : IStreamRequestHandler<StreamAnalyzeCod
         var fullReportBuilder = new StringBuilder();
         int tokenEstimate = 0;
 
-        await foreach (var update in _chatClient.CompleteStreamingAsync(messages, cancellationToken: cancellationToken))
+        // Use chatClient to get the best client
+        var chatClient = await _chatClient.GetClientAsync(cancellationToken: cancellationToken);
+        var response = await chatClient.GetResponseAsync(messages, cancellationToken: cancellationToken);
+        foreach (var update in response.Messages)
         {
             if (!string.IsNullOrEmpty(update.Text))
             {

@@ -5,14 +5,14 @@ namespace AiOrchestration.ValueObjects;
 
 public record TokenCount
 {
-    public int Value { get; }
+    public long Value { get; }
 
-    private TokenCount(int value)
+    private TokenCount(long value)
     {
         Value = value;
     }
 
-    public static TokenCount Of(int value)
+    public static TokenCount Of(long value)
     {
         if (value < 0)
         {
@@ -22,7 +22,7 @@ public record TokenCount
         return new TokenCount(value);
     }
 
-    public static implicit operator int(TokenCount id)
+    public static implicit operator long(TokenCount id)
     {
         return id.Value;
     }

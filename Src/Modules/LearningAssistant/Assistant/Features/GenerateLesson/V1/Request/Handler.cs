@@ -2,6 +2,8 @@
 using AiOrchestration.ValueObjects;
 using LearningAssistant.Data;
 using LearningAssistant.Models;
+using Ardalis.GuardClauses;
+using AiOrchestration.Services;
 using LearningAssistant.ValueObjects;
 using Microsoft.Extensions.AI;
 
@@ -11,9 +13,9 @@ namespace LearningAssistant.Features.GenerateLesson.V1;
 internal class GenerateAILessonHandler : ICommandHandler<GenerateAILessonCommand, GenerateAILessonCommandResult>
 {
     private readonly LearningDbContext _dbContext;
-    private readonly IChatClient _chatClient;
+    private readonly IAiOrchestrator _chatClient;
 
-    public GenerateAILessonHandler(LearningDbContext dbContext, IChatClient chatClient)
+    public GenerateAILessonHandler(LearningDbContext dbContext, IAiOrchestrator chatClient)
     {
         _dbContext = dbContext;
         _chatClient = chatClient;
@@ -31,8 +33,10 @@ internal class GenerateAILessonHandler : ICommandHandler<GenerateAILessonCommand
             new ChatMessage(ChatRole.User, $"Explain: {request.Topic}")
         };
 
-        var completion = await _chatClient.CompleteAsync(messages, cancellationToken: cancellationToken);
-        var contentText = completion.Message.Text ?? "Failed to generate lesson.";
+        // Use chatClient to get the best client
+        var chatClient = await _chatClient.GetClientAsync(cancellationToken: cancellationToken);
+        var completion = await chatClient.GetResponseAsync(messages, cancellationToken: cancellationToken);
+        var contentText = completion.Messages[0].Text ?? "Failed to generate lesson.";
 
         // Persist
         var sessionId = LearningId.Of(Guid.NewGuid());
@@ -55,6 +59,6 @@ internal class GenerateAILessonHandler : ICommandHandler<GenerateAILessonCommand
         _dbContext.Sessions.Add(session);
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        return new GenerateAILessonResult(sessionId.Value, activityId.Value, contentText);
+        return new GenerateAILessonCommandResult(sessionId.Value, activityId.Value, contentText);
     }
 }

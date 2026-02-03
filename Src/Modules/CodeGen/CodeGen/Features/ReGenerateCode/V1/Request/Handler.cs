@@ -3,6 +3,8 @@ using AiOrchestration.ValueObjects;
 using CodeGen.Data;
 using CodeGen.Enums;
 using CodeGen.Models;
+using Ardalis.GuardClauses;
+using AiOrchestration.Services;
 using CodeGen.ValueObjects;
 using Microsoft.Extensions.AI;
 
@@ -12,9 +14,9 @@ namespace CodeGen.Features.ReGenerateCode.V1;
 internal class ReGenerateCodeHandler : ICommandHandler<ReGenerateCodeCommand, ReGenerateCodeCommandResult>
 {
     private readonly CodeGenDbContext _dbContext;
-    private readonly IChatClient _chatClient;
+    private readonly IAiOrchestrator _chatClient;
 
-    public ReGenerateCodeHandler(CodeGenDbContext dbContext, IChatClient chatClient)
+    public ReGenerateCodeHandler(CodeGenDbContext dbContext, IAiOrchestrator chatClient)
     {
         _dbContext = dbContext;
         _chatClient = chatClient;
@@ -22,11 +24,11 @@ internal class ReGenerateCodeHandler : ICommandHandler<ReGenerateCodeCommand, Re
 
     public async Task<ReGenerateCodeCommandResult> Handle(ReGenerateCodeCommand request, CancellationToken cancellationToken)
     {
-        // 1. Load Session
+        // Load Session
         var session = await _dbContext.Sessions.FindAsync(new object[] { CodeGenId.Of(request.SessionId) }, cancellationToken);
         if (session == null) throw new CodeGen.Exceptions.CodeGenNotFoundException(request.SessionId);
 
-        // 2. Prepare Context
+        // Prepare Context
         // We want the last generated code as context
         // EF Core loading results...
         await _dbContext.Entry(session).Collection(s => s.Results).LoadAsync(cancellationToken);
@@ -41,11 +43,14 @@ internal class ReGenerateCodeHandler : ICommandHandler<ReGenerateCodeCommand, Re
             new ChatMessage(ChatRole.User, $"Instructions:\n{request.Instruction}")
         };
 
-        // 3. Call AI
-        var completion = await _chatClient.CompleteAsync(messages, cancellationToken: cancellationToken);
-        var refinedCodeText = completion.Message.Text ?? string.Empty;
+        // Use chatClient to get the best client
+        var chatClient = await _chatClient.GetClientAsync(cancellationToken: cancellationToken);
 
-        // 4. Update Session
+        // Call AI
+        var completion = await chatClient.GetResponseAsync(messages, cancellationToken: cancellationToken);
+        var refinedCodeText = completion.Messages[0].Text ?? string.Empty;
+
+        // Update Session
         var resultId = CodeGenResultId.Of(Guid.NewGuid());
         var promptVo = CodeGenerationPrompt.Of(request.Instruction);
         var codeVo = GeneratedCode.Of(refinedCodeText);
@@ -64,6 +69,6 @@ internal class ReGenerateCodeHandler : ICommandHandler<ReGenerateCodeCommand, Re
         session.AddResult(newResult);
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        return new ReGenerateCodeResult(resultId.Value, refinedCodeText);
+        return new  ReGenerateCodeCommandResult(resultId.Value, refinedCodeText);
     }
 }

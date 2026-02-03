@@ -3,6 +3,8 @@ using AiOrchestration.ValueObjects;
 using ImageEdit.Data;
 using ImageEdit.Enums;
 using ImageEdit.Models;
+using Ardalis.GuardClauses;
+using AiOrchestration.Services;
 using ImageEdit.ValueObjects;
 using Microsoft.Extensions.AI;
 
@@ -11,9 +13,9 @@ namespace ImageEdit.Features.RemoveBackground.V1;
 internal class RemoveBackgroundHandler : ICommandHandler<RemoveBackgroundCommand, RemoveBackgroundCommandResult>
 {
     private readonly ImageEditDbContext _dbContext;
-    private readonly IChatClient _chatClient;
+    private readonly IAiOrchestrator _chatClient;
 
-    public RemoveBackgroundHandler(ImageEditDbContext dbContext, IChatClient chatClient)
+    public RemoveBackgroundHandler(ImageEditDbContext dbContext, IAiOrchestrator chatClient)
     {
         _dbContext = dbContext;
         _chatClient = chatClient;
@@ -37,7 +39,9 @@ internal class RemoveBackgroundHandler : ICommandHandler<RemoveBackgroundCommand
             })
         };
 
-        var completion = await _chatClient.CompleteAsync(messages, cancellationToken: cancellationToken);
+        // Use chatClient to get the best client
+        var chatClient = await _chatClient.GetClientAsync(cancellationToken: cancellationToken);
+        var completion = await chatClient.GetResponseAsync(messages, cancellationToken: cancellationToken);
 
         var resultImageUrl = request.ImageUrlOrBase64.StartsWith("http")
             ? request.ImageUrlOrBase64 + "?bg_removed=true"

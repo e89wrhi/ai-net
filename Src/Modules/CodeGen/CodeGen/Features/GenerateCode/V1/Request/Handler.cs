@@ -5,6 +5,8 @@ using CodeGen.Enums;
 using CodeGen.Features.ReGenerateCode.V1;
 using CodeGen.Models;
 using CodeGen.ValueObjects;
+using Ardalis.GuardClauses;
+using AiOrchestration.Services;
 using Microsoft.Extensions.AI;
 
 namespace CodeGen.Features.GenerateCode.V1;
@@ -12,9 +14,9 @@ namespace CodeGen.Features.GenerateCode.V1;
 internal class GenerateCodeHandler : ICommandHandler<GenerateCodeCommand, GenerateCodeCommandResult>
 {
     private readonly CodeGenDbContext _dbContext;
-    private readonly IChatClient _chatClient;
+    private readonly IAiOrchestrator _chatClient;
 
-    public GenerateCodeHandler(CodeGenDbContext dbContext, IChatClient chatClient)
+    public GenerateCodeHandler(CodeGenDbContext dbContext, IAiOrchestrator chatClient)
     {
         _dbContext = dbContext;
         _chatClient = chatClient;
@@ -25,7 +27,7 @@ internal class GenerateCodeHandler : ICommandHandler<GenerateCodeCommand, Genera
         Guard.Against.NullOrEmpty(request.Prompt, nameof(request.Prompt));
         Guard.Against.NullOrEmpty(request.Language, nameof(request.Language));
 
-        // 1. Prepare AI Prompt
+        // Prepare AI Prompt
         var systemPrompt = $"You are an expert code generator. Generate {request.Language} code based on the user's prompt. Return ONLY the code, no explanation, no markdown tags unless requested.";
 
         var messages = new List<ChatMessage>
@@ -34,11 +36,13 @@ internal class GenerateCodeHandler : ICommandHandler<GenerateCodeCommand, Genera
             new ChatMessage(ChatRole.User, request.Prompt)
         };
 
-        // 2. Call AI
-        var completion = await _chatClient.CompleteAsync(messages, cancellationToken: cancellationToken);
-        var generatedCodeText = completion.Message.Text ?? string.Empty;
+        // Use chatClient to get the best client
+        var chatClient = await _chatClient.GetClientAsync(cancellationToken: cancellationToken);
+        // Call AI
+        var completion = await chatClient.GetResponseAsync(messages, cancellationToken: cancellationToken);
+        var generatedCodeText = completion.Messages[0].Text ?? string.Empty;
 
-        // 3. Persist
+        // Persist
         var sessionId = CodeGenId.Of(Guid.NewGuid());
         var userId = UserId.Of(Guid.NewGuid()); // Mock user
         var modelId = ModelId.Of(_chatClient.Metadata.ModelId ?? "codegen-model");
@@ -67,7 +71,7 @@ internal class GenerateCodeHandler : ICommandHandler<GenerateCodeCommand, Genera
         _dbContext.Sessions.Add(session);
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        return new GenerateCodeResult(sessionId.Value, resultId.Value, generatedCodeText);
+        return new GenerateCodeCommandResult(sessionId.Value, resultId.Value, generatedCodeText);
     }
 }
 
