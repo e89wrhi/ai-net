@@ -1,10 +1,13 @@
 ﻿using AI.Common.EFCore;
 using AI.Common.Mapster;
 using AI.Common.Web;
+using AiOrchestration.Extensions;
 using CodeDebug.Data;
 using CodeDebug.Data.Seed;
+using CodeDebug.Services;
 using FluentValidation;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace CodeDebug.Extensions;
@@ -22,6 +25,13 @@ public static class InfrastructureExtensions
         builder.Services.AddScoped<IDataSeeder, CodeDebugDataSeeder>();
 
         builder.Services.AddCustomMediatR();
+
+        // Register AI Orchestration
+        builder.Services.AddAiOrchestration();
+
+        // Register AI Chat Client
+        // In a real scenario, this would be configured with a real provider (e.g. OpenAI, Llama)
+        builder.Services.AddSingleton<IChatClient, SimulatedChatClient>();
 
         return builder;
     }

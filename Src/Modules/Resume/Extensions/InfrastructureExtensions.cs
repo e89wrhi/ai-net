@@ -1,11 +1,14 @@
 ﻿using AI.Common.EFCore;
 using AI.Common.Mapster;
 using AI.Common.Web;
+using AiOrchestration.Extensions;
 using FluentValidation;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Resume.Data;
 using Resume.Data.Seed;
+using Resume.Services;
 
 namespace Resume.Extensions;
 
@@ -22,6 +25,13 @@ public static class InfrastructureExtensions
         builder.Services.AddScoped<IDataSeeder, ResumeDataSeeder>();
 
         builder.Services.AddCustomMediatR();
+
+        // Register AI Orchestration
+        builder.Services.AddAiOrchestration();
+
+        // Register AI Chat Client
+        // In a real scenario, this would be configured with a real provider (e.g. OpenAI, Llama)
+        builder.Services.AddSingleton<IChatClient, SimulatedChatClient>();
 
         return builder;
     }

@@ -1,7 +1,7 @@
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.AI;
 
-namespace AutoComplete.Services;
+namespace LearningAssistant.Services;
 
 public class SimulatedChatClient : IChatClient
 {
