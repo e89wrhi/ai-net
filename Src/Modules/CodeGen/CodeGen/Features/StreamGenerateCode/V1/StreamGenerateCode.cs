@@ -28,7 +28,7 @@ public class StreamGenerateCodeEndpoint : IMinimalEndpoint
             .WithName("StreamGenerateCode")
             .WithApiVersionSet(builder.NewApiVersionSet("CodeGen").Build())
             .Produces<IAsyncEnumerable<string>>()
-            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status400BadRequest).ProducesProblem(StatusCodes.Status401Unauthorized)
             .WithSummary("Stream Generate Code")
             .WithDescription("Streams the generated code using AI.")
             .WithOpenApi()

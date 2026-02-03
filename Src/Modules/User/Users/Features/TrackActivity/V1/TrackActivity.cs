@@ -41,7 +41,7 @@ public class TrackActivityEndpoint : IMinimalEndpoint
             .WithName("TrackActivity")
             .WithApiVersionSet(builder.NewApiVersionSet("User").Build())
             .Produces<TrackActivityRequestResponse>()
-            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status400BadRequest).ProducesProblem(StatusCodes.Status401Unauthorized)
             .WithSummary("Track Activity")
             .WithDescription("Track Activity")
             .WithOpenApi()

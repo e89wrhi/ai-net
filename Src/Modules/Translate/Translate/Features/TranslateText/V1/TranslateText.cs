@@ -31,7 +31,7 @@ public class TranslateTextEndpoint : IMinimalEndpoint
             .WithName("TranslateText")
             .WithApiVersionSet(builder.NewApiVersionSet("Translate").Build())
             .Produces<TranslateTextWithAIResponseDto>()
-            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status400BadRequest).ProducesProblem(StatusCodes.Status401Unauthorized)
             .WithSummary("Translate Text")
             .WithDescription("Uses AI to translate text from a source language to a target language.")
             .WithOpenApi()

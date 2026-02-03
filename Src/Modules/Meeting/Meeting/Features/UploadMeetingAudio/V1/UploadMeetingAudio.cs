@@ -58,7 +58,7 @@ public class UploadMeetingAudioEndpoint : IMinimalEndpoint
             .WithName("UploadMeetingAudio")
             .WithApiVersionSet(builder.NewApiVersionSet("Meeting").Build())
             .Produces<UploadMeetingAudioRequestResponse>()
-            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status400BadRequest).ProducesProblem(StatusCodes.Status401Unauthorized)
             .WithSummary("Upload Meeting Audio")
             .WithDescription("Upload Meeting Audio")
             .WithOpenApi()

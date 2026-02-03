@@ -27,7 +27,7 @@ public class DeleteChatEndpoint : IMinimalEndpoint
             .WithName("DeleteChat")
             .WithApiVersionSet(builder.NewApiVersionSet("Chat").Build())
             .Produces<DeleteChatRequestResponse>()
-            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status400BadRequest).ProducesProblem(StatusCodes.Status401Unauthorized)
             .WithSummary("Delete Chat")
             .WithDescription("Delete Chat")
             .WithOpenApi()

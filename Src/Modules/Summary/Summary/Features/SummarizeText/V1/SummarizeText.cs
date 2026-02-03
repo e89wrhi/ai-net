@@ -31,7 +31,7 @@ public class SummarizeTextEndpoint : IMinimalEndpoint
             .WithName("SummarizeText")
             .WithApiVersionSet(builder.NewApiVersionSet("Summary").Build())
             .Produces<SummarizeTextWithAIResponseDto>()
-            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status400BadRequest).ProducesProblem(StatusCodes.Status401Unauthorized)
             .WithSummary("Summarize Text")
             .WithDescription("Uses AI to generate a summary of the provided text based on the specified detail level.")
             .WithOpenApi()

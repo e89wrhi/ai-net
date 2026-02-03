@@ -31,7 +31,7 @@ public class StreamResponseEndpoint : IMinimalEndpoint
             .WithName("StreamResponse")
             .WithApiVersionSet(builder.NewApiVersionSet("Chat").Build())
             .Produces<IAsyncEnumerable<string>>()
-            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status400BadRequest).ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .WithSummary("Stream AI Response")
             .WithDescription("Streams the AI response for the given chat session.")

@@ -32,7 +32,7 @@ public class ReGenerateCodeEndpoint : IMinimalEndpoint
             .WithName("ReGenerateCode")
             .WithApiVersionSet(builder.NewApiVersionSet("CodeGen").Build())
             .Produces<ReGenerateCodeResponseDto>()
-            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status400BadRequest).ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .WithSummary("Re-generate Code")
             .WithDescription("Re-generates or refines code based on instructions and previous session state.")

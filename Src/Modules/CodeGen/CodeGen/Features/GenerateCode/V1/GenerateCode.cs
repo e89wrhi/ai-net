@@ -32,7 +32,7 @@ public class GenerateCodeEndpoint : IMinimalEndpoint
             .WithName("GenerateCode")
             .WithApiVersionSet(builder.NewApiVersionSet("CodeGen").Build())
             .Produces<GenerateCodeResponseDto>()
-            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status400BadRequest).ProducesProblem(StatusCodes.Status401Unauthorized)
             .WithSummary("Generate Code")
             .WithDescription("Generates code based on a text prompt using AI.")
             .WithOpenApi()

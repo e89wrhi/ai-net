@@ -31,7 +31,7 @@ public class GenerateAudioEndpoint : IMinimalEndpoint
             .WithName("GenerateAudio")
             .WithApiVersionSet(builder.NewApiVersionSet("TextToSpeech").Build())
             .Produces<GenerateAudioWithAIResponseDto>()
-            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status400BadRequest).ProducesProblem(StatusCodes.Status401Unauthorized)
             .WithSummary("Generate AI Voice")
             .WithDescription("Uses AI to generate expressive spoken audio from text with selection of voice types.")
             .WithOpenApi()

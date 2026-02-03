@@ -40,7 +40,7 @@ public class CreateSubscriptionEndpoint : IMinimalEndpoint
             .WithName("CreateSubscription")
             .WithApiVersionSet(builder.NewApiVersionSet("Payment").Build())
             .Produces<CreateSubscriptionRequestResponse>()
-            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status400BadRequest).ProducesProblem(StatusCodes.Status401Unauthorized)
             .WithSummary("Create Subscription")
             .WithDescription("Create Subscription")
             .WithOpenApi()

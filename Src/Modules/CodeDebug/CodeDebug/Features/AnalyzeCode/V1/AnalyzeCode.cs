@@ -32,7 +32,7 @@ public class AnalyzeCodeEndpoint : IMinimalEndpoint
             .WithName("AnalyzeCode")
             .WithApiVersionSet(builder.NewApiVersionSet("CodeDebug").Build())
             .Produces<AnalyzeCodeResponseDto>()
-            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status400BadRequest).ProducesProblem(StatusCodes.Status401Unauthorized)
             .WithSummary("Analyze Code")
             .WithDescription("Analyzes code for bugs and issues using AI.")
             .WithOpenApi()

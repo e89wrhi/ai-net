@@ -31,7 +31,7 @@ public class RemoveBackgroundEndpoint : IMinimalEndpoint
             .WithName("RemoveBackground")
             .WithApiVersionSet(builder.NewApiVersionSet("ImageEdit").Build())
             .Produces<RemoveBackgroundResponseDto>()
-            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status400BadRequest).ProducesProblem(StatusCodes.Status401Unauthorized)
             .WithSummary("Remove Background with AI")
             .WithDescription("Uses AI to automatically detect and remove the background from an image.")
             .WithOpenApi()

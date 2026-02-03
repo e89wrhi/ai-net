@@ -28,7 +28,7 @@ public class StreamSummarizeTextEndpoint : IMinimalEndpoint
             .WithName("StreamSummarizeText")
             .WithApiVersionSet(builder.NewApiVersionSet("Summary").Build())
             .Produces<IAsyncEnumerable<string>>()
-            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status400BadRequest).ProducesProblem(StatusCodes.Status401Unauthorized)
             .WithSummary("Stream Text Summary")
             .WithDescription("Streams the generated summary of the provided text.")
             .WithOpenApi()

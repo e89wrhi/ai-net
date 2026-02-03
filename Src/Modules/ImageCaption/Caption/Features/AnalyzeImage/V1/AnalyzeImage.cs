@@ -31,7 +31,7 @@ public class AnalyzeImageEndpoint : IMinimalEndpoint
             .WithName("AnalyzeImage")
             .WithApiVersionSet(builder.NewApiVersionSet("Image").Build())
             .Produces<AnalyzeImageResponseDto>()
-            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status400BadRequest).ProducesProblem(StatusCodes.Status401Unauthorized)
             .WithSummary("Analyze Image with AI")
             .WithDescription("Uses AI to provide a detailed analysis of the provided image, including objects, colors, and context.")
             .WithOpenApi()

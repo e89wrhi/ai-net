@@ -31,7 +31,7 @@ public class RecordUsageChargeEndpoint : IMinimalEndpoint
             .WithName("RecordUsageCharge")
             .WithApiVersionSet(builder.NewApiVersionSet("Payment").Build())
             .Produces<RecordUsageChargeRequestResponse>()
-            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status400BadRequest).ProducesProblem(StatusCodes.Status401Unauthorized)
             .WithSummary("Record Usage Charge")
             .WithDescription("Record Usage Charge")
             .WithOpenApi()

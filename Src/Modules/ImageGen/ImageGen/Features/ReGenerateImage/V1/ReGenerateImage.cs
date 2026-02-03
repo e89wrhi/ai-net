@@ -31,7 +31,7 @@ public class ReGenerateImageEndpoint : IMinimalEndpoint
             .WithName("ReGenerateImage")
             .WithApiVersionSet(builder.NewApiVersionSet("ImageGen").Build())
             .Produces<ReGenerateImageResponseDto>()
-            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status400BadRequest).ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .WithSummary("Re-generate Image")
             .WithDescription("Re-generates or modifies an existing image based on new instructions.")

@@ -31,7 +31,7 @@ public class GenerateQuizEndpoint : IMinimalEndpoint
             .WithName("GenerateQuiz")
             .WithApiVersionSet(builder.NewApiVersionSet("Assistant").Build())
             .Produces<GenerateAIQuizResponseDto>()
-            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status400BadRequest).ProducesProblem(StatusCodes.Status401Unauthorized)
             .WithSummary("Generate AI Quiz")
             .WithDescription("Uses AI to generate a quiz on a topic.")
             .WithOpenApi()

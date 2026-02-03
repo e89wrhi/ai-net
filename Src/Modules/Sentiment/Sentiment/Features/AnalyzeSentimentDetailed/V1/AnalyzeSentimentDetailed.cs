@@ -31,7 +31,7 @@ public class AnalyzeSentimentDetailedEndpoint : IMinimalEndpoint
             .WithName("AnalyzeSentimentDetailed")
             .WithApiVersionSet(builder.NewApiVersionSet("Sentiment").Build())
             .Produces<AnalyzeSentimentDetailedResponseDto>()
-            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status400BadRequest).ProducesProblem(StatusCodes.Status401Unauthorized)
             .WithSummary("Detailed Sentiment Analysis")
             .WithDescription("Uses AI to provide a deep sentiment analysis of the text, including an explanation of why the sentiment was chosen.")
             .WithOpenApi()

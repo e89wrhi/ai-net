@@ -31,7 +31,7 @@ public class CaptionImageEndpoint : IMinimalEndpoint
             .WithName("CaptionImage")
             .WithApiVersionSet(builder.NewApiVersionSet("Image").Build())
             .Produces<AIImageCaptionResponseDto>()
-            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status400BadRequest).ProducesProblem(StatusCodes.Status401Unauthorized)
             .WithSummary("Generate Image Caption with AI")
             .WithDescription("Uses AI to generate a descriptive caption for the provided image.")
             .WithOpenApi()

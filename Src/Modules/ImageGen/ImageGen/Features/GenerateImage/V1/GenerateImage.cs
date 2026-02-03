@@ -31,7 +31,7 @@ public class GenerateImageEndpoint : IMinimalEndpoint
             .WithName("GenerateImage")
             .WithApiVersionSet(builder.NewApiVersionSet("ImageGen").Build())
             .Produces<GenerateImageResponseDto>()
-            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status400BadRequest).ProducesProblem(StatusCodes.Status401Unauthorized)
             .WithSummary("Generate Image")
             .WithDescription("Generates an image from a text prompt using AI.")
             .WithOpenApi()

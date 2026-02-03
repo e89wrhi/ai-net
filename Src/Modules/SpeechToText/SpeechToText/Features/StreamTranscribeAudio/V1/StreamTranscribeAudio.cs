@@ -28,7 +28,7 @@ public class StreamTranscribeAudioEndpoint : IMinimalEndpoint
             .WithName("StreamTranscribeAudio")
             .WithApiVersionSet(builder.NewApiVersionSet("SpeechToText").Build())
             .Produces<IAsyncEnumerable<string>>()
-            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status400BadRequest).ProducesProblem(StatusCodes.Status401Unauthorized)
             .WithSummary("Stream Audio Transcription")
             .WithDescription("Streams the text transcription of an audio file in real-time.")
             .WithOpenApi()

@@ -29,7 +29,7 @@ public class StreamTranslateTextEndpoint : IMinimalEndpoint
             .WithName("StreamTranslateText")
             .WithApiVersionSet(builder.NewApiVersionSet("Translate").Build())
             .Produces<IAsyncEnumerable<string>>()
-            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status400BadRequest).ProducesProblem(StatusCodes.Status401Unauthorized)
             .WithSummary("Stream Text Translation")
             .WithDescription("Streams the translated text from a source language to a target language.")
             .WithOpenApi()

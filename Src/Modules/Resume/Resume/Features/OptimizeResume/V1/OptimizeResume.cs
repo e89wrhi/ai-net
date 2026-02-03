@@ -31,7 +31,7 @@ public class OptimizeResumeEndpoint : IMinimalEndpoint
             .WithName("OptimizeResume")
             .WithApiVersionSet(builder.NewApiVersionSet("Resume").Build())
             .Produces<OptimizeResumeWithAIResponseDto>()
-            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status400BadRequest).ProducesProblem(StatusCodes.Status401Unauthorized)
             .WithSummary("Optimize Resume for Job Description")
             .WithDescription("Uses AI to suggest improvements and tailor the resume for a specific job description.")
             .WithOpenApi()

@@ -31,7 +31,7 @@ public class AnalyzeResumeEndpoint : IMinimalEndpoint
             .WithName("AnalyzeResume")
             .WithApiVersionSet(builder.NewApiVersionSet("Resume").Build())
             .Produces<AnalyzeResumeWithAIResponseDto>()
-            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status400BadRequest).ProducesProblem(StatusCodes.Status401Unauthorized)
             .WithSummary("Analyze Resume with AI")
             .WithDescription("Uses AI to extract key information, skills, and experience from a resume.")
             .WithOpenApi()

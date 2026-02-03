@@ -31,7 +31,7 @@ public class SynthesizeSpeechEndpoint : IMinimalEndpoint
             .WithName("SynthesizeSpeech")
             .WithApiVersionSet(builder.NewApiVersionSet("TextToSpeech").Build())
             .Produces<SynthesizeSpeechResponseDto>()
-            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status400BadRequest).ProducesProblem(StatusCodes.Status401Unauthorized)
             .WithSummary("Synthesize Text to Speech")
             .WithDescription("Uses AI to convert written text into high-quality spoken audio.")
             .WithOpenApi()

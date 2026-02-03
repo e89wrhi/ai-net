@@ -31,7 +31,7 @@ public class DetectLanguageEndpoint : IMinimalEndpoint
             .WithName("DetectLanguage")
             .WithApiVersionSet(builder.NewApiVersionSet("Translate").Build())
             .Produces<DetectLanguageResponseDto>()
-            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status400BadRequest).ProducesProblem(StatusCodes.Status401Unauthorized)
             .WithSummary("Detect Language")
             .WithDescription("Uses AI to detect the language of the provided text.")
             .WithOpenApi()

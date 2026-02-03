@@ -31,7 +31,7 @@ public class GenerateFixEndpoint : IMinimalEndpoint
             .WithName("GenerateFix")
             .WithApiVersionSet(builder.NewApiVersionSet("CodeDebug").Build())
             .Produces<GenerateFixResponseDto>()
-            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status400BadRequest).ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .WithSummary("Generate Fix")
             .WithDescription("Generates fixed code based on a previous debugging analysis.")

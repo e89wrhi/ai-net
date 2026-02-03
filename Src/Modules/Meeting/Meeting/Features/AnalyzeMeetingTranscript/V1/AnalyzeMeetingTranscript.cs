@@ -31,7 +31,7 @@ public class AnalyzeMeetingTranscriptEndpoint : IMinimalEndpoint
             .WithName("AnalyzeMeetingTranscript")
             .WithApiVersionSet(builder.NewApiVersionSet("Meeting").Build())
             .Produces<AnalyzeMeetingTranscriptResponseDto>()
-            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status400BadRequest).ProducesProblem(StatusCodes.Status401Unauthorized)
             .WithSummary("Analyze Meeting Transcript")
             .WithDescription("Uses AI to summarize a meeting transcript and extract key insights.")
             .WithOpenApi()

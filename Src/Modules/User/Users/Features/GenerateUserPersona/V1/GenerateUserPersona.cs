@@ -31,7 +31,7 @@ public class GenerateUserPersonaEndpoint : IMinimalEndpoint
             .WithName("GenerateUserPersona")
             .WithApiVersionSet(builder.NewApiVersionSet("User").Build())
             .Produces<GenerateUserPersonaWithAIResponseDto>()
-            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status400BadRequest).ProducesProblem(StatusCodes.Status401Unauthorized)
             .WithSummary("Generate User AI Persona")
             .WithDescription("Uses AI to categorize the user into a specific 'AI Persona' based on their tool preferences.")
             .WithOpenApi()

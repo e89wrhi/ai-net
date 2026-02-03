@@ -40,7 +40,7 @@ public class GenerateInvoiceEndpoint : IMinimalEndpoint
             .WithName("GenerateInvoice")
             .WithApiVersionSet(builder.NewApiVersionSet("Payment").Build())
             .Produces<GenerateInvoiceRequestResponse>()
-            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status400BadRequest).ProducesProblem(StatusCodes.Status401Unauthorized)
             .WithSummary("Generate Invoice")
             .WithDescription("Generate Invoice")
             .WithOpenApi()

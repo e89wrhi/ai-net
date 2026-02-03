@@ -30,7 +30,7 @@ public class ResetUsageCountersEndpoint : IMinimalEndpoint
             .WithName("ResetUsageCounter")
             .WithApiVersionSet(builder.NewApiVersionSet("User").Build())
             .Produces<ResetUsageCounterRequestResponse>()
-            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status400BadRequest).ProducesProblem(StatusCodes.Status401Unauthorized)
             .WithSummary("Reset Usage Counter")
             .WithDescription("Reset Usage Counter")
             .WithOpenApi()

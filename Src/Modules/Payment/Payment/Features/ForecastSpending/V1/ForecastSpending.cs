@@ -31,7 +31,7 @@ public class ForecastSpendingEndpoint : IMinimalEndpoint
             .WithName("ForecastSpending")
             .WithApiVersionSet(builder.NewApiVersionSet("Payment").Build())
             .Produces<ForecastSpendingWithAIResponseDto>()
-            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status400BadRequest).ProducesProblem(StatusCodes.Status401Unauthorized)
             .WithSummary("Forecast Spending with AI")
             .WithDescription("Uses AI to predict future AI costs based on historical usage charges.")
             .WithOpenApi()

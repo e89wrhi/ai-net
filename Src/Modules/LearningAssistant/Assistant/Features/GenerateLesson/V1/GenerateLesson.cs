@@ -31,7 +31,7 @@ public class GenerateLessonEndpoint : IMinimalEndpoint
             .WithName("GenerateLesson")
             .WithApiVersionSet(builder.NewApiVersionSet("Assistant").Build())
             .Produces<GenerateAILessonResponseDto>()
-            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status400BadRequest).ProducesProblem(StatusCodes.Status401Unauthorized)
             .WithSummary("Generate AI Lesson")
             .WithDescription("Uses AI to generate a lesson on a specific topic.")
             .WithOpenApi()

@@ -39,7 +39,7 @@ public class SubmitQuizEndpoint : IMinimalEndpoint
             .WithName("SubmitQuiz")
             .WithApiVersionSet(builder.NewApiVersionSet("Assistant").Build())
             .Produces<SubmitQuizRequestResponse>()
-            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status400BadRequest).ProducesProblem(StatusCodes.Status401Unauthorized)
             .WithSummary("Submit Quiz")
             .WithDescription("Submit Quiz")
             .WithOpenApi()

@@ -39,7 +39,7 @@ public class SendMessageEndpoint : IMinimalEndpoint
             .WithName("SendMessage")
             .WithApiVersionSet(builder.NewApiVersionSet("Chat").Build())
             .Produces<SendMessageRequestResponse>()
-            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status400BadRequest).ProducesProblem(StatusCodes.Status401Unauthorized)
             .WithSummary("Send Message")
             .WithDescription("Send Message")
             .WithOpenApi()

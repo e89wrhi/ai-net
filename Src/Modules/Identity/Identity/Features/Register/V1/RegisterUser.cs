@@ -55,7 +55,7 @@ public class RegisterNewUserEndpoint : IMinimalEndpoint
             .WithName("RegisterUser")
             .WithApiVersionSet(builder.NewApiVersionSet("Identity").Build())
             .Produces<RegisterNewUserResponseDto>()
-            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status400BadRequest).ProducesProblem(StatusCodes.Status401Unauthorized)
             .WithSummary("Register User")
             .WithDescription("Register User")
             .WithOpenApi()

@@ -28,7 +28,7 @@ public class StreamMeetingAnalysisEndpoint : IMinimalEndpoint
             .WithName("StreamMeetingAnalysis")
             .WithApiVersionSet(builder.NewApiVersionSet("Meeting").Build())
             .Produces<IAsyncEnumerable<string>>()
-            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status400BadRequest).ProducesProblem(StatusCodes.Status401Unauthorized)
             .WithSummary("Stream Meeting Analysis")
             .WithDescription("Streams the AI analysis of a meeting transcript.")
             .WithOpenApi()

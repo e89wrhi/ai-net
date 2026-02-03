@@ -22,7 +22,7 @@ public class AnalyzeUserUsageEndpoint : IMinimalEndpoint
             .WithName("AnalyzeUserUsage")
             .WithApiVersionSet(builder.NewApiVersionSet("User").Build())
             .Produces<AnalyzeUserUsageWithAIResponseDto>()
-            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status400BadRequest).ProducesProblem(StatusCodes.Status401Unauthorized)
             .WithSummary("Analyze User AI Usage")
             .WithDescription("Uses AI to analyze a user's AI consumption patterns and provide personalized recommendations.")
             .WithOpenApi()

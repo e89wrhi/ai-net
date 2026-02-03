@@ -40,7 +40,7 @@ public class CancelSubscriptionEndpoint : IMinimalEndpoint
             .WithName("CancelSubscription")
             .WithApiVersionSet(builder.NewApiVersionSet("Payment").Build())
             .Produces<CancelSubscriptionRequestResponse>()
-            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status400BadRequest).ProducesProblem(StatusCodes.Status401Unauthorized)
             .WithSummary("Cancel Subscription")
             .WithDescription("Cancel Subscription")
             .WithOpenApi()

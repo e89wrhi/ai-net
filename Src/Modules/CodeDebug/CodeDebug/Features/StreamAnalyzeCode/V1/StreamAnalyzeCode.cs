@@ -28,7 +28,7 @@ public class StreamAnalyzeCodeEndpoint : IMinimalEndpoint
             .WithName("StreamAnalyzeCode")
             .WithApiVersionSet(builder.NewApiVersionSet("CodeDebug").Build())
             .Produces<IAsyncEnumerable<string>>()
-            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status400BadRequest).ProducesProblem(StatusCodes.Status401Unauthorized)
             .WithSummary("Stream Analyze Code")
             .WithDescription("Streams the code analysis results using AI.")
             .WithOpenApi()

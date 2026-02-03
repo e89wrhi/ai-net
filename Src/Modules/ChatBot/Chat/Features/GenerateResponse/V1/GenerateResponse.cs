@@ -31,7 +31,7 @@ public class GenerateAiResponseEndpoint : IMinimalEndpoint
             .WithName("GenerateAiResponse")
             .WithApiVersionSet(builder.NewApiVersionSet("Chat").Build())
             .Produces<GenerateAiResponseResponseDto>()
-            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status400BadRequest).ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .WithSummary("Generate AI Response")
             .WithDescription("Triggers the AI to generate a response for the given chat session.")

@@ -31,7 +31,7 @@ public class ExtractActionItemsEndpoint : IMinimalEndpoint
             .WithName("ExtractActionItems")
             .WithApiVersionSet(builder.NewApiVersionSet("Meeting").Build())
             .Produces<ExtractActionItemsResponseDto>()
-            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status400BadRequest).ProducesProblem(StatusCodes.Status401Unauthorized)
             .WithSummary("Extract Meeting Action Items")
             .WithDescription("Uses AI to extract only the actionable tasks and assignments from a meeting transcript.")
             .WithOpenApi()

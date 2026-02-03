@@ -31,7 +31,7 @@ public class EnhanceImageEndpoint : IMinimalEndpoint
             .WithName("EnhanceImage")
             .WithApiVersionSet(builder.NewApiVersionSet("ImageEdit").Build())
             .Produces<AIEnhanceImageResponseDto>()
-            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status400BadRequest).ProducesProblem(StatusCodes.Status401Unauthorized)
             .WithSummary("Enhance Image with AI")
             .WithDescription("Uses AI to enhance the quality or details of an image based on a prompt.")
             .WithOpenApi()

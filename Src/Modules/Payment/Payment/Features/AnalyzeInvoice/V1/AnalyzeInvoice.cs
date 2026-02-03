@@ -31,7 +31,7 @@ public class AnalyzeInvoiceEndpoint : IMinimalEndpoint
             .WithName("AnalyzeInvoice")
             .WithApiVersionSet(builder.NewApiVersionSet("Payment").Build())
             .Produces<AnalyzeInvoiceWithAIResponseDto>()
-            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status400BadRequest).ProducesProblem(StatusCodes.Status401Unauthorized)
             .WithSummary("Analyze Invoice with AI")
             .WithDescription("Uses AI to summarize invoice details and detect any unusual spending patterns.")
             .WithOpenApi()

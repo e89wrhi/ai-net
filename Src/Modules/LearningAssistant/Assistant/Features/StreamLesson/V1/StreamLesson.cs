@@ -28,7 +28,7 @@ public class StreamLessonEndpoint : IMinimalEndpoint
             .WithName("StreamLesson")
             .WithApiVersionSet(builder.NewApiVersionSet("Assistant").Build())
             .Produces<IAsyncEnumerable<string>>()
-            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status400BadRequest).ProducesProblem(StatusCodes.Status401Unauthorized)
             .WithSummary("Stream AI Lesson")
             .WithDescription("Streams the AI generated lesson for the given topic.")
             .WithOpenApi()

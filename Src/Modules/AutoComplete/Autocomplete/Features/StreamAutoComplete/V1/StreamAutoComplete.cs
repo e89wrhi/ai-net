@@ -34,7 +34,7 @@ public class StreamAutoCompleteEndpoint : IMinimalEndpoint
             .WithName("StreamAutoComplete")
             .WithApiVersionSet(builder.NewApiVersionSet("AutoComplete").Build())
             .Produces<IAsyncEnumerable<string>>()
-            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status400BadRequest).ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .WithSummary("Stream AI Completion")
             .WithDescription("Streams text completion using an AI model.")

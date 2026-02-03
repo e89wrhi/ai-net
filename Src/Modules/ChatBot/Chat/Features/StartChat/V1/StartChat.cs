@@ -39,7 +39,7 @@ public class StartChatEndpoint : IMinimalEndpoint
             .WithName("StartChat")
             .WithApiVersionSet(builder.NewApiVersionSet("Chat").Build())
             .Produces<StartChatRequestResponse>()
-            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status400BadRequest).ProducesProblem(StatusCodes.Status401Unauthorized)
             .WithSummary("Start Chat")
             .WithDescription("Start Chat")
             .WithOpenApi()

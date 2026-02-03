@@ -31,7 +31,7 @@ public class TranscribeAudioEndpoint : IMinimalEndpoint
             .WithName("TranscribeAudio")
             .WithApiVersionSet(builder.NewApiVersionSet("SpeechToText").Build())
             .Produces<TranscribeAudioResponseDto>()
-            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status400BadRequest).ProducesProblem(StatusCodes.Status401Unauthorized)
             .WithSummary("Transcribe Audio to Text")
             .WithDescription("Uses AI to convert speech from an audio file into written text.")
             .WithOpenApi()
