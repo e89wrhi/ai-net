@@ -4,6 +4,7 @@ using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using System.Security.Claims;
 
 namespace SpeechToText.Features.TranscribeAudio.V1;
 
@@ -12,8 +13,16 @@ public class TranscribeAudioEndpoint : IMinimalEndpoint
     public IEndpointRouteBuilder MapEndpoint(IEndpointRouteBuilder builder)
     {
         builder.MapPost($"{EndpointConfig.BaseApiPath}/speech/transcribe",
-                async (TranscribeAudioRequestDto request, IMediator mediator, CancellationToken cancellationToken) =>
+                async (TranscribeAudioRequestDto request, IMediator mediator, IHttpContextAccessor httpContextAccessor, CancellationToken cancellationToken) =>
                 {
+                    // current user id
+                    var userIdClaim = httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                    if (!Guid.TryParse(userIdClaim, out var userId))
+                    {
+                        return Results.Unauthorized();
+                    }
+
                     var command = new TranscribeAudioCommand(request.AudioUrl, request.Language);
                     var result = await mediator.Send(command, cancellationToken);
                     return Results.Ok(new TranscribeAudioResponseDto(result.SessionId, result.ResultId, result.Transcript));

@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Meeting.Models;
+using System.Security.Claims;
 
 namespace Meeting.Features.UploadMeetingAudio.V1;
 
@@ -34,9 +35,17 @@ public class UploadMeetingAudioEndpoint : IMinimalEndpoint
     public IEndpointRouteBuilder MapEndpoint(IEndpointRouteBuilder builder)
     {
         builder.MapPost($"{EndpointConfig.BaseApiPath}/meeting/upload", async (UploadMeetingAudioRequest request,
-                IMediator mediator, IMapper mapper,
+                IMediator mediator, IHttpContextAccessor httpContextAccessor, IMapper mapper,
                 CancellationToken cancellationToken) =>
         {
+            // current user id
+            var userIdClaim = httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (!Guid.TryParse(userIdClaim, out var userId))
+            {
+                return Results.Unauthorized();
+            }
+
             var command = mapper.Map<UploadMeetingAudioCommand>(request);
 
             var result = await mediator.Send(command, cancellationToken);
@@ -81,13 +90,13 @@ internal class UploadMeetingAudioHandler : IRequestHandler<UploadMeetingAudioCom
     {
         Guard.Against.Null(request, nameof(request));
 
-        var meeting = MeetingModel.Create(
+        var meeting = MeetingAnalysisSession.Create(
             MeetingId.Of(NewId.NextGuid()),
             request.OrganizerId,
             ValueObjects.MeetingAnalysisConfiguration.Of(request.Title),
             AudioSource.Of(request.AudioUrl));
 
-        await _dbContext.Meetings.AddAsync(meeting, cancellationToken);
+        await _dbContext.Sessions.AddAsync(meeting, cancellationToken);
         await _dbContext.SaveChangesAsync(cancellationToken);
         
         return new UploadMeetingAudioCommandResponse(meeting.Id.Value);

@@ -1,4 +1,5 @@
 ﻿using AI.Common.Web;
+using Duende.IdentityServer.EntityFramework.Entities;
 using Mapster;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
@@ -15,8 +16,9 @@ public class GetSubscriptionEndpoint : IMinimalEndpoint
         builder.MapGet($"{EndpointConfig.BaseApiPath}/subscription",
                 async (IMediator mediator, IHttpContextAccessor httpContextAccessor, CancellationToken cancellationToken) =>
                 {
+                    // current user id
                     var userIdClaim = httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
-                    
+
                     if (!Guid.TryParse(userIdClaim, out var userId))
                     {
                         return Results.Unauthorized();

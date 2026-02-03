@@ -12,8 +12,16 @@ public class StreamSummarizeTextEndpoint : IMinimalEndpoint
     public IEndpointRouteBuilder MapEndpoint(IEndpointRouteBuilder builder)
     {
         builder.MapPost($"{EndpointConfig.BaseApiPath}/summary/summarize-stream",
-                (StreamSummarizeTextRequestDto request, IMediator mediator, CancellationToken cancellationToken) =>
+                (StreamSummarizeTextRequestDto request, IMediator mediator, IHttpContextAccessor httpContextAccessor, CancellationToken cancellationToken) =>
                 {
+                    // current user id
+                    var userIdClaim = httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                    if (!Guid.TryParse(userIdClaim, out var userId))
+                    {
+                        return Results.Unauthorized();
+                    }
+
                     return mediator.CreateStream(new StreamSummarizeTextCommand(request.Text, request.DetailLevel, request.Language), cancellationToken);
                 })
             .RequireAuthorization(nameof(ApiScope))

@@ -12,8 +12,19 @@ public class StreamResponseEndpoint : IMinimalEndpoint
     public IEndpointRouteBuilder MapEndpoint(IEndpointRouteBuilder builder)
     {
         builder.MapPost($"{EndpointConfig.BaseApiPath}/chat/stream-response",
-                (StreamAiResponseRequestDto request, IMediator mediator, CancellationToken cancellationToken) =>
+                (StreamAiResponseRequestDto request, 
+                IMediator mediator, 
+                IHttpContextAccessor httpContextAccessor, 
+                CancellationToken cancellationToken) =>
                 {
+                    // current user id
+                    var userIdClaim = httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                    if (!Guid.TryParse(userIdClaim, out var userId))
+                    {
+                        return Results.Unauthorized();
+                    }
+
                     return mediator.CreateStream(new StreamAiResponseCommand(request.SessionId), cancellationToken);
                 })
             .RequireAuthorization(nameof(ApiScope))

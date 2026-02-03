@@ -4,6 +4,7 @@ using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using System.Security.Claims;
 
 namespace Meeting.Features.ExtractActionItems.V1;
 
@@ -12,8 +13,16 @@ public class ExtractActionItemsEndpoint : IMinimalEndpoint
     public IEndpointRouteBuilder MapEndpoint(IEndpointRouteBuilder builder)
     {
         builder.MapPost($"{EndpointConfig.BaseApiPath}/meeting/action-items",
-                async (ExtractActionItemsRequestDto request, IMediator mediator, CancellationToken cancellationToken) =>
+                async (ExtractActionItemsRequestDto request, IMediator mediator, IHttpContextAccessor httpContextAccessor, CancellationToken cancellationToken) =>
                 {
+                    // current user id
+                    var userIdClaim = httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                    if (!Guid.TryParse(userIdClaim, out var userId))
+                    {
+                        return Results.Unauthorized();
+                    }
+
                     var command = new ExtractActionItemsCommand(request.Transcript);
                     var result = await mediator.Send(command, cancellationToken);
                     return Results.Ok(new ExtractActionItemsResponseDto(result.MeetingId, result.ActionItems));

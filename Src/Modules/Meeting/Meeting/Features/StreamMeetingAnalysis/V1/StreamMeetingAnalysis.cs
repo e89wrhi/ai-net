@@ -12,8 +12,16 @@ public class StreamMeetingAnalysisEndpoint : IMinimalEndpoint
     public IEndpointRouteBuilder MapEndpoint(IEndpointRouteBuilder builder)
     {
         builder.MapPost($"{EndpointConfig.BaseApiPath}/meeting/analyze-stream",
-                (StreamMeetingAnalysisRequestDto request, IMediator mediator, CancellationToken cancellationToken) =>
+                (StreamMeetingAnalysisRequestDto request, IMediator mediator, IHttpContextAccessor httpContextAccessor, CancellationToken cancellationToken) =>
                 {
+                    // current user id
+                    var userIdClaim = httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                    if (!Guid.TryParse(userIdClaim, out var userId))
+                    {
+                        return Results.Unauthorized();
+                    }
+
                     return mediator.CreateStream(new StreamMeetingAnalysisCommand(request.Transcript), cancellationToken);
                 })
             .RequireAuthorization(nameof(ApiScope))

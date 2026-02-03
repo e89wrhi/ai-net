@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using AI.Common.Web;
+using Duende.IdentityServer.EntityFramework.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -12,16 +13,17 @@ public class StreamAutoCompleteEndpoint : IMinimalEndpoint
     public IEndpointRouteBuilder MapEndpoint(IEndpointRouteBuilder builder)
     {
         builder.MapPost($"{EndpointConfig.BaseApiPath}/autocomplete/stream",
-                (StreamAutoCompleteRequestDto request, IMediator mediator, IHttpContextAccessor httpContextAccessor, CancellationToken cancellationToken) =>
+                (StreamAutoCompleteRequestDto request, 
+                 IMediator mediator,
+                 IHttpContextAccessor httpContextAccessor, 
+                 CancellationToken cancellationToken) =>
                 {
+                    // current user id
                     var userIdClaim = httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
-                    
+
                     if (!Guid.TryParse(userIdClaim, out var userId))
                     {
-                        // For streaming endpoints returning IAsyncEnumerable, throwing or returning a special stream is an option.
-                        // However, since it's RequireAuthorization, we can assume it's usually there or let it fail gracefully.
-                        // Throwing will be caught by the global error handler.
-                        throw new UnauthorizedAccessException("User ID claim is missing or invalid.");
+                        return Results.Unauthorized();
                     }
 
                     var command = new StreamAutoCompleteCommand(userId, request.Prompt);

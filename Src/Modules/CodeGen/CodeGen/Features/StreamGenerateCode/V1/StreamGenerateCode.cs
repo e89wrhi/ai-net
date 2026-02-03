@@ -12,8 +12,16 @@ public class StreamGenerateCodeEndpoint : IMinimalEndpoint
     public IEndpointRouteBuilder MapEndpoint(IEndpointRouteBuilder builder)
     {
         builder.MapPost($"{EndpointConfig.BaseApiPath}/codegen/generate-stream",
-                (StreamGenerateCodeRequestDto request, IMediator mediator, CancellationToken cancellationToken) =>
+                (StreamGenerateCodeRequestDto request, IMediator mediator, IHttpContextAccessor httpContextAccessor, CancellationToken cancellationToken) =>
                 {
+                    // current user id
+                    var userIdClaim = httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                    if (!Guid.TryParse(userIdClaim, out var userId))
+                    {
+                        return Results.Unauthorized();
+                    }
+
                     return mediator.CreateStream(new StreamGenerateCodeCommand(request.Prompt, request.Language), cancellationToken);
                 })
             .RequireAuthorization(nameof(ApiScope))

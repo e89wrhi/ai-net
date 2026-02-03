@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using AI.Common.Web;
+using Duende.IdentityServer.EntityFramework.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -14,6 +15,7 @@ public class GenerateAutoCompleteEndpoint : IMinimalEndpoint
         builder.MapPost($"{EndpointConfig.BaseApiPath}/autocomplete/generate",
                 async (GenerateAutoCompleteRequestDto request, IMediator mediator, IHttpContextAccessor httpContextAccessor, CancellationToken cancellationToken) =>
                 {
+                    // current user id
                     var userIdClaim = httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
                     
                     if (!Guid.TryParse(userIdClaim, out var userId))

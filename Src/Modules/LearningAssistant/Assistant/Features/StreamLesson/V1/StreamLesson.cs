@@ -12,8 +12,16 @@ public class StreamLessonEndpoint : IMinimalEndpoint
     public IEndpointRouteBuilder MapEndpoint(IEndpointRouteBuilder builder)
     {
         builder.MapPost($"{EndpointConfig.BaseApiPath}/assistant/lesson-stream",
-                (StreamAILessonRequestDto request, IMediator mediator, CancellationToken cancellationToken) =>
+                (StreamAILessonRequestDto request, IMediator mediator, IHttpContextAccessor httpContextAccessor, CancellationToken cancellationToken) =>
                 {
+                    // current user id
+                    var userIdClaim = httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                    if (!Guid.TryParse(userIdClaim, out var userId))
+                    {
+                        return Results.Unauthorized();
+                    }
+
                     return mediator.CreateStream(new StreamAILessonCommand(request.Topic, request.Level), cancellationToken);
                 })
             .RequireAuthorization(nameof(ApiScope))

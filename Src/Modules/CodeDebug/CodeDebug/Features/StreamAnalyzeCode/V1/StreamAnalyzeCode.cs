@@ -12,8 +12,16 @@ public class StreamAnalyzeCodeEndpoint : IMinimalEndpoint
     public IEndpointRouteBuilder MapEndpoint(IEndpointRouteBuilder builder)
     {
         builder.MapPost($"{EndpointConfig.BaseApiPath}/codedebug/analyze-stream",
-                (StreamAnalyzeCodeRequestDto request, IMediator mediator, CancellationToken cancellationToken) =>
+                (StreamAnalyzeCodeRequestDto request, IMediator mediator, IHttpContextAccessor httpContextAccessor, CancellationToken cancellationToken) =>
                 {
+                    // current user id
+                    var userIdClaim = httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                    if (!Guid.TryParse(userIdClaim, out var userId))
+                    {
+                        return Results.Unauthorized();
+                    }
+
                     return mediator.CreateStream(new StreamAnalyzeCodeCommand(request.Code, request.Language), cancellationToken);
                 })
             .RequireAuthorization(nameof(ApiScope))

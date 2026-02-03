@@ -4,6 +4,7 @@ using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using System.Security.Claims;
 
 namespace ImageGen.Features.ReGenerateImage.V1;
 
@@ -12,8 +13,16 @@ public class ReGenerateImageEndpoint : IMinimalEndpoint
     public IEndpointRouteBuilder MapEndpoint(IEndpointRouteBuilder builder)
     {
         builder.MapPost($"{EndpointConfig.BaseApiPath}/imagegen/regenerate",
-                async (ReGenerateImageRequestDto request, IMediator mediator, CancellationToken cancellationToken) =>
+                async (ReGenerateImageRequestDto request, IMediator mediator, IHttpContextAccessor httpContextAccessor, CancellationToken cancellationToken) =>
                 {
+                    // current user id
+                    var userIdClaim = httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                    if (!Guid.TryParse(userIdClaim, out var userId))
+                    {
+                        return Results.Unauthorized();
+                    }
+
                     var command = new ReGenerateImageCommand(request.SessionId, request.Instruction);
                     var result = await mediator.Send(command, cancellationToken);
                     return Results.Ok(new ReGenerateImageResponseDto(result.ResultId, result.ImageUrl));

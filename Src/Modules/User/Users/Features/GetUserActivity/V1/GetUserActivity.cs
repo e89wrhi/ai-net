@@ -16,8 +16,9 @@ public class GetUserActivityEndpoint : IMinimalEndpoint
         builder.MapGet($"{EndpointConfig.BaseApiPath}/users/activities",
                 async (IMediator mediator, IHttpContextAccessor httpContextAccessor, CancellationToken cancellationToken) =>
                 {
+                    // current user id
                     var userIdClaim = httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
-                    
+
                     if (!Guid.TryParse(userIdClaim, out var userId))
                     {
                         return Results.Unauthorized();

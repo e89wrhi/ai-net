@@ -4,6 +4,7 @@ using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using System.Security.Claims;
 
 namespace LearningAssistant.Features.GenerateLesson.V1;
 
@@ -12,8 +13,16 @@ public class GenerateLessonEndpoint : IMinimalEndpoint
     public IEndpointRouteBuilder MapEndpoint(IEndpointRouteBuilder builder)
     {
         builder.MapPost($"{EndpointConfig.BaseApiPath}/assistant/generate-lesson",
-                async (GenerateAILessonRequestDto request, IMediator mediator, CancellationToken cancellationToken) =>
+                async (GenerateAILessonRequestDto request, IMediator mediator, IHttpContextAccessor httpContextAccessor, CancellationToken cancellationToken) =>
                 {
+                    // current user id
+                    var userIdClaim = httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                    if (!Guid.TryParse(userIdClaim, out var userId))
+                    {
+                        return Results.Unauthorized();
+                    }
+
                     var command = new GenerateAILessonCommand(request.Topic, request.Level);
                     var result = await mediator.Send(command, cancellationToken);
                     return Results.Ok(new GenerateAILessonResponseDto(result.SessionId, result.ActivityId, result.Content));
