@@ -23,7 +23,7 @@ public class GenerateImageEndpoint : IMinimalEndpoint
                         return Results.Unauthorized();
                     }
 
-                    var command = new GenerateImageCommand(request.Prompt, request.Size, request.Style, request.ModelId);
+                    var command = new GenerateImageCommand(userId, request.Prompt, request.Size, request.Style, request.ModelId);
                     var result = await mediator.Send(command, cancellationToken);
                     return Results.Ok(new GenerateImageResponseDto(result.SessionId, result.ResultId, 
                         result.ImageUrl,

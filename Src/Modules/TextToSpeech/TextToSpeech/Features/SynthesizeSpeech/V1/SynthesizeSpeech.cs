@@ -23,7 +23,7 @@ public class SynthesizeSpeechEndpoint : IMinimalEndpoint
                         return Results.Unauthorized();
                     }
 
-                    var command = new SynthesizeSpeechCommand(request.Text, request.Voice, 
+                    var command = new SynthesizeSpeechCommand(userId, request.Text, request.Voice, 
                         request.Speed, request.Language, request.ModelId);
                     var result = await mediator.Send(command, cancellationToken);
                     return Results.Ok(new SynthesizeSpeechResponseDto(result.SessionId, result.ResultId, 

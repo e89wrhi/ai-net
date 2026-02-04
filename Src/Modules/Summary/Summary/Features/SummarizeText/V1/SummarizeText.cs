@@ -23,7 +23,7 @@ public class SummarizeTextEndpoint : IMinimalEndpoint
                         return Results.Unauthorized();
                     }
 
-                    var command = new SummarizeTextCommand(request.Text, request.DetailLevel, request.Language, request.ModelId);
+                    var command = new SummarizeTextCommand(userId, request.Text, request.DetailLevel, request.Language, request.ModelId);
                     var result = await mediator.Send(command, cancellationToken);
                     return Results.Ok(new SummarizeTextResponseDto(result.SessionId, result.ResultId, result.Summary,
                         result.ModelId, result.ProviderName));

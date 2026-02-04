@@ -1,4 +1,5 @@
 ﻿using AI.Common.Core;
+using AiOrchestration.Models;
 using AiOrchestration.Services;
 using AiOrchestration.ValueObjects;
 using Ardalis.GuardClauses;
@@ -14,35 +15,58 @@ internal class TranslateTextWithAIHandler : ICommandHandler<TranslateTextCommand
 {
     private readonly TranslateDbContext _dbContext;
     private readonly IAiOrchestrator _orchestrator;
+    private readonly IChatClient _chatClient;
+    private readonly IAiModelService _modelService;
 
-    public TranslateTextWithAIHandler(TranslateDbContext dbContext, IAiOrchestrator orchestrator)
+    public TranslateTextWithAIHandler(TranslateDbContext dbContext, IAiModelService modelService, IAiOrchestrator orchestrator, IChatClient chatClient)
     {
         _dbContext = dbContext;
+        _modelService = modelService;
         _orchestrator = orchestrator;
+        _chatClient = chatClient;
     }
 
     public async Task<TranslateTextCommandResult> Handle(TranslateTextCommand request, CancellationToken cancellationToken)
     {
-        Guard.Against.NullOrEmpty(request.Text, nameof(request.Text));
-
-        var prompt = $"Translate the following text from {request.SourceLanguage} to {request.TargetLanguage}. Detail level: {request.DetailLevel}.\n\nText: {request.Text}";
-
+        #region Prompt
         var messages = new List<ChatMessage>
         {
-            new ChatMessage(ChatRole.System, "You are a professional translator."),
-            new ChatMessage(ChatRole.User, prompt)
+            new ChatMessage(
+                role: ChatRole.System, 
+                content: "You are a professional translator."),
+            new ChatMessage(
+                role: ChatRole.User, 
+                content: $"Translate the following text from {request.SourceLanguage} to {request.TargetLanguage}. Detail level: {request.DetailLevel}.\n\nText: {request.Text}")
         };
+        #endregion
 
-        // Use orchestrator to get the best client
+        Guard.Against.NullOrEmpty(request.Text, nameof(request.Text));
+
+        // Use orchestrator to get the client based on requested model criteria
         var criteria = new ModelCriteria { ModelId = request.ModelId };
-        var orchestrator = await _orchestrator.GetClientAsync(criteria, cancellationToken: cancellationToken);
-        var completion = await orchestrator.GetResponseAsync(messages, cancellationToken: cancellationToken);
-        var translatedText = completion.Messages[0].Text ?? "Translation failed.";
+        var chatClient = await _orchestrator.GetClientAsync(criteria, cancellationToken);
+
+        // Get actual model info from client metadata
+        var clientMetadata = chatClient.GetService(typeof(ChatClientMetadata)) as ChatClientMetadata;
+        var modelIdStr = clientMetadata?.DefaultModelId ?? "default-model";
+        var providerName = clientMetadata?.ProviderName ?? "Unknown";
+        var modelId = ModelId.Of(modelIdStr);
+
+        // Call AI Model
+        var chatCompletion = await chatClient.GetResponseAsync(messages, cancellationToken: cancellationToken);
+        
+        var translatedText = chatCompletion.Messages[0].Text ?? "Translation failed.";
+        // Calculate Metadata & Usage
+        var tokenUsage = chatCompletion.Usage?.TotalTokenCount ?? (messages.Sum(i => i.Text.Length) + translatedText.Length) / 4;
+
+        // Get cost per token from model service
+        var costPerToken = _modelService.GetCostPerToken(modelId);
+        var costValue = (decimal)tokenUsage * costPerToken;
+
 
         // Persist
         var sessionId = TranslateId.Of(Guid.NewGuid());
-        var userId = UserId.Of(Guid.NewGuid());
-        var modelId = ModelId.Of(_orchestrator.Metadata.ModelId ?? "translate-model");
+        var userId = UserId.Of(request.UserId);
         var config = new TranslationConfiguration(
             LanguageCode.Of(request.SourceLanguage),
             LanguageCode.Of(request.TargetLanguage),
@@ -52,15 +76,21 @@ internal class TranslateTextWithAIHandler : ICommandHandler<TranslateTextCommand
 
         var resultId = TranslateResultId.Of(Guid.NewGuid());
         var translatedTextVo = TranslatedText.Of(translatedText);
-        var tokenCountVo = TokenCount.Of(completion.Usage?.TotalTokenCount ?? 0);
-        var costVo = CostEstimate.Of(0);
+        var tokenCountVo = TokenCount.Of(tokenUsage);
+        var costVo = CostEstimate.Of(costValue);
 
-        var result = TranslationResult.Create(resultId, request.Text, translatedTextVo, tokenCountVo, costVo);
+        var result = TranslationResult.Create(
+                resultId, 
+                request.Text, 
+                translatedTextVo, 
+                tokenCountVo, 
+                costVo);
+
         session.AddResult(result);
 
         _dbContext.Sessions.Add(session);
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        return new TranslateTextWithAIResult(sessionId.Value, resultId.Value, translatedText);
+        return new TranslateTextCommandResult(sessionId.Value, resultId.Value, translatedText, modelIdStr, providerName);
     }
 }

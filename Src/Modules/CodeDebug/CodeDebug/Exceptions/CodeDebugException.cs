@@ -10,6 +10,14 @@ public class CodeDebugNotFoundException : DomainException
     }
 }
 
+public class CodeDebugReportNotFoundException : DomainException
+{
+    public CodeDebugReportNotFoundException(Guid codedebugId)
+        : base($"codedebug_report: '{codedebugId}' not found.")
+    {
+    }
+}
+
 public class CodeDebugAlreadyExistException : DomainException
 {
     public CodeDebugAlreadyExistException(Guid codedebugId)

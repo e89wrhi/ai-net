@@ -1,12 +1,15 @@
 ﻿using AI.Common.Core;
+using AiOrchestration.Models;
+using AiOrchestration.Services;
 using AiOrchestration.ValueObjects;
+using Ardalis.GuardClauses;
 using ChatBot.Data;
 using ChatBot.Enums;
 using ChatBot.Exceptions;
+using ChatBot.Models;
 using ChatBot.ValueObjects;
-using Ardalis.GuardClauses;
-using AiOrchestration.Services;
 using Microsoft.Extensions.AI;
+using System.Configuration.Provider;
 
 namespace ChatBot.Features.GenerateResponse.V1;
 
@@ -14,17 +17,72 @@ namespace ChatBot.Features.GenerateResponse.V1;
 internal class GenerateAiResponseHandler : ICommandHandler<GenerateAiResponseCommand, GenerateAiResponseCommandResult>
 {
     private readonly ChatDbContext _dbContext;
-    private readonly IAiOrchestrator _chatClient;
+    private readonly IAiOrchestrator _orchestrator;
+    private readonly IChatClient _chatClient;
+    private readonly IAiModelService _modelService;
 
-    public GenerateAiResponseHandler(ChatDbContext dbContext, IAiOrchestrator chatClient)
+    public GenerateAiResponseHandler(ChatDbContext dbContext, IAiModelService modelService, IAiOrchestrator orchestrator, IChatClient chatClient)
     {
         _dbContext = dbContext;
+        _modelService = modelService;
+        _orchestrator = orchestrator;
         _chatClient = chatClient;
     }
 
     public async Task<GenerateAiResponseCommandResult> Handle(GenerateAiResponseCommand request, CancellationToken cancellationToken)
     {
-        Guard.Against.Null(request, nameof(request));
+        #region Prompt
+        var messages = new List<Microsoft.Extensions.AI.ChatMessage>
+        {
+             new Microsoft.Extensions.AI.ChatMessage(
+                    role: ChatRole.System,
+                    content: ""),
+             new Microsoft.Extensions.AI.ChatMessage(
+                    role: ChatRole.User,
+                    content: request.Message)
+        };
+        #endregion
+
+        Guard.Against.NullOrEmpty(request.Prompt, nameof(request.Prompt));
+
+        // Use orchestrator to get the client based on requested model criteria
+        var criteria = new ModelCriteria { ModelId = request.ModelId };
+        var chatClient = await _orchestrator.GetClientAsync(criteria, cancellationToken);
+
+        // Get actual model info from client metadata
+        var clientMetadata = chatClient.GetService(typeof(ChatClientMetadata)) as ChatClientMetadata;
+        var modelIdStr = clientMetadata?.DefaultModelId ?? "default-model";
+        var providerName = clientMetadata?.ProviderName ?? "Unknown";
+        var modelId = ModelId.Of(modelIdStr);
+
+        // Call AI Model
+        var chatCompletion = await chatClient.GetResponseAsync(messages, cancellationToken: cancellationToken);
+        var responseText = chatCompletion.Messages[0].Text ?? "I'm sorry, I couldn't generate a response.";
+
+        // Calculate Metadata & Usage
+        var tokenUsage = chatCompletion.Usage?.TotalTokenCount ?? (messages.Sum(i => i.Text.Length) + responseText.Length) / 4;
+
+        // Get cost per token from model service
+        var costPerToken = _modelService.GetCostPerToken(modelId);
+        var costValue = (decimal)tokenUsage * costPerToken;
+
+        // Persist Interaction
+        var sessionId = SessionId.Of(Guid.NewGuid());
+        var userId = UserId.Of(request.UserId);
+
+        // Configuration setup
+        var config = new ChatConfiguration(
+            Temperature.Of(0.7f),
+            TokenCount.Of(tokenUsage),
+            SystemPrompt.Of(messages[0].Text)
+        );
+
+        // Create Session Aggregate
+        var session = ChatSession.Create(sessionId, userId, title: "", modelId, config);
+
+        // Add Request to Session
+        var tokenCountVo = TokenCount.Of(tokenUsage);
+        var costVo = CostEstimate.Of(costValue);
 
         // Load the chat session including messages (to provide context)
         // Note: In a real app we might limit context window size.
@@ -59,7 +117,7 @@ internal class GenerateAiResponseHandler : ICommandHandler<GenerateAiResponseCom
 
         // Let's just prompt based on the session Title or Summary for now if history is missing, 
         // or assume FindAsync worked if LazyLoading is on (Common.csproj has related packages).
-                new List<ChatMessage>();
+                new List<Microsoft.Extensions.AI.ChatMessage>();
 
         // Convert to ChatMessage (Microsoft.Extensions.AI)
         var chatMessages = new List<Microsoft.Extensions.AI.ChatMessage>();
@@ -80,31 +138,26 @@ internal class GenerateAiResponseHandler : ICommandHandler<GenerateAiResponseCom
         else
         {
             // Fallback or just prompt
-            chatMessages.Add(new Microsoft.Extensions.AI.ChatMessage(ChatRole.System, $"You are a helpful assistant for session: {chat.Title}"));
+            chatMessages.Add(new Microsoft.Extensions.AI.ChatMessage(role: ChatRole.System, $"You are a helpful assistant for session: {chat.Title}"));
         }
-
-        // Use chatClient to get the best client
-        var chatClient = await _chatClient.GetClientAsync(cancellationToken: cancellationToken);
-
-        var completion = await chatClient.GetResponseAsync(chatMessages, cancellationToken: cancellationToken);
-        var responseContent = completion.Messages[0].Text ?? "I'm sorry, I couldn't generate a response.";
 
         // Create Response Message
         var messageId = MessageId.Of(Guid.NewGuid());
         var sequence = chat.Messages.Count + 1;
 
-        var aiMessage = ChatMessage.Create(
-            messageId,
+        var message = new ChatBot.Models.ChatMessage()
+        {
             MessageSender.Assistant,
             MessageContent.Of(responseContent),
             TokenCount.Of(completion.Usage?.TotalTokenCount ?? 0),
-            CostEstimate.Of(0), // Calculate cost logic if needed
+            CostEstimate.Of(0),
             sequence
-        );
+        };
 
-        chat.AddMessage(aiMessage);
+        chat.AddMessage();
+
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        return new GenerateAiResponseCommandResult(messageId.Value, responseContent);
+        return new GenerateAiResponseCommandResult(messageId.Value, responseContent, modelIdStr, providerName);
     }
 }

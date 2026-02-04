@@ -1,10 +1,11 @@
 ﻿using AI.Common.Core;
+using AiOrchestration.Models;
+using AiOrchestration.Services;
 using AiOrchestration.ValueObjects;
+using Ardalis.GuardClauses;
 using ImageEdit.Data;
 using ImageEdit.Enums;
 using ImageEdit.Models;
-using Ardalis.GuardClauses;
-using AiOrchestration.Services;
 using ImageEdit.ValueObjects;
 using Microsoft.Extensions.AI;
 
@@ -13,35 +14,60 @@ namespace ImageEdit.Features.RemoveBackground.V1;
 internal class RemoveBackgroundHandler : ICommandHandler<RemoveBackgroundCommand, RemoveBackgroundCommandResult>
 {
     private readonly ImageEditDbContext _dbContext;
-    private readonly IAiOrchestrator _chatClient;
+    private readonly IAiOrchestrator _orchestrator;
+    private readonly IChatClient _chatClient;
+    private readonly IAiModelService _modelService;
 
-    public RemoveBackgroundHandler(ImageEditDbContext dbContext, IAiOrchestrator chatClient)
+    public RemoveBackgroundHandler(ImageEditDbContext dbContext, IAiModelService modelService, IAiOrchestrator orchestrator, IChatClient chatClient)
     {
+        _modelService = modelService;
+        _orchestrator = orchestrator;
         _dbContext = dbContext;
         _chatClient = chatClient;
     }
 
     public async Task<RemoveBackgroundCommandResult> Handle(RemoveBackgroundCommand request, CancellationToken cancellationToken)
     {
+        #region Prompt
+        var messages = new List<ChatMessage>
+        {
+            new ChatMessage(
+                role: ChatRole.User,
+                content: new List<AIContent>
+                {
+                    new TextContent("Identify the subject of this image and prepare it for background removal."),
+                        request.ImageUrlOrBase64.StartsWith("http")
+                        ? new AIContent() { RawRepresentation = new Uri(request.ImageUrlOrBase64) }
+                        : new AIContent() { RawRepresentation = Convert.FromBase64String(request.ImageUrlOrBase64.Contains(",") ? request.ImageUrlOrBase64.Split(',')[1] : request.ImageUrlOrBase64) }
+                })
+        };
+        #endregion
+
         Guard.Against.NullOrEmpty(request.ImageUrlOrBase64, nameof(request.ImageUrlOrBase64));
+
+        // Use orchestrator to get the client based on requested model criteria
+        var criteria = new ModelCriteria { ModelId = request.ModelId };
+        var chatClient = await _orchestrator.GetClientAsync(criteria, cancellationToken);
+
+        // Get actual model info from client metadata
+        var clientMetadata = chatClient.GetService(typeof(ChatClientMetadata)) as ChatClientMetadata;
+        var modelIdStr = clientMetadata?.DefaultModelId ?? "default-model";
+        var providerName = clientMetadata?.ProviderName ?? "Unknown";
+        var modelId = ModelId.Of(modelIdStr);
+
+        // Call AI Model
+        var chatCompletion = await chatClient.GetResponseAsync(messages, cancellationToken: cancellationToken);
+        var responseText = chatCompletion.Messages[0].Text ?? string.Empty;
+
+        // Calculate Metadata & Usage
+        var tokenUsage = chatCompletion.Usage?.TotalTokenCount ?? (messages.Sum(i => i.Text.Length) + responseText.Length) / 4;
+
+        // Get cost per token from model service
+        var costPerToken = _modelService.GetCostPerToken(modelId);
+        var costValue = (decimal)tokenUsage * costPerToken;
 
         // Background removal usually uses a specialized model (like rembg or Segment Anything).
         // Here we simulate the process.
-
-        var messages = new List<ChatMessage>
-        {
-            new ChatMessage(ChatRole.User, new List<AIContent>
-            {
-                new TextContent("Identify the subject of this image and prepare it for background removal."),
-                request.ImageUrlOrBase64.StartsWith("http")
-                    ? new ImageContent(new Uri(request.ImageUrlOrBase64))
-                    : new ImageContent(Convert.FromBase64String(request.ImageUrlOrBase64.Contains(",") ? request.ImageUrlOrBase64.Split(',')[1] : request.ImageUrlOrBase64), "image/jpeg")
-            })
-        };
-
-        // Use chatClient to get the best client
-        var chatClient = await _chatClient.GetClientAsync(cancellationToken: cancellationToken);
-        var completion = await chatClient.GetResponseAsync(messages, cancellationToken: cancellationToken);
 
         var resultImageUrl = request.ImageUrlOrBase64.StartsWith("http")
             ? request.ImageUrlOrBase64 + "?bg_removed=true"
@@ -49,9 +75,8 @@ internal class RemoveBackgroundHandler : ICommandHandler<RemoveBackgroundCommand
 
         // Persist
         var sessionId = ImageEditId.Of(Guid.NewGuid());
-        var userId = UserId.Of(Guid.NewGuid());
-        var modelId = ModelId.Of(_chatClient.Metadata.ModelId ?? "vision-segment-model");
-        var config = ImageEditConfiguration.Of("auto-segmentation");
+        var userId = UserId.Of(request.UserId);
+        var config = new ImageEditConfiguration(ImageEditQuality.Low, ImageFormat.Png);
 
         var session = ImageEditSession.Create(sessionId, userId, modelId, config);
 
@@ -59,16 +84,23 @@ internal class RemoveBackgroundHandler : ICommandHandler<RemoveBackgroundCommand
         var originalImage = ImageSource.Of(request.ImageUrlOrBase64.Length > 200 ? "base64-source" : request.ImageUrlOrBase64);
         var resultImage = EditedImage.Of(resultImageUrl);
         var promptVo = ImageEditPrompt.Of("Remove background automatically");
-        var tokenCountVo = TokenCount.Of(completion.Usage?.TotalTokenCount ?? 50);
-        var costVo = CostEstimate.Of(0.005m);
+        var tokenCountVo = TokenCount.Of(tokenUsage);
+        var costVo = CostEstimate.Of(costValue);
 
-        var result = ImageEditResult.Create(resultId, originalImage, resultImage, promptVo, EditOperation.BackgroundRemoval, tokenCountVo, costVo);
+        var result = ImageEditResult.Create(
+                    resultId, 
+                    originalImage, 
+                    resultImage, 
+                    promptVo, 
+                    EditOperation.BackgroundRemoval, 
+                    tokenCountVo, costVo);
+
         session.AddResult(result);
 
         _dbContext.Sessions.Add(session);
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        return new RemoveBackgroundCommandResult(sessionId.Value, resultId.Value, resultImageUrl);
+        return new RemoveBackgroundCommandResult(sessionId.Value, resultId.Value, resultImageUrl, modelIdStr, providerName);
     }
 }
 

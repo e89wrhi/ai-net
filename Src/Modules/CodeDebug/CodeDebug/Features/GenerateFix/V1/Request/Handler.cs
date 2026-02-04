@@ -1,9 +1,11 @@
 ﻿using AI.Common.Core;
+using AiOrchestration.Models;
+using AiOrchestration.Services;
+using AiOrchestration.ValueObjects;
+using Ardalis.GuardClauses;
 using CodeDebug.Data;
 using CodeDebug.Exceptions;
 using CodeDebug.ValueObjects;
-using Ardalis.GuardClauses;
-using AiOrchestration.Services;
 using Microsoft.Extensions.AI;
 
 namespace CodeDebug.Features.GenerateFix.V1;
@@ -12,16 +14,53 @@ namespace CodeDebug.Features.GenerateFix.V1;
 internal class GenerateFixHandler : ICommandHandler<GenerateFixCommand, GenerateFixCommandResult>
 {
     private readonly CodeDebugDbContext _dbContext;
-    private readonly IAiOrchestrator _chatClient;
+    private readonly IAiOrchestrator _orchestrator;
+    private readonly IChatClient _chatClient;
+    private readonly IAiModelService _modelService;
 
-    public GenerateFixHandler(CodeDebugDbContext dbContext, IAiOrchestrator chatClient)
+    public GenerateFixHandler(CodeDebugDbContext dbContext, IAiModelService modelService, IAiOrchestrator orchestrator, IChatClient chatClient)
     {
+        _modelService = modelService;
+        _orchestrator = orchestrator;
         _dbContext = dbContext;
         _chatClient = chatClient;
     }
 
     public async Task<GenerateFixCommandResult> Handle(GenerateFixCommand request, CancellationToken cancellationToken)
     {
+        #region Prompt
+        var messages = new List<ChatMessage>
+        {
+             new ChatMessage(
+                    role: ChatRole.System, 
+                    content: "You are an expert coder. Fix the provided code."),
+             new ChatMessage(
+                    role: ChatRole.User, 
+                    content : $"Based on the following code and analysis, provide the fixed code. Return ONLY the code in one block, followed by a brief explanation.\n\nOriginal Code:\n{report.Code.Value}\n\nAnalysis:\n{report.Summary.Value}")
+        };
+        #endregion
+
+        // Use orchestrator to get the client based on requested model criteria
+        var criteria = new ModelCriteria { ModelId = request.ModelId };
+        var chatClient = await _orchestrator.GetClientAsync(criteria, cancellationToken);
+
+        // Get actual model info from client metadata
+        var clientMetadata = chatClient.GetService(typeof(ChatClientMetadata)) as ChatClientMetadata;
+        var modelIdStr = clientMetadata?.DefaultModelId ?? "default-model";
+        var providerName = clientMetadata?.ProviderName ?? "Unknown";
+        var modelId = ModelId.Of(modelIdStr);
+
+        // Call AI Model
+        var chatCompletion = await chatClient.GetResponseAsync(messages, cancellationToken: cancellationToken);
+        var responseText = chatCompletion.Messages[0].Text ?? string.Empty;
+
+        // Calculate Metadata & Usage
+        var tokenUsage = chatCompletion.Usage?.TotalTokenCount ?? (messages.Sum(i => i.Text.Length) + responseText.Length) / 4;
+
+        // Get cost per token from model service
+        var costPerToken = _modelService.GetCostPerToken(modelId);
+        var costValue = (decimal)tokenUsage * costPerToken;
+
         // Load Session to check existence
         var session = await _dbContext.Sessions.FindAsync(new object[] { CodeDebugId.Of(request.SessionId) }, cancellationToken);
         if (session == null) throw new CodeDebugNotFoundException(request.SessionId);
@@ -39,20 +78,6 @@ internal class GenerateFixHandler : ICommandHandler<GenerateFixCommand, Generate
 
         if (report == null)
             throw new CodeDebugReportNotFoundException(request.ReportId);
-
-        // Prepare Prompt
-        var prompt = $"Based on the following code and analysis, provide the fixed code. Return ONLY the code in one block, followed by a brief explanation.\n\nOriginal Code:\n{report.Code.Value}\n\nAnalysis:\n{report.Summary.Value}";
-
-        var messages = new List<ChatMessage>
-        {
-             new(ChatRole.System, "You are an expert coder. Fix the provided code."),
-             new(ChatRole.User, prompt)
-        };
-
-        // Use chatClient to get the best client
-        var chatClient = await _chatClient.GetClientAsync(cancellationToken: cancellationToken);
-        var completion = await chatClient.GetResponseAsync(messages, cancellationToken: cancellationToken);
-        var response = completion.Messages[0].Text ?? "";
 
         // Heuristic split of Code vs Explanation (assuming markdown code blocks)
         var fixedCode = response;
@@ -90,6 +115,6 @@ internal class GenerateFixHandler : ICommandHandler<GenerateFixCommand, Generate
         // We could create a "FixedReport" or track fixes in the session.
         // For now, just return.
 
-        return new GenerateFixCommandResult(fixedCode, explanation);
+        return new GenerateFixCommandResult(fixedCode, explanation, modelIdStr, providerName);
     }
 }

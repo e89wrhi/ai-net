@@ -1,11 +1,12 @@
 ﻿using AI.Common.Core;
+using AiOrchestration.Models;
+using AiOrchestration.Services;
 using AiOrchestration.ValueObjects;
+using Ardalis.GuardClauses;
 using ImageGen.Data;
 using ImageGen.Models;
 using ImageGen.ValueObjects;
 using Microsoft.Extensions.AI;
-using Ardalis.GuardClauses;
-using AiOrchestration.Services;
 
 namespace ImageGen.Features.GenerateImage.V1;
 
@@ -13,48 +14,74 @@ namespace ImageGen.Features.GenerateImage.V1;
 internal class GenerateImageHandler : ICommandHandler<GenerateImageCommand, GenerateImageCommandResult>
 {
     private readonly ImageGenDbContext _dbContext;
-    private readonly IAiOrchestrator _chatClient;
+    private readonly IAiOrchestrator _orchestrator;
+    private readonly IChatClient _chatClient;
+    private readonly IAiModelService _modelService;
 
-    public GenerateImageHandler(ImageGenDbContext dbContext, IAiOrchestrator chatClient)
+    public GenerateImageHandler(ImageGenDbContext dbContext, IAiModelService modelService, IAiOrchestrator orchestrator, IChatClient chatClient)
     {
         _dbContext = dbContext;
+        _modelService = modelService;
+        _orchestrator = orchestrator;
         _chatClient = chatClient;
     }
 
     public async Task<GenerateImageCommandResult> Handle(GenerateImageCommand request, CancellationToken cancellationToken)
     {
-        Guard.Against.NullOrEmpty(request.Prompt, nameof(request.Prompt));
-
+        #region Prompt
         // Use ChatClient to "acknowledge" the generation or log intent
         var messages = new List<ChatMessage>
         {
-            new ChatMessage(ChatRole.System, "You are an image generation chatClient."),
-            new ChatMessage(ChatRole.User, $"Generate an image with prompt: {request.Prompt}. Style: {request.Style}, Size: {request.Size}")
+            new ChatMessage(
+                    role: ChatRole.System, 
+                    content : "You are an image generation chatClient."),
+            new ChatMessage(
+                    role: ChatRole.User, 
+                    content : $"Generate an image with prompt: {request.Prompt}. Style: {request.Style}, Size: {request.Size}")
         };
+        #endregion
 
-        // Use chatClient to get the best client
-        var chatClient = await _chatClient.GetClientAsync(cancellationToken: cancellationToken);
+        Guard.Against.NullOrEmpty(request.Prompt, nameof(request.Prompt));
 
-        // This is a placeholder for real image generation call
-        // In a real scenario, you'd use a dedicated IImageClient or similar
-        var completion = await chatClient.GetResponseAsync(messages, cancellationToken: cancellationToken);
+        // Use orchestrator to get the client based on requested model criteria
+        var criteria = new ModelCriteria { ModelId = request.ModelId };
+        var chatClient = await _orchestrator.GetClientAsync(criteria, cancellationToken);
 
-        // Mock Image URL
+        // Get actual model info from client metadata
+        var clientMetadata = chatClient.GetService(typeof(ChatClientMetadata)) as ChatClientMetadata;
+        var modelIdStr = clientMetadata?.DefaultModelId ?? "default-model";
+        var providerName = clientMetadata?.ProviderName ?? "Unknown";
+        var modelId = ModelId.Of(modelIdStr);
+
+        // Call AI Model
+        var chatCompletion = await chatClient.GetResponseAsync(messages, cancellationToken: cancellationToken);
+        var responseText = chatCompletion.Messages[0].Text ?? string.Empty;
+
+        // Calculate Metadata & Usage
+        var tokenUsage = chatCompletion.Usage?.TotalTokenCount ?? (messages.Sum(i => i.Text.Length) + responseText.Length) / 4;
+
+        // Get cost per token from model service
+        var costPerToken = _modelService.GetCostPerToken(modelId);
+        var costValue = (decimal)tokenUsage * costPerToken;
+
+        //  Image URL
         var imageUrl = $"https://generated-images.com/{Guid.NewGuid()}.png";
 
         // Persist
         var sessionId = ImageGenId.Of(Guid.NewGuid());
-        var userId = UserId.Of(Guid.NewGuid()); // Mock
-        var modelId = ModelId.Of(_chatClient.Metadata.ModelId ?? "dall-e-3");
-        var config = ImageGenerationConfiguration.Of("standard");
-
+        var userId = UserId.Of(request.UserId);
+        var config = new ImageGenerationConfiguration(
+            Enums.ImageSize.Large,
+            Enums.ImageStyle.Realistic,
+            Enums.ImageQuality.Low,
+            LanguageCode.Of("en"));
         var session = ImageGenerationSession.Create(sessionId, userId, modelId, config);
 
         var resultId = ImageGenResultId.Of(Guid.NewGuid());
         var promptVo = ImageGenerationPrompt.Of(request.Prompt);
         var imageVo = GeneratedImage.Of(imageUrl);
-        var tokenCountVo = TokenCount.Of(completion.Usage?.TotalTokenCount ?? 1000); // Images usually cost "tokens" or flat rates
-        var costVo = CostEstimate.Of(0.04m);
+        var tokenCountVo = TokenCount.Of(tokenUsage); // Images usually cost "tokens" or flat rates
+        var costVo = CostEstimate.Of(costValue);
 
         var result = ImageGenerationResult.Create(
             resultId,
@@ -70,6 +97,6 @@ internal class GenerateImageHandler : ICommandHandler<GenerateImageCommand, Gene
         _dbContext.Sessions.Add(session);
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        return new GenerateImageCommandResult(sessionId.Value, resultId.Value, imageUrl);
+        return new GenerateImageCommandResult(sessionId.Value, resultId.Value, imageUrl, modelIdStr, providerName);
     }
 }

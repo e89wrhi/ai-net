@@ -23,7 +23,7 @@ public class TranslateTextEndpoint : IMinimalEndpoint
                         return Results.Unauthorized();
                     }
 
-                    var command = new TranslateTextCommand(request.Text, request.SourceLanguage, 
+                    var command = new TranslateTextCommand(userId, request.Text, request.SourceLanguage, 
                         request.TargetLanguage, request.DetailLevel, request.ModelId);
                     var result = await mediator.Send(command, cancellationToken);
                     return Results.Ok(new TranslateTextResponseDto(result.SessionId, result.ResultId,

@@ -10,6 +10,14 @@ public class CodeGenNotFoundException : DomainException
     }
 }
 
+public class CodeGenResultNotFoundException : DomainException
+{
+    public CodeGenResultNotFoundException(Guid codegenId)
+        : base($"codegen_result: '{codegenId}' not found.")
+    {
+    }
+}
+
 public class CodeGenAlreadyExistException : DomainException
 {
     public CodeGenAlreadyExistException(Guid codegenId)

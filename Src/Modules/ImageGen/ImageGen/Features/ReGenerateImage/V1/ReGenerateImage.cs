@@ -23,7 +23,7 @@ public class ReGenerateImageEndpoint : IMinimalEndpoint
                         return Results.Unauthorized();
                     }
 
-                    var command = new ReGenerateImageCommand(request.SessionId, request.Instruction, request.ModelId);
+                    var command = new ReGenerateImageCommand(userId, request.SessionId, request.Instruction, request.ModelId);
                     var result = await mediator.Send(command, cancellationToken);
                     return Results.Ok(new ReGenerateImageResponseDto(result.ResultId, result.ImageUrl,
                         result.ModelId, result.ProviderName));

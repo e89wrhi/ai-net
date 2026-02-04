@@ -23,7 +23,7 @@ public class TranscribeAudioEndpoint : IMinimalEndpoint
                         return Results.Unauthorized();
                     }
 
-                    var command = new TranscribeAudioCommand(request.AudioUrl, request.Language, request.ModelId);
+                    var command = new TranscribeAudioCommand(userId, request.AudioUrl, request.Language, request.ModelId);
                     var result = await mediator.Send(command, cancellationToken);
                     return Results.Ok(new TranscribeAudioResponseDto(result.SessionId, result.ResultId, 
                         result.Transcript,

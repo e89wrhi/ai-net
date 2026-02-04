@@ -23,7 +23,7 @@ public class GenerateLessonEndpoint : IMinimalEndpoint
                         return Results.Unauthorized();
                     }
 
-                    var command = new GenerateLessonCommand(request.Topic, request.Level, request.ModelId);
+                    var command = new GenerateLessonCommand(userId, request.Topic, request.Level, request.ModelId);
                     var result = await mediator.Send(command, cancellationToken);
                     return Results.Ok(new GenerateLessonResponseDto(result.SessionId, result.ActivityId, 
                         result.Content,

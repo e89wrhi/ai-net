@@ -23,7 +23,7 @@ public class ReGenerateCodeEndpoint : IMinimalEndpoint
                         return Results.Unauthorized();
                     }
 
-                    var command = new ReGenerateCodeCommand(request.SessionId, request.Instruction, request.ModelId);
+                    var command = new ReGenerateCodeCommand(userId, request.SessionId, request.Instruction, request.ModelId);
                     var result = await mediator.Send(command, cancellationToken);
 
                     return Results.Ok(new ReGenerateCodeResponseDto(result.ResultId, result.Code,

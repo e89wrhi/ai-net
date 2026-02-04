@@ -1,11 +1,12 @@
 ﻿using AI.Common.Core;
+using AiOrchestration.Models;
+using AiOrchestration.Services;
 using AiOrchestration.ValueObjects;
+using Ardalis.GuardClauses;
 using Microsoft.Extensions.AI;
 using Resume.Data;
 using Resume.Models;
 using Resume.ValueObjects;
-using Ardalis.GuardClauses;
-using AiOrchestration.Services;
 
 namespace Resume.Features.AnalyzeResume.V1;
 
@@ -13,30 +14,54 @@ namespace Resume.Features.AnalyzeResume.V1;
 internal class AnalyzeResumeWithAIHandler : ICommandHandler<AnalyzeResumeCommand, AnalyzeResumeCommandResult>
 {
     private readonly ResumeDbContext _dbContext;
-    private readonly IAiOrchestrator _chatClient;
+    private readonly IAiOrchestrator _orchestrator;
+    private readonly IChatClient _chatClient;
+    private readonly IAiModelService _modelService;
 
-    public AnalyzeResumeWithAIHandler(ResumeDbContext dbContext, IAiOrchestrator chatClient)
+    public AnalyzeResumeWithAIHandler(ResumeDbContext dbContext, IAiModelService modelService, IAiOrchestrator orchestrator, IChatClient chatClient)
     {
         _dbContext = dbContext;
+        _modelService = modelService;
+        _orchestrator = orchestrator;
         _chatClient = chatClient;
     }
 
     public async Task<AnalyzeResumeCommandResult> Handle(AnalyzeResumeCommand request, CancellationToken cancellationToken)
     {
-        Guard.Against.NullOrEmpty(request.ResumeContent, nameof(request.ResumeContent));
-
-        var systemPrompt = "You are an HR expert system. Analyze the provided resume text. Extract a summary and provide a candidate score (0-100) based on professional standards.";
-
+        #region Prompt
         var messages = new List<ChatMessage>
         {
-            new ChatMessage(ChatRole.System, systemPrompt),
-            new ChatMessage(ChatRole.User, $"Resume Content:\n{request.ResumeContent}")
+            new ChatMessage(
+                    role: ChatRole.System, 
+                    content: "You are an HR expert system. Analyze the provided resume text. Extract a summary and provide a candidate score (0-100) based on professional standards."),
+            new ChatMessage(
+                    role: ChatRole.User, 
+                    content : $"Resume Content:\n{request.ResumeContent}")
         };
+        #endregion
 
-        // Use chatClient to get the best client
-        var chatClient = await _chatClient.GetClientAsync(cancellationToken: cancellationToken);
-        var completion = await chatClient.GetResponseAsync(messages, cancellationToken: cancellationToken);
-        var responseText = completion.Messages[0].Text ?? "Failed to analyze resume.";
+        Guard.Against.NullOrEmpty(request.ResumeContent, nameof(request.ResumeContent));
+
+        // Use orchestrator to get the client based on requested model criteria
+        var criteria = new ModelCriteria { ModelId = request.ModelId };
+        var chatClient = await _orchestrator.GetClientAsync(criteria, cancellationToken);
+
+        // Get actual model info from client metadata
+        var clientMetadata = chatClient.GetService(typeof(ChatClientMetadata)) as ChatClientMetadata;
+        var modelIdStr = clientMetadata?.DefaultModelId ?? "default-model";
+        var providerName = clientMetadata?.ProviderName ?? "Unknown";
+        var modelId = ModelId.Of(modelIdStr);
+
+        // Call AI Model
+        var chatCompletion = await chatClient.GetResponseAsync(messages, cancellationToken: cancellationToken);
+        var responseText = chatCompletion.Messages[0].Text ?? "Failed to analyze resume.";
+
+        // Calculate Metadata & Usage
+        var tokenUsage = chatCompletion.Usage?.TotalTokenCount ?? (messages.Sum(i => i.Text.Length) + responseText.Length) / 4;
+
+        // Get cost per token from model service
+        var costPerToken = _modelService.GetCostPerToken(modelId);
+        var costValue = (decimal)tokenUsage * costPerToken;
 
         // Simple parsing for score (mocking better extraction)
         double score = 85.0; // Default or parsed
@@ -44,9 +69,8 @@ internal class AnalyzeResumeWithAIHandler : ICommandHandler<AnalyzeResumeCommand
 
         // Persist
         var sessionId = ResumeId.Of(Guid.NewGuid());
-        var userId = UserId.Of(Guid.NewGuid());
-        var modelId = ModelId.Of(_chatClient.Metadata.ModelId ?? "resume-model");
-        var config = ResumeAnalysisConfiguration.Of(true, true);
+        var userId = UserId.Of(request.UserId);
+        var config = new ResumeAnalysisConfiguration(true, true, true);
 
         var session = ResumeAnalysisSession.Create(sessionId, userId, modelId, config);
 
@@ -54,15 +78,22 @@ internal class AnalyzeResumeWithAIHandler : ICommandHandler<AnalyzeResumeCommand
         var resumeFileVo = ResumeFile.Of("UploadedResume", request.ResumeContent);
         var summaryVo = ResumeSummary.Of(summaryText);
         var scoreVo = CandidateScore.Of(score);
-        var tokenCountVo = TokenCount.Of(completion.Usage?.TotalTokenCount ?? 0);
-        var costVo = CostEstimate.Of(0);
+        var tokenCountVo = TokenCount.Of(tokenUsage);
+        var costVo = CostEstimate.Of(costValue);
 
-        var result = ResumeAnalysisResult.Create(resultId, resumeFileVo, summaryVo, scoreVo, tokenCountVo, costVo);
+        var result = ResumeAnalysisResult.Create(
+                    resultId, 
+                    resumeFileVo, 
+                    summaryVo, 
+                    scoreVo, 
+                    tokenCountVo, 
+                    costVo);
+
         session.AddResult(result);
 
         _dbContext.Sessions.Add(session);
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        return new AnalyzeResumeWithAICommandResult(sessionId.Value, resultId.Value, summaryText, score);
+        return new AnalyzeResumeCommandResult(sessionId.Value, resultId.Value, summaryText, score, modelIdStr, providerName);
     }
 }

@@ -23,7 +23,7 @@ public class GenerateAiResponseEndpoint : IMinimalEndpoint
                         return Results.Unauthorized();
                     }
 
-                    var command = new GenerateAiResponseCommand(request.SessionId, request.ModelId);
+                    var command = new GenerateAiResponseCommand(userId, request.SessionId, request.ModelId);
                     var result = await mediator.Send(command, cancellationToken);
                     return Results.Ok(new GenerateResponseResponseDto(result.MessageId, result.Content,
                         result.ModelId, result.ProviderName));

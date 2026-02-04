@@ -10,6 +10,14 @@ public class ImageGenNotFoundException : DomainException
     }
 }
 
+public class ImageGenResultNotFoundException : DomainException
+{
+    public ImageGenResultNotFoundException(Guid imagegenId)
+        : base($"imagegen_result: '{imagegenId}' not found.")
+    {
+    }
+}
+
 public class ImageGenAlreadyExistException : DomainException
 {
     public ImageGenAlreadyExistException(Guid imagegenId)

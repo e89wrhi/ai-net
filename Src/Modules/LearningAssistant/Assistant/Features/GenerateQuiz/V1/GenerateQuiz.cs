@@ -23,7 +23,7 @@ public class GenerateQuizEndpoint : IMinimalEndpoint
                         return Results.Unauthorized();
                     }
 
-                    var command = new GenerateQuizCommand(request.Topic, request.QuestionCount, request.ModelId);
+                    var command = new GenerateQuizCommand(userId, request.Topic, request.QuestionCount, request.ModelId);
                     var result = await mediator.Send(command, cancellationToken);
                     return Results.Ok(new GenerateQuizResponseDto(result.SessionId, result.ActivityId, 
                         result.QuizContent,

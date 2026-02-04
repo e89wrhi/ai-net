@@ -23,7 +23,7 @@ public class AnalyzeImageEndpoint : IMinimalEndpoint
                         return Results.Unauthorized();
                     }
 
-                    var command = new AnalyzeImageCommand(request.ImageUrlOrBase64, request.ModelId);
+                    var command = new AnalyzeImageCommand(userId, request.ImageUrlOrBase64, request.ModelId);
                     var result = await mediator.Send(command, cancellationToken);
                     return Results.Ok(new AnalyzeImageResponseDto(result.SessionId, result.ResultId, 
                         result.Analysis,

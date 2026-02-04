@@ -1,10 +1,12 @@
 ﻿using AI.Common.Core;
+using AiOrchestration.Models;
+using AiOrchestration.Services;
 using AiOrchestration.ValueObjects;
+using Ardalis.GuardClauses;
 using ImageGen.Data;
+using ImageGen.Exceptions;
 using ImageGen.Models;
 using ImageGen.ValueObjects;
-using Ardalis.GuardClauses;
-using AiOrchestration.Services;
 using Microsoft.Extensions.AI;
 
 namespace ImageGen.Features.ReGenerateImage.V1;
@@ -12,46 +14,75 @@ namespace ImageGen.Features.ReGenerateImage.V1;
 internal class ReGenerateImageHandler : ICommandHandler<ReGenerateImageCommand, ReGenerateImageCommandResult>
 {
     private readonly ImageGenDbContext _dbContext;
-    private readonly IAiOrchestrator _chatClient;
+    private readonly IAiOrchestrator _orchestrator;
+    private readonly IChatClient _chatClient;
+    private readonly IAiModelService _modelService;
 
-    public ReGenerateImageHandler(ImageGenDbContext dbContext, IAiOrchestrator chatClient)
+    public ReGenerateImageHandler(ImageGenDbContext dbContext, IAiModelService modelService, IAiOrchestrator orchestrator, IChatClient chatClient)
     {
+        _modelService = modelService;
+        _orchestrator = orchestrator;
         _dbContext = dbContext;
         _chatClient = chatClient;
     }
 
     public async Task<ReGenerateImageCommandResult> Handle(ReGenerateImageCommand request, CancellationToken cancellationToken)
     {
+        // Use orchestrator to get the client based on requested model criteria
+        var criteria = new ModelCriteria { ModelId = request.ModelId };
+        var chatClient = await _orchestrator.GetClientAsync(criteria, cancellationToken);
+
+        // Get actual model info from client metadata
+        var clientMetadata = chatClient.GetService(typeof(ChatClientMetadata)) as ChatClientMetadata;
+        var modelIdStr = clientMetadata?.DefaultModelId ?? "default-model";
+        var providerName = clientMetadata?.ProviderName ?? "Unknown";
+        var modelId = ModelId.Of(modelIdStr);
+
         // Load Session
-        var session = await _dbContext.Sessions.FindAsync(new object[] { CodeGenId.Of(request.SessionId) }, cancellationToken);
-        if (session == null) throw new ImageGen.Exceptions.ImageGenNotFoundException(request.SessionId);
+        var session = await _dbContext.Sessions.FindAsync(new object[] { ImageGenId.Of(request.SessionId) }, cancellationToken);
+        if (session == null) throw new ImageGenNotFoundException(request.SessionId);
 
         // Load context
         await _dbContext.Entry(session).Collection(s => s.Results).LoadAsync(cancellationToken);
         var lastResult = session.Results.OrderByDescending(r => r.GeneratedAt).FirstOrDefault();
-        if (lastResult == null) throw new ImageGen.Exceptions.ImageGenResultNotFoundException(Guid.Empty);
+        if (lastResult == null) throw new ImageGenResultNotFoundException(Guid.Empty);
 
+        #region Prompt
         // Orchestrate re-generation
         var messages = new List<ChatMessage>
         {
-            new ChatMessage(ChatRole.System, "You are an image generation refiner."),
-            new ChatMessage(ChatRole.User, $"Original Prompt: {lastResult.Prompt.Value}"),
-            new ChatMessage(ChatRole.User, $"Refinement Instruction: {request.Instruction}")
+            new ChatMessage(
+                    role: ChatRole.System, 
+                    content: "You are an image generation refiner."),
+            new ChatMessage(
+                    role: ChatRole.User, 
+                    content : $"Original Prompt: {lastResult.Prompt.Value}"),
+            new ChatMessage(
+                    role: ChatRole.User, 
+                    content : $"Refinement Instruction: {request.Instruction}")
         };
+        #endregion
 
-        // Use chatClient to get the best client
-        var chatClient = await _chatClient.GetClientAsync(cancellationToken: cancellationToken);
-        var completion = await chatClient.GetResponseAsync(messages, cancellationToken: cancellationToken);
+        // Call AI Model
+        var chatCompletion = await chatClient.GetResponseAsync(messages, cancellationToken: cancellationToken);
+        var responseText = chatCompletion.Messages[0].Text ?? string.Empty;
 
-        // Mock refined Image URL
+        // Calculate Metadata & Usage
+        var tokenUsage = chatCompletion.Usage?.TotalTokenCount ?? (messages.Sum(i => i.Text.Length) + responseText.Length) / 4;
+
+        // Get cost per token from model service
+        var costPerToken = _modelService.GetCostPerToken(modelId);
+        var costValue = (decimal)tokenUsage * costPerToken;
+
+        //  refined Image URL
         var imageUrl = $"https://generated-images.com/{Guid.NewGuid()}_refined.png";
 
         // Update
         var resultId = ImageGenResultId.Of(Guid.NewGuid());
         var promptVo = ImageGenerationPrompt.Of(request.Instruction);
         var imageVo = GeneratedImage.Of(imageUrl);
-        var tokenCountVo = TokenCount.Of(completion.Usage?.TotalTokenCount ?? 1200);
-        var costVo = CostEstimate.Of(0.04m);
+        var tokenCountVo = TokenCount.Of(tokenUsage);
+        var costVo = CostEstimate.Of(costValue);
 
         var refinedResult = ImageGenerationResult.Create(
             resultId,
@@ -65,7 +96,7 @@ internal class ReGenerateImageHandler : ICommandHandler<ReGenerateImageCommand, 
         session.AddResult(refinedResult);
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        return new ReGenerateImageCommandResult(resultId.Value, imageUrl);
+        return new ReGenerateImageCommandResult(resultId.Value, imageUrl, modelIdStr, providerName);
     }
 }
 

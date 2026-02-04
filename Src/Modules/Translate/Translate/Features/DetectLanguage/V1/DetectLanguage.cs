@@ -23,7 +23,7 @@ public class DetectLanguageEndpoint : IMinimalEndpoint
                         return Results.Unauthorized();
                     }
 
-                    var command = new DetectLanguageCommand(request.Text, request.ModelId);
+                    var command = new DetectLanguageCommand(userId, request.Text, request.ModelId);
                     var result = await mediator.Send(command, cancellationToken);
                     return Results.Ok(new DetectLanguageResponseDto(result.DetectedLanguageCode, 
                         result.Confidence,

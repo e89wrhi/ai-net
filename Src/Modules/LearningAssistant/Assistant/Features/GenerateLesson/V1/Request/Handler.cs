@@ -1,9 +1,10 @@
 ﻿using AI.Common.Core;
+using AiOrchestration.Models;
+using AiOrchestration.Services;
 using AiOrchestration.ValueObjects;
+using Ardalis.GuardClauses;
 using LearningAssistant.Data;
 using LearningAssistant.Models;
-using Ardalis.GuardClauses;
-using AiOrchestration.Services;
 using LearningAssistant.ValueObjects;
 using Microsoft.Extensions.AI;
 
@@ -13,52 +14,84 @@ namespace LearningAssistant.Features.GenerateLesson.V1;
 internal class GenerateAILessonHandler : ICommandHandler<GenerateLessonCommand, GenerateLessonCommandResult>
 {
     private readonly LearningDbContext _dbContext;
-    private readonly IAiOrchestrator _chatClient;
+    private readonly IAiOrchestrator _orchestrator;
+    private readonly IChatClient _chatClient;
+    private readonly IAiModelService _modelService;
 
-    public GenerateAILessonHandler(LearningDbContext dbContext, IAiOrchestrator chatClient)
+    public GenerateAILessonHandler(LearningDbContext dbContext, IAiModelService modelService, IAiOrchestrator orchestrator, IChatClient chatClient)
     {
+        _modelService = modelService;
+        _orchestrator = orchestrator;
         _dbContext = dbContext;
         _chatClient = chatClient;
     }
 
     public async Task<GenerateLessonCommandResult> Handle(GenerateLessonCommand request, CancellationToken cancellationToken)
     {
-        Guard.Against.NullOrEmpty(request.Topic, nameof(request.Topic));
-
-        var systemPrompt = $"You are a professional teacher. Generate a comprehensive lesson about the topic provided for a {request.Level} level student.";
-
+        #region Prompt
         var messages = new List<ChatMessage>
         {
-            new ChatMessage(ChatRole.System, systemPrompt),
-            new ChatMessage(ChatRole.User, $"Explain: {request.Topic}")
+            new ChatMessage(
+                    role: ChatRole.System, 
+                    content: $"You are a professional teacher. Generate a comprehensive lesson about the topic provided for a {request.Level} level student."),
+            new ChatMessage(
+                    role: ChatRole.User, 
+                    content : $"Explain: {request.Topic}")
         };
+        #endregion
 
-        // Use chatClient to get the best client
-        var chatClient = await _chatClient.GetClientAsync(cancellationToken: cancellationToken);
-        var completion = await chatClient.GetResponseAsync(messages, cancellationToken: cancellationToken);
-        var contentText = completion.Messages[0].Text ?? "Failed to generate lesson.";
+        Guard.Against.NullOrEmpty(request.Topic, nameof(request.Topic));
+
+        // Use orchestrator to get the client based on requested model criteria
+        var criteria = new ModelCriteria { ModelId = request.ModelId };
+        var chatClient = await _orchestrator.GetClientAsync(criteria, cancellationToken);
+
+        // Get actual model info from client metadata
+        var clientMetadata = chatClient.GetService(typeof(ChatClientMetadata)) as ChatClientMetadata;
+        var modelIdStr = clientMetadata?.DefaultModelId ?? "default-model";
+        var providerName = clientMetadata?.ProviderName ?? "Unknown";
+        var modelId = ModelId.Of(modelIdStr);
+
+        // Call AI Model
+        var chatCompletion = await chatClient.GetResponseAsync(messages, cancellationToken: cancellationToken);
+        var responseText = chatCompletion.Messages[0].Text ?? "Failed to generate lesson.";
+
+        // Calculate Metadata & Usage
+        var tokenUsage = chatCompletion.Usage?.TotalTokenCount ?? (messages.Sum(i => i.Text.Length) + responseText.Length) / 4;
+
+        // Get cost per token from model service
+        var costPerToken = _modelService.GetCostPerToken(modelId);
+        var costValue = (decimal)tokenUsage * costPerToken;
 
         // Persist
         var sessionId = LearningId.Of(Guid.NewGuid());
-        var userId = UserId.Of(Guid.NewGuid()); // Mock
-        var modelId = ModelId.Of(_chatClient.Metadata.ModelId ?? "learning-model");
-        var config = LearningConfiguration.Of("standard");
+        var userId = UserId.Of(request.UserId);
+        var config = new LearningConfiguration(
+            Enums.LearningMode.Quiz,
+            Enums.DifficultyLevel.Medium);
 
         var session = LearningSession.Create(sessionId, userId, modelId, config);
 
         var activityId = ActivityId.Of(Guid.NewGuid());
         var topicVo = LearningTopic.Of(request.Topic);
-        var contentVo = LearningContent.Of(contentText);
+        var contentVo = LearningContent.Of(responseText);
         var outcomeVo = LearningOutcome.Of("Lesson Generated");
-        var tokenCountVo = TokenCount.Of(completion.Usage?.TotalTokenCount ?? 0);
-        var costVo = CostEstimate.Of(0);
+        var tokenCountVo = TokenCount.Of(tokenUsage);
+        var costVo = CostEstimate.Of(costValue);
 
-        var activity = LearningActivity.Create(activityId, topicVo, contentVo, outcomeVo, tokenCountVo, costVo);
+        var activity = LearningActivity.Create(
+                    activityId, 
+                    topicVo, 
+                    contentVo, 
+                    outcomeVo, 
+                    tokenCountVo, 
+                    costVo);
+
         session.AddActivity(activity);
 
         _dbContext.Sessions.Add(session);
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        return new GenerateAILessonCommandResult(sessionId.Value, activityId.Value, contentText);
+        return new GenerateLessonCommandResult(sessionId.Value, activityId.Value, responseText, modelIdStr, providerName);
     }
 }

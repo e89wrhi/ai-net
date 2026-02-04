@@ -23,7 +23,7 @@ public class CaptionImageEndpoint : IMinimalEndpoint
                         return Results.Unauthorized();
                     }
 
-                    var command = new ImageCaptionCommand(request.ImageUrlOrBase64, request.ModelId);
+                    var command = new ImageCaptionCommand(userId, request.ImageUrlOrBase64, request.ModelId);
                     var result = await mediator.Send(command, cancellationToken);
                     return Results.Ok(new ImageCaptionResponseDto(result.SessionId, result.ResultId, 
                         result.Caption,

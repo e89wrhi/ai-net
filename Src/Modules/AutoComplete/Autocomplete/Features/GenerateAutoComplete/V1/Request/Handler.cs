@@ -29,6 +29,18 @@ internal class GenerateAICompletionHandler : ICommandHandler<GenerateAutoComplet
     public async Task<GenerateAutoCompleteCommandResult> Handle(GenerateAutoCompleteCommand request,
         CancellationToken cancellationToken)
     {
+        #region Prompt
+        var messages = new List<ChatMessage>
+        {
+             new ChatMessage(
+                    role: ChatRole.System,
+                    content: ""),
+             new ChatMessage(
+                    role: ChatRole.User,
+                    content: request.Prompt)
+        };
+        #endregion
+
         Guard.Against.NullOrEmpty(request.Prompt, nameof(request.Prompt));
 
         // Use orchestrator to get the client based on requested model criteria
@@ -42,11 +54,11 @@ internal class GenerateAICompletionHandler : ICommandHandler<GenerateAutoComplet
         var modelId = ModelId.Of(modelIdStr);
 
         // Call AI Model
-        var chatCompletion = await chatClient.GetResponseAsync(request.Prompt, cancellationToken: cancellationToken);
+        var chatCompletion = await chatClient.GetResponseAsync(messages, cancellationToken: cancellationToken);
         var responseText = chatCompletion.Messages[0].Text ?? string.Empty;
 
         // Calculate Metadata & Usage
-        var tokenUsage = chatCompletion.Usage?.TotalTokenCount ?? (request.Prompt.Length + responseText.Length) / 4;
+        var tokenUsage = chatCompletion.Usage?.TotalTokenCount ?? (messages.Sum(i => i.Text.Length) + responseText.Length) / 4;
         
         // Get cost per token from model service
         var costPerToken = _modelService.GetCostPerToken(modelId);

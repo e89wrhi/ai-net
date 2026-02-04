@@ -23,7 +23,7 @@ public class AnalyzeSentimentEndpoint : IMinimalEndpoint
                         return Results.Unauthorized();
                     }
 
-                    var command = new AnalyzeSentimentCommand(request.Text, request.ModelId);
+                    var command = new AnalyzeSentimentCommand(userId, request.Text, request.ModelId);
                     var result = await mediator.Send(command, cancellationToken);
                     return Results.Ok(new AnalyzeSentimentResponseDto(result.SessionId, result.ResultId, 
                         result.Sentiment, result.Score,

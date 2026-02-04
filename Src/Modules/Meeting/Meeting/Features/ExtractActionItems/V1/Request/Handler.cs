@@ -1,11 +1,12 @@
 ﻿using AI.Common.Core;
+using AiOrchestration.Models;
+using AiOrchestration.Services;
 using AiOrchestration.ValueObjects;
+using Ardalis.GuardClauses;
 using Meeting.Data;
 using Meeting.Models;
 using Meeting.ValueObjects;
 using Microsoft.Extensions.AI;
-using Ardalis.GuardClauses;
-using AiOrchestration.Services;
 
 namespace Meeting.Features.ExtractActionItems.V1;
 
@@ -13,49 +14,80 @@ namespace Meeting.Features.ExtractActionItems.V1;
 internal class ExtractActionItemsHandler : ICommandHandler<ExtractActionItemsCommand, ExtractActionItemsCommandResult>
 {
     private readonly MeetingDbContext _dbContext;
-    private readonly IAiOrchestrator _chatClient;
+    private readonly IAiOrchestrator _orchestrator;
+    private readonly IChatClient _chatClient;
+    private readonly IAiModelService _modelService;
 
-    public ExtractActionItemsHandler(MeetingDbContext dbContext, IAiOrchestrator chatClient)
+    public ExtractActionItemsHandler(MeetingDbContext dbContext, IAiModelService modelService, IAiOrchestrator orchestrator, IChatClient chatClient)
     {
         _dbContext = dbContext;
+        _modelService = modelService;
+        _orchestrator = orchestrator;
         _chatClient = chatClient;
     }
 
     public async Task<ExtractActionItemsCommandResult> Handle(ExtractActionItemsCommand request, CancellationToken cancellationToken)
     {
-        Guard.Against.NullOrEmpty(request.Transcript, nameof(request.Transcript));
-
+        #region Prompt
         var messages = new List<ChatMessage>
         {
-            new ChatMessage(ChatRole.System, "You are an efficiency expert. Extract a numbered list of ONLY specific action items, the responsible person (if mentioned), and any deadlines from the transcript."),
-            new ChatMessage(ChatRole.User, $"Transcript:\n{request.Transcript}")
+            new ChatMessage(
+                    role: ChatRole.System, 
+                    content: "You are an efficiency expert. Extract a numbered list of ONLY specific action items, the responsible person (if mentioned), and any deadlines from the transcript."),
+            new ChatMessage(
+                    role: ChatRole.User, 
+                    content : $"Transcript:\n{request.Transcript}")
         };
+        #endregion
 
-        // Use chatClient to get the best client
-        var chatClient = await _chatClient.GetClientAsync(cancellationToken: cancellationToken);
-        var completion = await chatClient.GetResponseAsync(messages, cancellationToken: cancellationToken);
-        var actionItems = completion.Messages[0].Text ?? "No action items found.";
+        Guard.Against.NullOrEmpty(request.Transcript, nameof(request.Transcript));
+
+        // Use orchestrator to get the client based on requested model criteria
+        var criteria = new ModelCriteria { ModelId = request.ModelId };
+        var chatClient = await _orchestrator.GetClientAsync(criteria, cancellationToken);
+
+        // Get actual model info from client metadata
+        var clientMetadata = chatClient.GetService(typeof(ChatClientMetadata)) as ChatClientMetadata;
+        var modelIdStr = clientMetadata?.DefaultModelId ?? "default-model";
+        var providerName = clientMetadata?.ProviderName ?? "Unknown";
+        var modelId = ModelId.Of(modelIdStr);
+
+        // Call AI Model
+        var chatCompletion = await chatClient.GetResponseAsync(messages, cancellationToken: cancellationToken);
+        var responseText = chatCompletion.Messages[0].Text ?? "No action items found.";
+
+        // Calculate Metadata & Usage
+        var tokenUsage = chatCompletion.Usage?.TotalTokenCount ?? (messages.Sum(i => i.Text.Length) + responseText.Length) / 4;
+
+        // Get cost per token from model service
+        var costPerToken = _modelService.GetCostPerToken(modelId);
+        var costValue = (decimal)tokenUsage * costPerToken;
 
         // Persist
         var meetingId = MeetingId.Of(Guid.NewGuid());
-        var userId = UserId.Of(Guid.NewGuid());
-        var modelId = ModelId.Of(_chatClient.Metadata.ModelId ?? "action-item-model");
+        var userId = UserId.Of(request.UserId);
         var langCode = LanguageCode.Of("en");
         var config = new MeetingAnalysisConfiguration(true, false, langCode);
 
         var session = MeetingAnalysisSession.Create(meetingId, userId, modelId, config);
 
         var transcriptId = TranscriptId.Of(Guid.NewGuid());
-        var summaryVo = TranscriptSummary.Of(actionItems); // Using Summary VO to store action items for now
-        var tokenCountVo = TokenCount.Of(completion.Usage?.TotalTokenCount ?? 0);
-        var costVo = CostEstimate.Of(0);
+        var summaryVo = TranscriptSummary.Of(responseText); // Using Summary VO to store action items for now
+        var tokenCountVo = TokenCount.Of(tokenUsage);
+        var costVo = CostEstimate.Of(costValue);
 
-        var transcript = MeetingTranscript.Create(transcriptId, request.Transcript, summaryVo, tokenCountVo, costVo);
+        var transcript = MeetingTranscript.Create(
+            transcriptId, 
+            request.Transcript, 
+            summaryVo, 
+            tokenCountVo, 
+            costVo);
+
         session.AddTranscript(transcript);
 
         _dbContext.Sessions.Add(session);
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        return new ExtractActionItemsCommandResult(meetingId.Value, actionItems);
+        return new ExtractActionItemsCommandResult(meetingId.Value, responseText, modelIdStr, providerName);
     }
 }
