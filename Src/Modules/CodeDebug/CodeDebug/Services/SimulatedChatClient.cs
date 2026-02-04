@@ -7,21 +7,26 @@ public class SimulatedChatClient : IChatClient
 {
     public ChatClientMetadata Metadata => new("Simulated", new Uri("http://localhost"));
 
-    public object? GetService(Type serviceType, object? serviceKey = null) => this.GetType() == serviceType ? this : null;
+    public object? GetService(Type serviceType, object? serviceKey = null) =>
+        serviceKey is not null ? null :
+        serviceType == typeof(ChatClientMetadata) ? Metadata :
+        serviceType?.IsInstanceOfType(this) is true ? this :
+        null;
 
     public async Task<ChatResponse> GetResponseAsync(
         IEnumerable<ChatMessage> chatMessages, 
         ChatOptions? options = null, 
         CancellationToken cancellationToken = default)
     {
-        await Task.Delay(0);
-        var lastMessage = chatMessages.LastOrDefault();
-        var prompt = lastMessage?.Text ?? "No prompt";
+        await Task.Delay(50, cancellationToken);
+        var messages = chatMessages.ToList();
+        var systemMessage = messages.FirstOrDefault(m => m.Role == ChatRole.System)?.Text ?? "";
 
-        // Real usecase simulation: provide autocomplete suggestions
-        var suggestions = $"Here are some suggestions based on '{prompt}':\n1. {prompt} extended\n2. {prompt} refined\n3. {prompt} alternative";
+        string responseText = systemMessage.Contains("JSON") 
+            ? "{\"summary\": \"Simulated analysis: Potential issue found in the code structure.\", \"issueCount\": 1}" 
+            : "Simulated response message.";
 
-        return new ChatResponse(new[] { new ChatMessage(ChatRole.Assistant, suggestions) });
+        return new ChatResponse(new[] { new ChatMessage(ChatRole.Assistant, responseText) });
     }
 
     public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(

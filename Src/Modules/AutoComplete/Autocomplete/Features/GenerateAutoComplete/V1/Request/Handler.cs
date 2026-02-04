@@ -11,14 +11,17 @@ using Microsoft.Extensions.AI;
 
 namespace AutoComplete.Features.GenerateAutoComplete.V1;
 
-
 internal class GenerateAICompletionHandler : ICommandHandler<GenerateAutoCompleteCommand, GenerateAutoCompleteCommandResult>
 {
-    private readonly IAiOrchestrator _chatClient;
+    private readonly IAiOrchestrator _orchestrator;
+    private readonly IChatClient _chatClient;
+    private readonly IAiModelService _modelService;
     private readonly AutocompleteDbContext _dbContext;
 
-    public GenerateAICompletionHandler(IAiOrchestrator chatClient, AutocompleteDbContext dbContext)
+    public GenerateAICompletionHandler(IAiModelService modelService, IAiOrchestrator orchestrator, IChatClient chatClient, AutocompleteDbContext dbContext)
     {
+        _modelService = modelService;
+        _orchestrator = orchestrator;
         _chatClient = chatClient;
         _dbContext = dbContext;
     }
@@ -28,49 +31,43 @@ internal class GenerateAICompletionHandler : ICommandHandler<GenerateAutoComplet
     {
         Guard.Against.NullOrEmpty(request.Prompt, nameof(request.Prompt));
 
-        // Use chatClient to get the best client
-        var chatClient = await _chatClient.GetClientAsync(cancellationToken: cancellationToken);
+        // Use orchestrator to get the client based on requested model criteria
+        var criteria = new ModelCriteria { ModelId = request.ModelId };
+        var chatClient = await _orchestrator.GetClientAsync(criteria, cancellationToken);
 
-        //  Call AI Model
+        // Get actual model info from client metadata
+        var clientMetadata = chatClient.GetService(typeof(ChatClientMetadata)) as ChatClientMetadata;
+        var modelIdStr = clientMetadata?.DefaultModelId ?? "default-model";
+        var providerName = clientMetadata?.ProviderName ?? "Unknown";
+        var modelId = ModelId.Of(modelIdStr);
+
+        // Call AI Model
         var chatCompletion = await chatClient.GetResponseAsync(request.Prompt, cancellationToken: cancellationToken);
         var responseText = chatCompletion.Messages[0].Text ?? string.Empty;
 
-        // Calculate Metadata
-        // Use usage data from the provider if available, otherwise estimate
+        // Calculate Metadata & Usage
         var tokenUsage = chatCompletion.Usage?.TotalTokenCount ?? (request.Prompt.Length + responseText.Length) / 4;
-
-
-        // Simple cost estimation logic (example: $0.002 per 1k tokens)
-        var costValue = (decimal)(tokenUsage * 0.000002);
+        
+        // Get cost per token from model service
+        var costPerToken = _modelService.GetCostPerToken(modelId);
+        var costValue = (decimal)tokenUsage * costPerToken;
 
         // Persist Interaction
         var sessionId = AutoCompleteId.Of(Guid.NewGuid());
         var userId = UserId.Of(request.UserId);
 
-        // Use metadata from the client (following the example's GetService pattern)
-        var clientMetadata = chatClient.GetService(typeof(ChatClientMetadata)) as ChatClientMetadata ?? chatClient.Metadata;
-        var modelIdStr = clientMetadata.ModelId ?? "default-model";
-        var providerName = clientMetadata.ProviderName;
-        
-        var modelId = ModelId.Of(modelIdStr);
-
-
-        var config = new AutoCompleteConfiguration()
-        {
-            MaxTokens = tokenUsage,
-            Mode = Enums.CompletionMode.Text,
-            Temperature = temperature,
-        };
+        // Configuration setup
+        var config = new AutoCompleteConfiguration(
+            Temperature.Of(0.7f),
+            TokenCount.Of(tokenUsage),
+            Enums.CompletionMode.Text
+        );
 
         // Create Session Aggregate
         var session = AutoCompleteSession.Create(sessionId, userId, modelId, config);
 
         // Add Request to Session
         var requestId = AutoCompleteRequestId.Of(Guid.NewGuid());
-
-        // Assuming ValueObject.Of(string) pattern
-        // If these VOs expect different types, this will need adjustment. 
-        // Based on typical DDD patterns in this codebase (Of(primitive)).
         var promptVo = AutoCompletePrompt.Of(request.Prompt);
         var suggestionVo = AutoCompleteSuggestion.Of(responseText);
         var tokenCountVo = TokenCount.Of(tokenUsage);

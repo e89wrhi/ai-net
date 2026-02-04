@@ -61,7 +61,8 @@ internal class StreamTranslateTextHandler : IStreamRequestHandler<StreamTranslat
             var sessionId = TranslateId.Of(Guid.NewGuid());
             var userId = UserId.Of(Guid.NewGuid());
             var chatClient = await _chatClient.GetClientAsync(cancellationToken: cancellationToken);
-            var modelId = ModelId.Of(chatClient.Metadata.ModelId ?? "translate-stream-model");
+            var clientMetadata = chatClient.GetService(typeof(ChatClientMetadata)) as ChatClientMetadata;
+            var modelId = ModelId.Of(clientMetadata?.ModelId ?? "translate-stream-model");
             var config = new TranslationConfiguration(
                 LanguageCode.Of(request.SourceLanguage),
                 LanguageCode.Of(request.TargetLanguage),

@@ -59,7 +59,7 @@ internal class StreamAICompletionHandler : IStreamRequestHandler<StreamAutoCompl
             var userId = UserId.Of(request.UserId);
             
             // Use metadata from the client (following the example's GetService pattern)
-            var clientMetadata = client.GetService(typeof(ChatClientMetadata)) as ChatClientMetadata ?? client.Metadata;
+            var clientMetadata = client.GetService(typeof(ChatClientMetadata)) as ChatClientMetadata;
             var modelIdStr = clientMetadata?.ModelId ?? "stream-model";
             var modelId = ModelId.Of(modelIdStr);
 

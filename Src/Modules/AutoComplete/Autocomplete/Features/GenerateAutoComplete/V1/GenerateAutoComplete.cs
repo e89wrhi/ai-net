@@ -23,7 +23,7 @@ public class GenerateAutoCompleteEndpoint : IMinimalEndpoint
                         return Results.Unauthorized();
                     }
 
-                    var command = new GenerateAutoCompleteCommand(userId, request.Prompt);
+                    var command = new GenerateAutoCompleteCommand(userId, request.Prompt, request.ModelId);
                     var result = await mediator.Send(command, cancellationToken);
 
                     var response = new GenerateAutoCompleteResponseDto(result.Completion, result.TokensUsed, result.EstimatedCost);

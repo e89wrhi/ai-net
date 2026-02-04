@@ -6,6 +6,7 @@ using Grpc.Core;
 using MediatR;
 using Google.Protobuf.WellKnownTypes;
 using Payment;
+using Payment.Features.GetInvoices.V1;
 
 namespace Payment.GrpcServer.Services;
 
@@ -35,7 +36,7 @@ public class PaymentGrpcService : Payment.PaymentGrpcService.PaymentGrpcServiceB
 
     public override async Task<GetInvoicesResponse> GetInvoices(GetInvoicesRequest request, ServerCallContext context)
     {
-        var query = new Payment.Features.GetInvoices.V1.GetInvoices(Guid.Parse(request.SubscriptionId));
+        var query = new GetInvoices(Guid.Parse(request.SubscriptionId), request.UserId);
         var result = await _mediator.Send(query, context.CancellationToken);
 
         var response = new GetInvoicesResponse();

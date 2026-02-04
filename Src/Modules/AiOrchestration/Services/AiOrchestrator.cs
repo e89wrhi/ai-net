@@ -15,6 +15,8 @@ public class AiOrchestrator : IAiOrchestrator
         _defaultChatClient = defaultChatClient;
     }
 
+    public ChatClientMetadata Metadata => _defaultChatClient.GetService(typeof(ChatClientMetadata)) as ChatClientMetadata ?? new ChatClientMetadata("Default", new Uri("http://localhost"));
+
     public async Task<IChatClient> GetClientAsync(ModelCriteria? criteria = null, CancellationToken cancellationToken = default)
     {
         var model = await SelectModelAsync(criteria, cancellationToken);
@@ -34,6 +36,7 @@ public class AiOrchestrator : IAiOrchestrator
         // 2. Select the first that matches or the first available
         
         var selected = models
+            .Where(m => string.IsNullOrEmpty(criteria.ModelId) || m.Id.Value == criteria.ModelId)
             .Where(m => !criteria.MaxCostPerToken.HasValue || _modelService.GetCostPerToken(m.Id) <= criteria.MaxCostPerToken.Value)
             .OrderBy(m => _modelService.GetCostPerToken(m.Id)) // Prefer cheaper models by default
             .FirstOrDefault();
@@ -58,7 +61,7 @@ internal class ChatClientMetadataWrapper : IChatClient
     public ChatClientMetadataWrapper(IChatClient innerClient, string modelId)
     {
         _innerClient = innerClient;
-        var innerMetadata = innerClient.Metadata;
+        var innerMetadata = innerClient.GetService(typeof(ChatClientMetadata)) as ChatClientMetadata;
         _metadata = new ChatClientMetadata(
             innerMetadata?.ProviderName ?? "UnknownProvider",
             innerMetadata?.Uri,

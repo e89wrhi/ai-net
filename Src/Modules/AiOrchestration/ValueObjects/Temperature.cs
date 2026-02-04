@@ -5,14 +5,14 @@ namespace AiOrchestration.ValueObjects;
 
 public record Temperature
 {
-    public int Value { get; }
+    public float Value { get; }
 
-    private Temperature(int value)
+    private Temperature(float value)
     {
         Value = value;
     }
 
-    public static Temperature Of(int value)
+    public static Temperature Of(float value)
     {
         if (value < 0)
         {
@@ -22,7 +22,7 @@ public record Temperature
         return new Temperature(value);
     }
 
-    public static implicit operator int(Temperature id)
+    public static implicit operator float(Temperature id)
     {
         return id.Value;
     }

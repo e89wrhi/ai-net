@@ -6,6 +6,8 @@ using CodeDebug.Data;
 using CodeDebug.Models;
 using CodeDebug.ValueObjects;
 using Microsoft.Extensions.AI;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace CodeDebug.Features.AnalyzeCode.V1;
 
@@ -25,39 +27,43 @@ internal class AnalyzeCodeHandler : ICommandHandler<AnalyzeCodeCommand, AnalyzeC
     {
         Guard.Against.NullOrEmpty(request.Code, nameof(request.Code));
 
-        // Prepare AI Prompt
-        var prompt = $"Analyze the following {request.Language} code for bugs and potential issues. Return a summary of issues found and a count of distinct issues.\n\nCode:\n```{request.Language}\n{request.Code}\n```";
+        // Prepare AI Prompt with Structured Output instructions
+        var systemInstructions = 
+            "You are an expert code debugger. Analyze the provided code for bugs, security vulnerabilities, and logic issues. " +
+            "You MUST respond with a VALID JSON object containing 'summary' (string) and 'issueCount' (integer). " +
+            "Example: { \"summary\": \"Found a null reference\", \"issueCount\": 1 }";
 
-        // Call AI
-        // Ideally we would want a structured response (JSON) to easily parse Issue Count.
-        // For now, simple text prompt and parsing or assumption.
-        // Or using ChatOptions to request JSON format if supported (middleware might handle it, or we hint in prompt).
-        var aiPrompt = new List<ChatMessage>
+        var userPrompt = $"Analyze this {request.Language} code:\n\n```{request.Language}\n{request.Code}\n```";
+
+        var aiMessages = new List<ChatMessage>
         {
-             new(ChatRole.System, "You are an expert code debugger. Provide your analysis in the following format:\nSummary: <summary text>\nIssues: <n>"),
-             new(ChatRole.User, prompt)
+             new(ChatRole.System, systemInstructions),
+             new(ChatRole.User, userPrompt)
         };
 
-        // Use chatClient to get the best client
+        // Use orchestrator to get the configured client
         var chatClient = await _chatClient.GetClientAsync(cancellationToken: cancellationToken);
 
-        var completion = await chatClient.GetResponseAsync(aiPrompt, cancellationToken: cancellationToken);
-        var responseText = completion.Messages[0].Text ?? "No analysis generated.";
+        var completion = await chatClient.GetResponseAsync(aiMessages, cancellationToken: cancellationToken);
+        var responseText = completion.Messages[0].Text ?? "{}";
 
-        // Parse Response (Naive)
-        var summary = responseText;
-        int issueCountVal = 1; // Default
-
-        // Simple heuristic extraction
-        var lines = responseText.Split('\n');
-        var countLine = lines.FirstOrDefault(l => l.Contains("Issues:", StringComparison.OrdinalIgnoreCase));
-        if (countLine != null)
+        // Structured Parsing
+        AiAnalysisResult analysis;
+        try 
         {
-            var parts = countLine.Split(':');
-            if (parts.Length > 1 && int.TryParse(parts[1].Trim(), out var count))
-            {
-                issueCountVal = count;
-            }
+            // Clean markdown if AI wrapped JSON in ```json
+            var cleanJson = responseText.Contains("```json") 
+                ? responseText.Split("```json")[1].Split("```")[0].Trim()
+                : responseText.Trim('`', ' ', '\n', '\r');
+
+            analysis = JsonSerializer.Deserialize<AiAnalysisResult>(cleanJson, new JsonSerializerOptions 
+            { 
+                PropertyNameCaseInsensitive = true 
+            }) ?? new AiAnalysisResult("Could not parse AI response.", 0);
+        }
+        catch
+        {
+            analysis = new AiAnalysisResult(responseText, 1);
         }
 
         // Persist
@@ -66,15 +72,16 @@ internal class AnalyzeCodeHandler : ICommandHandler<AnalyzeCodeCommand, AnalyzeC
         var sessionId = CodeDebugId.Of(Guid.NewGuid());
         // Mock user
         var userId = UserId.Of(Guid.NewGuid());
-        var modelId = ModelId.Of(chatClient.Metadata.ModelId ?? "debug-model");
+        var clientMetadata = chatClient.GetService(typeof(ChatClientMetadata)) as ChatClientMetadata;
+        var modelId = ModelId.Of(clientMetadata?.ModelId ?? "debug-model");
         var config = CodeDebugConfiguration.Of("standard");
 
         var session = CodeDebugSession.Create(sessionId, userId, modelId, config);
 
         var reportId = CodeDebugReportId.Of(Guid.NewGuid());
         var codeVo = SourceCode.Of(request.Code);
-        var summaryVo = DebugSummary.Of(responseText); // Store full analysis as summary for now
-        var issueCountVo = IssueCount.Of(issueCountVal);
+        var summaryVo = DebugSummary.Of(analysis.Summary); 
+        var issueCountVo = IssueCount.Of(analysis.IssueCount);
         var tokenCountVo = TokenCount.Of(completion.Usage?.TotalTokenCount ?? 0);
         var costVo = CostEstimate.Of(0);
 
@@ -85,6 +92,8 @@ internal class AnalyzeCodeHandler : ICommandHandler<AnalyzeCodeCommand, AnalyzeC
         _dbContext.Sessions.Add(session);
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        return new AnalyzeCodeCommandResult(sessionId.Value, reportId.Value, responseText, issueCountVal);
+        return new AnalyzeCodeCommandResult(sessionId.Value, reportId.Value, analysis.Summary, analysis.IssueCount);
     }
+
+    private record AiAnalysisResult(string Summary, int IssueCount);
 }

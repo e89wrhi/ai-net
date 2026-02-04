@@ -4,7 +4,7 @@ namespace AiOrchestration.Exceptions;
 
 public class TemperatureException : DomainException
 {
-    public TemperatureException(int temprature)
+    public TemperatureException(float temprature)
         : base($"temprature: '{temprature}' is invalid.")
     {
     }

@@ -7,7 +7,11 @@ public class SimulatedChatClient : IChatClient
 {
     public ChatClientMetadata Metadata => new("Simulated", new Uri("http://localhost"));
 
-    public object? GetService(Type serviceType, object? serviceKey = null) => this.GetType() == serviceType ? this : null;
+    public object? GetService(Type serviceType, object? serviceKey = null) =>
+        serviceKey is not null ? null :
+        serviceType == typeof(ChatClientMetadata) ? Metadata :
+        serviceType?.IsInstanceOfType(this) is true ? this :
+        null;
 
     public async Task<ChatResponse> GetResponseAsync(
         IEnumerable<ChatMessage> chatMessages, 
@@ -44,3 +48,4 @@ public class SimulatedChatClient : IChatClient
         // No-op
     }
 }
+

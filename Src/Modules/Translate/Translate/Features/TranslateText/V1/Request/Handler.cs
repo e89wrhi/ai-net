@@ -34,7 +34,8 @@ internal class TranslateTextWithAIHandler : ICommandHandler<TranslateTextWithAIC
         };
 
         // Use orchestrator to get the best client
-        var orchestrator = await _orchestrator.GetClientAsync(cancellationToken: cancellationToken);
+        var criteria = new ModelCriteria { ModelId = request.ModelId };
+        var orchestrator = await _orchestrator.GetClientAsync(criteria, cancellationToken: cancellationToken);
         var completion = await orchestrator.GetResponseAsync(messages, cancellationToken: cancellationToken);
         var translatedText = completion.Messages[0].Text ?? "Translation failed.";
 
