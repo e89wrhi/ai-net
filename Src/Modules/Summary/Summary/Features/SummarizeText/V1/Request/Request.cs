@@ -2,5 +2,5 @@
 
 namespace Summary.Features.SummarizeText.V1;
 
-public record SummarizeTextWithAIRequestDto(string Text, SummaryDetailLevel DetailLevel, string Language);
-public record SummarizeTextWithAIResponseDto(Guid SessionId, Guid ResultId, string Summary);
+public record SummarizeTextRequestDto(string Text, SummaryDetailLevel DetailLevel, string Language, string? ModelId = null);
+public record SummarizeTextResponseDto(Guid SessionId, Guid ResultId, string Summary, string ModelId, string? ProviderName);

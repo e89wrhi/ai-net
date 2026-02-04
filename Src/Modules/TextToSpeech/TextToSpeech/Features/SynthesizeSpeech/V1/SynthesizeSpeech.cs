@@ -23,9 +23,12 @@ public class SynthesizeSpeechEndpoint : IMinimalEndpoint
                         return Results.Unauthorized();
                     }
 
-                    var command = new SynthesizeSpeechCommand(request.Text, request.Voice, request.Speed, request.Language);
+                    var command = new SynthesizeSpeechCommand(request.Text, request.Voice, 
+                        request.Speed, request.Language, request.ModelId);
                     var result = await mediator.Send(command, cancellationToken);
-                    return Results.Ok(new SynthesizeSpeechResponseDto(result.SessionId, result.ResultId, result.AudioUrl));
+                    return Results.Ok(new SynthesizeSpeechResponseDto(result.SessionId, result.ResultId, 
+                        result.AudioUrl,
+                        result.ModelId, result.ProviderName));
                 })
             .RequireAuthorization(nameof(ApiScope))
             .WithName("SynthesizeSpeech")

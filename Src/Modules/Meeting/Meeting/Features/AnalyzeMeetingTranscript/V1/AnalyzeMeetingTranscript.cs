@@ -23,9 +23,11 @@ public class AnalyzeMeetingTranscriptEndpoint : IMinimalEndpoint
                         return Results.Unauthorized();
                     }
 
-                    var command = new AnalyzeMeetingTranscriptCommand(request.Transcript);
+                    var command = new AnalyzeMeetingTranscriptCommand(request.Transcript, request.ModelId);
                     var result = await mediator.Send(command, cancellationToken);
-                    return Results.Ok(new AnalyzeMeetingTranscriptResponseDto(result.MeetingId, result.TranscriptId, result.Summary));
+                    return Results.Ok(new AnalyzeMeetingTranscriptResponseDto(result.MeetingId, 
+                        result.TranscriptId, result.Summary,
+                        result.ModelId, result.ProviderName));
                 })
             .RequireAuthorization(nameof(ApiScope))
             .WithName("AnalyzeMeetingTranscript")

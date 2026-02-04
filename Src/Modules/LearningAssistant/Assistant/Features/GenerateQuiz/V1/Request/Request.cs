@@ -1,4 +1,4 @@
 ﻿namespace LearningAssistant.Features.GenerateQuiz.V1;
 
-public record GenerateAIQuizRequestDto(string Topic, int QuestionCount);
-public record GenerateAIQuizResponseDto(Guid SessionId, Guid ActivityId, string QuizContent);
+public record GenerateQuizRequestDto(string Topic, int QuestionCount, string? ModelId = null);
+public record GenerateQuizResponseDto(Guid SessionId, Guid ActivityId, string QuizContent, string ModelId, string? ProviderName);

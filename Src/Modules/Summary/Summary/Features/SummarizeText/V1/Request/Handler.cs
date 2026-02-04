@@ -10,7 +10,7 @@ using AiOrchestration.Services;
 namespace Summary.Features.SummarizeText.V1;
 
 
-internal class SummarizeTextWithAIHandler : ICommandHandler<SummarizeTextWithAICommand, SummarizeTextWithAICommandResult>
+internal class SummarizeTextWithAIHandler : ICommandHandler<SummarizeTextCommand, SummarizeTextCommandResult>
 {
     private readonly SummaryDbContext _dbContext;
     private readonly IAiOrchestrator _chatClient;
@@ -21,7 +21,7 @@ internal class SummarizeTextWithAIHandler : ICommandHandler<SummarizeTextWithAIC
         _chatClient = chatClient;
     }
 
-    public async Task<SummarizeTextWithAICommandResult> Handle(SummarizeTextWithAICommand request, CancellationToken cancellationToken)
+    public async Task<SummarizeTextCommandResult> Handle(SummarizeTextCommand request, CancellationToken cancellationToken)
     {
         Guard.Against.NullOrEmpty(request.Text, nameof(request.Text));
 

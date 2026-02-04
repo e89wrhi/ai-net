@@ -23,9 +23,11 @@ public class RemoveBackgroundEndpoint : IMinimalEndpoint
                         return Results.Unauthorized();
                     }
 
-                    var command = new RemoveBackgroundCommand(request.ImageUrlOrBase64);
+                    var command = new RemoveBackgroundCommand(request.ImageUrlOrBase64, request.ModelId);
                     var result = await mediator.Send(command, cancellationToken);
-                    return Results.Ok(new RemoveBackgroundResponseDto(result.SessionId, result.ResultId, result.ResultImageUrl));
+                    return Results.Ok(new RemoveBackgroundResponseDto(result.SessionId, result.ResultId, 
+                        result.ResultImageUrl,
+                        result.ModelId, result.ProviderName));
                 })
             .RequireAuthorization(nameof(ApiScope))
             .WithName("RemoveBackground")

@@ -3,6 +3,6 @@ using TextToSpeech.Enums;
 
 namespace TextToSpeech.Features.GenerateAudio.V1;
 
-public record GenerateAudioWithAICommand(string Text, VoiceType Voice) : ICommand<GenerateAudioWithAICommandResult>;
+public record GenerateAudioCommand(string Text, VoiceType Voice, string? ModelId = null) : ICommand<GenerateAudioCommandResult>;
 
-public record GenerateAudioWithAICommandResult(Guid SessionId, string AudioUrl);
+public record GenerateAudioCommandResult(Guid SessionId, string AudioUrl, string ModelId, string? ProviderName);

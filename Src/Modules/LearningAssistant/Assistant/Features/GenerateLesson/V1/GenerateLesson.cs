@@ -13,7 +13,7 @@ public class GenerateLessonEndpoint : IMinimalEndpoint
     public IEndpointRouteBuilder MapEndpoint(IEndpointRouteBuilder builder)
     {
         builder.MapPost($"{EndpointConfig.BaseApiPath}/assistant/generate-lesson",
-                async (GenerateAILessonRequestDto request, IMediator mediator, IHttpContextAccessor httpContextAccessor, CancellationToken cancellationToken) =>
+                async (GenerateLessonRequestDto request, IMediator mediator, IHttpContextAccessor httpContextAccessor, CancellationToken cancellationToken) =>
                 {
                     // current user id
                     var userIdClaim = httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -23,14 +23,16 @@ public class GenerateLessonEndpoint : IMinimalEndpoint
                         return Results.Unauthorized();
                     }
 
-                    var command = new GenerateAILessonCommand(request.Topic, request.Level);
+                    var command = new GenerateLessonCommand(request.Topic, request.Level, request.ModelId);
                     var result = await mediator.Send(command, cancellationToken);
-                    return Results.Ok(new GenerateAILessonResponseDto(result.SessionId, result.ActivityId, result.Content));
+                    return Results.Ok(new GenerateLessonResponseDto(result.SessionId, result.ActivityId, 
+                        result.Content,
+                        result.ModelId, result.ProviderName));
                 })
             .RequireAuthorization(nameof(ApiScope))
             .WithName("GenerateLesson")
             .WithApiVersionSet(builder.NewApiVersionSet("Assistant").Build())
-            .Produces<GenerateAILessonResponseDto>()
+            .Produces<GenerateLessonResponseDto>()
             .ProducesProblem(StatusCodes.Status400BadRequest).ProducesProblem(StatusCodes.Status401Unauthorized)
             .WithSummary("Generate AI Lesson")
             .WithDescription("Uses AI to generate a lesson on a specific topic.")

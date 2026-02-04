@@ -23,9 +23,10 @@ public class ReGenerateImageEndpoint : IMinimalEndpoint
                         return Results.Unauthorized();
                     }
 
-                    var command = new ReGenerateImageCommand(request.SessionId, request.Instruction);
+                    var command = new ReGenerateImageCommand(request.SessionId, request.Instruction, request.ModelId);
                     var result = await mediator.Send(command, cancellationToken);
-                    return Results.Ok(new ReGenerateImageResponseDto(result.ResultId, result.ImageUrl));
+                    return Results.Ok(new ReGenerateImageResponseDto(result.ResultId, result.ImageUrl,
+                        result.ModelId, result.ProviderName));
                 })
             .RequireAuthorization(nameof(ApiScope))
             .WithName("ReGenerateImage")

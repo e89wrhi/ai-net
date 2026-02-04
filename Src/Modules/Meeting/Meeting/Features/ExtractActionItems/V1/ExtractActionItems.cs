@@ -23,9 +23,10 @@ public class ExtractActionItemsEndpoint : IMinimalEndpoint
                         return Results.Unauthorized();
                     }
 
-                    var command = new ExtractActionItemsCommand(request.Transcript);
+                    var command = new ExtractActionItemsCommand(request.Transcript, request.ModelId);
                     var result = await mediator.Send(command, cancellationToken);
-                    return Results.Ok(new ExtractActionItemsResponseDto(result.MeetingId, result.ActionItems));
+                    return Results.Ok(new ExtractActionItemsResponseDto(result.MeetingId, result.ActionItems,
+                        result.ModelId, result.ProviderName));
                 })
             .RequireAuthorization(nameof(ApiScope))
             .WithName("ExtractActionItems")

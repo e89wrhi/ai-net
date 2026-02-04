@@ -2,7 +2,7 @@
 
 namespace LearningAssistant.Features.GenerateLesson.V1;
 
-public class GenerateAILessonCommandValidator : AbstractValidator<GenerateAILessonCommand>
+public class GenerateAILessonCommandValidator : AbstractValidator<GenerateLessonCommand>
 {
     public GenerateAILessonCommandValidator()
     {

@@ -1,4 +1,4 @@
 ﻿namespace ChatBot.Features.GenerateResponse.V1;
 
-public record GenerateAiResponseRequestDto(Guid SessionId);
-public record GenerateAiResponseResponseDto(Guid MessageId, string Content);
+public record GenerateResponseRequestDto(Guid SessionId, string? ModelId = null);
+public record GenerateResponseResponseDto(Guid MessageId, string Content, string ModelId, string? ProviderName);

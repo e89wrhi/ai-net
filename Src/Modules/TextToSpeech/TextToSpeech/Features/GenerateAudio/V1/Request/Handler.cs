@@ -11,7 +11,7 @@ using AiOrchestration.Services;
 namespace TextToSpeech.Features.GenerateAudio.V1;
 
 
-internal class GenerateAudioWithAIHandler : ICommandHandler<GenerateAudioWithAICommand, GenerateAudioWithAICommandResult>
+internal class GenerateAudioWithAIHandler : ICommandHandler<GenerateAudioCommand, GenerateAudioCommandResult>
 {
     private readonly TextToSpeechDbContext _dbContext;
     private readonly IAiOrchestrator _chatClient;
@@ -22,7 +22,7 @@ internal class GenerateAudioWithAIHandler : ICommandHandler<GenerateAudioWithAIC
         _chatClient = chatClient;
     }
 
-    public async Task<GenerateAudioWithAICommandResult> Handle(GenerateAudioWithAICommand request, CancellationToken cancellationToken)
+    public async Task<GenerateAudioCommandResult> Handle(GenerateAudioCommand request, CancellationToken cancellationToken)
     {
         Guard.Against.NullOrEmpty(request.Text, nameof(request.Text));
 

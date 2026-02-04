@@ -2,7 +2,7 @@
 
 namespace TextToSpeech.Features.GenerateAudio.V1;
 
-public class GenerateAudioWithAICommandValidator : AbstractValidator<GenerateAudioWithAICommand>
+public class GenerateAudioWithAICommandValidator : AbstractValidator<GenerateAudioCommand>
 {
     public GenerateAudioWithAICommandValidator()
     {

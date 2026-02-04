@@ -13,7 +13,7 @@ public class GenerateAiResponseEndpoint : IMinimalEndpoint
     public IEndpointRouteBuilder MapEndpoint(IEndpointRouteBuilder builder)
     {
         builder.MapPost($"{EndpointConfig.BaseApiPath}/chat/generate-response",
-                async (GenerateAiResponseRequestDto request, IMediator mediator, IHttpContextAccessor httpContextAccessor, CancellationToken cancellationToken) =>
+                async (GenerateResponseRequestDto request, IMediator mediator, IHttpContextAccessor httpContextAccessor, CancellationToken cancellationToken) =>
                 {
                     // current user id
                     var userIdClaim = httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -23,14 +23,15 @@ public class GenerateAiResponseEndpoint : IMinimalEndpoint
                         return Results.Unauthorized();
                     }
 
-                    var command = new GenerateAiResponseCommand(request.SessionId);
+                    var command = new GenerateAiResponseCommand(request.SessionId, request.ModelId);
                     var result = await mediator.Send(command, cancellationToken);
-                    return Results.Ok(new GenerateAiResponseResponseDto(result.MessageId, result.Content));
+                    return Results.Ok(new GenerateResponseResponseDto(result.MessageId, result.Content,
+                        result.ModelId, result.ProviderName));
                 })
             .RequireAuthorization(nameof(ApiScope))
             .WithName("GenerateAiResponse")
             .WithApiVersionSet(builder.NewApiVersionSet("Chat").Build())
-            .Produces<GenerateAiResponseResponseDto>()
+            .Produces<GenerateResponseResponseDto>()
             .ProducesProblem(StatusCodes.Status400BadRequest).ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .WithSummary("Generate AI Response")

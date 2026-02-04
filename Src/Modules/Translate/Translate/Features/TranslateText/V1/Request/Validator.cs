@@ -2,7 +2,7 @@
 
 namespace Translate.Features.TranslateText.V1;
 
-public class TranslateTextWithAICommandValidator : AbstractValidator<TranslateTextWithAICommand>
+public class TranslateTextWithAICommandValidator : AbstractValidator<TranslateTextCommand>
 {
     public TranslateTextWithAICommandValidator()
     {

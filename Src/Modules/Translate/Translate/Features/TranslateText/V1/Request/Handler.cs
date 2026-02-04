@@ -10,7 +10,7 @@ using Translate.ValueObjects;
 namespace Translate.Features.TranslateText.V1;
 
 
-internal class TranslateTextWithAIHandler : ICommandHandler<TranslateTextWithAICommand, TranslateTextWithAICommandResult>
+internal class TranslateTextWithAIHandler : ICommandHandler<TranslateTextCommand, TranslateTextCommandResult>
 {
     private readonly TranslateDbContext _dbContext;
     private readonly IAiOrchestrator _orchestrator;
@@ -21,7 +21,7 @@ internal class TranslateTextWithAIHandler : ICommandHandler<TranslateTextWithAIC
         _orchestrator = orchestrator;
     }
 
-    public async Task<TranslateTextWithAICommandResult> Handle(TranslateTextWithAICommand request, CancellationToken cancellationToken)
+    public async Task<TranslateTextCommandResult> Handle(TranslateTextCommand request, CancellationToken cancellationToken)
     {
         Guard.Against.NullOrEmpty(request.Text, nameof(request.Text));
 

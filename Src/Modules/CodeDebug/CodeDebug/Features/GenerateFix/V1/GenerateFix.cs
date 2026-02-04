@@ -23,9 +23,10 @@ public class GenerateFixEndpoint : IMinimalEndpoint
                         return Results.Unauthorized();
                     }
 
-                    var command = new GenerateFixCommand(request.SessionId, request.ReportId);
+                    var command = new GenerateFixCommand(request.SessionId, request.ReportId, request.ModelId);
                     var result = await mediator.Send(command, cancellationToken);
-                    return Results.Ok(new GenerateFixResponseDto(result.FixedCode, result.Explanation));
+                    return Results.Ok(new GenerateFixResponseDto(result.FixedCode, result.Explanation,
+                        result.ModelId, result.ProviderName));
                 })
             .RequireAuthorization(nameof(ApiScope))
             .WithName("GenerateFix")

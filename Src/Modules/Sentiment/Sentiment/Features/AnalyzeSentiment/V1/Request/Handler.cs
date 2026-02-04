@@ -10,7 +10,7 @@ using AiOrchestration.Services;
 namespace Sentiment.Features.AnalyzeSentiment.V1;
 
 
-internal class AnalyzeSentimentWithAIHandler : ICommandHandler<AnalyzeSentimentWithAICommand, AnalyzeSentimentWithAICommandResult>
+internal class AnalyzeSentimentWithAIHandler : ICommandHandler<AnalyzeSentimentCommand, AnalyzeSentimentCommandResult>
 {
     private readonly SentimentDbContext _dbContext;
     private readonly IAiOrchestrator _chatClient;
@@ -21,7 +21,7 @@ internal class AnalyzeSentimentWithAIHandler : ICommandHandler<AnalyzeSentimentW
         _chatClient = chatClient;
     }
 
-    public async Task<AnalyzeSentimentWithAICommandResult> Handle(AnalyzeSentimentWithAICommand request, CancellationToken cancellationToken)
+    public async Task<AnalyzeSentimentCommandResult> Handle(AnalyzeSentimentCommand request, CancellationToken cancellationToken)
     {
         Guard.Against.NullOrEmpty(request.Text, nameof(request.Text));
 

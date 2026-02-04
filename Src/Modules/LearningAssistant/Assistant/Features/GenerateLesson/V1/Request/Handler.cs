@@ -10,7 +10,7 @@ using Microsoft.Extensions.AI;
 namespace LearningAssistant.Features.GenerateLesson.V1;
 
 
-internal class GenerateAILessonHandler : ICommandHandler<GenerateAILessonCommand, GenerateAILessonCommandResult>
+internal class GenerateAILessonHandler : ICommandHandler<GenerateLessonCommand, GenerateLessonCommandResult>
 {
     private readonly LearningDbContext _dbContext;
     private readonly IAiOrchestrator _chatClient;
@@ -21,7 +21,7 @@ internal class GenerateAILessonHandler : ICommandHandler<GenerateAILessonCommand
         _chatClient = chatClient;
     }
 
-    public async Task<GenerateAILessonCommandResult> Handle(GenerateAILessonCommand request, CancellationToken cancellationToken)
+    public async Task<GenerateLessonCommandResult> Handle(GenerateLessonCommand request, CancellationToken cancellationToken)
     {
         Guard.Against.NullOrEmpty(request.Topic, nameof(request.Topic));
 

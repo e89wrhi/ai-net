@@ -2,7 +2,7 @@
 
 namespace Summary.Features.SummarizeText.V1;
 
-public class SummarizeTextWithAICommandValidator : AbstractValidator<SummarizeTextWithAICommand>
+public class SummarizeTextWithAICommandValidator : AbstractValidator<SummarizeTextCommand>
 {
     public SummarizeTextWithAICommandValidator()
     {

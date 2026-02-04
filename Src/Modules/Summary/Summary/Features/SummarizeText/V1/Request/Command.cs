@@ -3,6 +3,6 @@ using Summary.Enums;
 
 namespace Summary.Features.SummarizeText.V1;
 
-public record SummarizeTextWithAICommand(string Text, SummaryDetailLevel DetailLevel, string Language) : ICommand<SummarizeTextWithAICommandResult>;
+public record SummarizeTextCommand(string Text, SummaryDetailLevel DetailLevel, string Language, string? ModelId = null) : ICommand<SummarizeTextCommandResult>;
 
-public record SummarizeTextWithAICommandResult(Guid SessionId, Guid ResultId, string Summary);
+public record SummarizeTextCommandResult(Guid SessionId, Guid ResultId, string Summary, string ModelId, string? ProviderName);

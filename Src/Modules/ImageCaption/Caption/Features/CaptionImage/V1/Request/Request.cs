@@ -1,4 +1,4 @@
 ﻿namespace ImageCaption.Features.CaptionImage.V1;
 
-public record AIImageCaptionRequestDto(string ImageUrlOrBase64);
-public record AIImageCaptionResponseDto(Guid SessionId, Guid ResultId, string Caption);
+public record ImageCaptionRequestDto(string ImageUrlOrBase64, string? ModelId = null);
+public record ImageCaptionResponseDto(Guid SessionId, Guid ResultId, string Caption, string ModelId, string? ProviderName);

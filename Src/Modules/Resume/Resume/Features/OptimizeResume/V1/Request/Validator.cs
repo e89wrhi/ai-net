@@ -2,7 +2,7 @@
 
 namespace Resume.Features.OptimizeResume.V1;
 
-public class OptimizeResumeWithAICommandValidator : AbstractValidator<OptimizeResumeWithAICommand>
+public class OptimizeResumeWithAICommandValidator : AbstractValidator<OptimizeResumeCommand>
 {
     public OptimizeResumeWithAICommandValidator()
     {

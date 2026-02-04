@@ -26,7 +26,9 @@ public class GenerateAutoCompleteEndpoint : IMinimalEndpoint
                     var command = new GenerateAutoCompleteCommand(userId, request.Prompt, request.ModelId);
                     var result = await mediator.Send(command, cancellationToken);
 
-                    var response = new GenerateAutoCompleteResponseDto(result.Completion, result.TokensUsed, result.EstimatedCost);
+                    var response = new GenerateAutoCompleteResponseDto(result.Completion, result.TokensUsed, 
+                        result.EstimatedCost, 
+                        result.ModelId, result.ProviderName);
 
                     return Results.Ok(response);
                 })

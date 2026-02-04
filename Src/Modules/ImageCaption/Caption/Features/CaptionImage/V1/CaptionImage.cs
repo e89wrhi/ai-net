@@ -13,7 +13,7 @@ public class CaptionImageEndpoint : IMinimalEndpoint
     public IEndpointRouteBuilder MapEndpoint(IEndpointRouteBuilder builder)
     {
         builder.MapPost($"{EndpointConfig.BaseApiPath}/image/ai-caption",
-                async (AIImageCaptionRequestDto request, IMediator mediator, IHttpContextAccessor httpContextAccessor, CancellationToken cancellationToken) =>
+                async (ImageCaptionRequestDto request, IMediator mediator, IHttpContextAccessor httpContextAccessor, CancellationToken cancellationToken) =>
                 {
                     // current user id
                     var userIdClaim = httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -23,14 +23,16 @@ public class CaptionImageEndpoint : IMinimalEndpoint
                         return Results.Unauthorized();
                     }
 
-                    var command = new AIImageCaptionCommand(request.ImageUrlOrBase64);
+                    var command = new ImageCaptionCommand(request.ImageUrlOrBase64, request.ModelId);
                     var result = await mediator.Send(command, cancellationToken);
-                    return Results.Ok(new AIImageCaptionResponseDto(result.SessionId, result.ResultId, result.Caption));
+                    return Results.Ok(new ImageCaptionResponseDto(result.SessionId, result.ResultId, 
+                        result.Caption,
+                        result.ModelId, result.ProviderName));
                 })
             .RequireAuthorization(nameof(ApiScope))
             .WithName("CaptionImage")
             .WithApiVersionSet(builder.NewApiVersionSet("Image").Build())
-            .Produces<AIImageCaptionResponseDto>()
+            .Produces<ImageCaptionResponseDto>()
             .ProducesProblem(StatusCodes.Status400BadRequest).ProducesProblem(StatusCodes.Status401Unauthorized)
             .WithSummary("Generate Image Caption with AI")
             .WithDescription("Uses AI to generate a descriptive caption for the provided image.")

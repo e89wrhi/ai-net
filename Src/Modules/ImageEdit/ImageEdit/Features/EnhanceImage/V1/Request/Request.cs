@@ -1,4 +1,4 @@
 ﻿namespace ImageEdit.Features.EnhanceImage.V1;
 
-public record AIEnhanceImageRequestDto(string ImageUrlOrBase64, string Prompt);
-public record AIEnhanceImageResponseDto(Guid SessionId, Guid ResultId, string ResultImageUrl);
+public record EnhanceImageRequestDto(string ImageUrlOrBase64, string Prompt, string? ModelId = null);
+public record EnhanceImageResponseDto(Guid SessionId, Guid ResultId, string ResultImageUrl, string ModelId, string? ProviderName);

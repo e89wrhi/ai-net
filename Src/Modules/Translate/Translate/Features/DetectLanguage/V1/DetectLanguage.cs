@@ -23,9 +23,11 @@ public class DetectLanguageEndpoint : IMinimalEndpoint
                         return Results.Unauthorized();
                     }
 
-                    var command = new DetectLanguageCommand(request.Text);
+                    var command = new DetectLanguageCommand(request.Text, request.ModelId);
                     var result = await mediator.Send(command, cancellationToken);
-                    return Results.Ok(new DetectLanguageResponseDto(result.DetectedLanguageCode, result.Confidence));
+                    return Results.Ok(new DetectLanguageResponseDto(result.DetectedLanguageCode, 
+                        result.Confidence,
+                        result.ModelId, result.ProviderName));
                 })
             .RequireAuthorization(nameof(ApiScope))
             .WithName("DetectLanguage")

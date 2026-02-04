@@ -23,10 +23,11 @@ public class GenerateCodeEndpoint : IMinimalEndpoint
                         return Results.Unauthorized();
                     }
 
-                    var command = new GenerateCodeCommand(request.Prompt, request.Language);
+                    var command = new GenerateCodeCommand(request.Prompt, request.Language, request.ModelId);
                     var result = await mediator.Send(command, cancellationToken);
 
-                    return Results.Ok(new GenerateCodeResponseDto(result.SessionId, result.ResultId, result.Code));
+                    return Results.Ok(new GenerateCodeResponseDto(result.SessionId, result.ResultId, result.Code,
+                        result.ModelId, result.ProviderName));
                 })
             .RequireAuthorization(nameof(ApiScope))
             .WithName("GenerateCode")

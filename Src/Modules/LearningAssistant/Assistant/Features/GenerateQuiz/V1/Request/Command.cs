@@ -2,7 +2,7 @@
 
 namespace LearningAssistant.Features.GenerateQuiz.V1;
 
-public record GenerateAIQuizCommand(string Topic, int QuestionCount) : ICommand<GenerateAIQuizCommandResult>;
+public record GenerateQuizCommand(string Topic, int QuestionCount, string? ModelId = null) : ICommand<GenerateQuizCommandResult>;
 
-public record GenerateAIQuizCommandResult(Guid SessionId, Guid ActivityId, string QuizContent);
+public record GenerateQuizCommandResult(Guid SessionId, Guid ActivityId, string QuizContent, string ModelId, string? ProviderName);
 

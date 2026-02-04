@@ -1,4 +1,4 @@
 ﻿namespace Resume.Features.OptimizeResume.V1;
 
-public record OptimizeResumeWithAIRequestDto(string ResumeContent, string JobDescription);
-public record OptimizeResumeWithAIResponseDto(Guid ResultId, string OptimizedResume);
+public record OptimizeResumeRequestDto(string ResumeContent, string JobDescription, string? ModelId = null);
+public record OptimizeResumeResponseDto(Guid ResultId, string OptimizedResume, string ModelId, string? ProviderName);

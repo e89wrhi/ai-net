@@ -23,10 +23,11 @@ public class ReGenerateCodeEndpoint : IMinimalEndpoint
                         return Results.Unauthorized();
                     }
 
-                    var command = new ReGenerateCodeCommand(request.SessionId, request.Instruction);
+                    var command = new ReGenerateCodeCommand(request.SessionId, request.Instruction, request.ModelId);
                     var result = await mediator.Send(command, cancellationToken);
 
-                    return Results.Ok(new ReGenerateCodeResponseDto(result.ResultId, result.Code));
+                    return Results.Ok(new ReGenerateCodeResponseDto(result.ResultId, result.Code,
+                        result.ModelId, result.ProviderName));
                 })
             .RequireAuthorization(nameof(ApiScope))
             .WithName("ReGenerateCode")

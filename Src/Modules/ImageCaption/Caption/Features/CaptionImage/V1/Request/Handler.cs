@@ -10,7 +10,7 @@ using Microsoft.Extensions.AI;
 namespace ImageCaption.Features.CaptionImage.V1;
 
 
-internal class AIImageCaptionHandler : ICommandHandler<AIImageCaptionCommand, AIImageCaptionCommandResult>
+internal class AIImageCaptionHandler : ICommandHandler<ImageCaptionCommand, ImageCaptionCommandResult>
 {
     private readonly ImageCaptionDbContext _dbContext;
     private readonly IAiOrchestrator _chatClient;
@@ -21,7 +21,7 @@ internal class AIImageCaptionHandler : ICommandHandler<AIImageCaptionCommand, AI
         _chatClient = chatClient;
     }
 
-    public async Task<AIImageCaptionCommandResult> Handle(AIImageCaptionCommand request, CancellationToken cancellationToken)
+    public async Task<ImageCaptionCommandResult> Handle(ImageCaptionCommand request, CancellationToken cancellationToken)
     {
         Guard.Against.NullOrEmpty(request.ImageUrlOrBase64, nameof(request.ImageUrlOrBase64));
 

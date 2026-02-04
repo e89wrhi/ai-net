@@ -2,7 +2,7 @@
 
 namespace Resume.Features.AnalyzeResume.V1;
 
-public class AnalyzeResumeWithAICommandValidator : AbstractValidator<AnalyzeResumeWithAICommand>
+public class AnalyzeResumeWithAICommandValidator : AbstractValidator<AnalyzeResumeCommand>
 {
     public AnalyzeResumeWithAICommandValidator()
     {

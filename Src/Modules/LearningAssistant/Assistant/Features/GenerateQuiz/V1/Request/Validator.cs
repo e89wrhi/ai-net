@@ -2,7 +2,7 @@
 
 namespace LearningAssistant.Features.GenerateQuiz.V1;
 
-public class GenerateAIQuizCommandValidator : AbstractValidator<GenerateAIQuizCommand>
+public class GenerateAIQuizCommandValidator : AbstractValidator<GenerateQuizCommand>
 {
     public GenerateAIQuizCommandValidator()
     {

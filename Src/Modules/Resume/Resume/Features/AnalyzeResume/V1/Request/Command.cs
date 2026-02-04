@@ -2,6 +2,6 @@
 
 namespace Resume.Features.AnalyzeResume.V1;
 
-public record AnalyzeResumeWithAICommand(string ResumeContent) : ICommand<AnalyzeResumeWithAICommandResult>;
+public record AnalyzeResumeCommand(string ResumeContent, string? ModelId = null) : ICommand<AnalyzeResumeCommandResult>;
 
-public record AnalyzeResumeWithAICommandResult(Guid SessionId, Guid ResultId, string Summary, double Score);
+public record AnalyzeResumeCommandResult(Guid SessionId, Guid ResultId, string Summary, double Score, string ModelId, string? ProviderName);

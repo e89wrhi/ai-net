@@ -3,7 +3,7 @@
 namespace ImageCaption.Features.CaptionImage.V1;
 
 
-public class AIImageCaptionCommandValidator : AbstractValidator<AIImageCaptionCommand>
+public class AIImageCaptionCommandValidator : AbstractValidator<ImageCaptionCommand>
 {
     public AIImageCaptionCommandValidator()
     {

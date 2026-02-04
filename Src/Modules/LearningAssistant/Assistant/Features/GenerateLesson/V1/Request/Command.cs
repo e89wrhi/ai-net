@@ -3,6 +3,6 @@ using LearningAssistant.Enums;
 
 namespace LearningAssistant.Features.GenerateLesson.V1;
 
-public record GenerateAILessonCommand(string Topic, DifficultyLevel Level) : ICommand<GenerateAILessonCommandResult>;
+public record GenerateLessonCommand(string Topic, DifficultyLevel Level, string? ModelId = null) : ICommand<GenerateLessonCommandResult>;
 
-public record GenerateAILessonCommandResult(Guid SessionId, Guid ActivityId, string Content);
+public record GenerateLessonCommandResult(Guid SessionId, Guid ActivityId, string Content, string ModelId, string? ProviderName);

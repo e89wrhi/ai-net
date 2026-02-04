@@ -13,7 +13,7 @@ public class SummarizeTextEndpoint : IMinimalEndpoint
     public IEndpointRouteBuilder MapEndpoint(IEndpointRouteBuilder builder)
     {
         builder.MapPost($"{EndpointConfig.BaseApiPath}/summary/summarize",
-                async (SummarizeTextWithAIRequestDto request, IMediator mediator, IHttpContextAccessor httpContextAccessor, CancellationToken cancellationToken) =>
+                async (SummarizeTextRequestDto request, IMediator mediator, IHttpContextAccessor httpContextAccessor, CancellationToken cancellationToken) =>
                 {
                     // current user id
                     var userIdClaim = httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -23,14 +23,15 @@ public class SummarizeTextEndpoint : IMinimalEndpoint
                         return Results.Unauthorized();
                     }
 
-                    var command = new SummarizeTextWithAICommand(request.Text, request.DetailLevel, request.Language);
+                    var command = new SummarizeTextCommand(request.Text, request.DetailLevel, request.Language, request.ModelId);
                     var result = await mediator.Send(command, cancellationToken);
-                    return Results.Ok(new SummarizeTextWithAIResponseDto(result.SessionId, result.ResultId, result.Summary));
+                    return Results.Ok(new SummarizeTextResponseDto(result.SessionId, result.ResultId, result.Summary,
+                        result.ModelId, result.ProviderName));
                 })
             .RequireAuthorization(nameof(ApiScope))
             .WithName("SummarizeText")
             .WithApiVersionSet(builder.NewApiVersionSet("Summary").Build())
-            .Produces<SummarizeTextWithAIResponseDto>()
+            .Produces<SummarizeTextResponseDto>()
             .ProducesProblem(StatusCodes.Status400BadRequest).ProducesProblem(StatusCodes.Status401Unauthorized)
             .WithSummary("Summarize Text")
             .WithDescription("Uses AI to generate a summary of the provided text based on the specified detail level.")

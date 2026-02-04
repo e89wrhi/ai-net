@@ -10,7 +10,7 @@ using Microsoft.Extensions.AI;
 namespace LearningAssistant.Features.GenerateQuiz.V1;
 
 
-internal class GenerateAIQuizHandler : ICommandHandler<GenerateAIQuizCommand, GenerateAIQuizCommandResult>
+internal class GenerateAIQuizHandler : ICommandHandler<GenerateQuizCommand, GenerateQuizCommandResult>
 {
     private readonly LearningDbContext _dbContext;
     private readonly IAiOrchestrator _chatClient;
@@ -21,7 +21,7 @@ internal class GenerateAIQuizHandler : ICommandHandler<GenerateAIQuizCommand, Ge
         _chatClient = chatClient;
     }
 
-    public async Task<GenerateAIQuizCommandResult> Handle(GenerateAIQuizCommand request, CancellationToken cancellationToken)
+    public async Task<GenerateQuizCommandResult> Handle(GenerateQuizCommand request, CancellationToken cancellationToken)
     {
         Guard.Against.NullOrEmpty(request.Topic, nameof(request.Topic));
 

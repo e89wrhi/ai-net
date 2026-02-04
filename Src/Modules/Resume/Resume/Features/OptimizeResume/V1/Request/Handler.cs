@@ -10,7 +10,7 @@ using AiOrchestration.Services;
 namespace Resume.Features.OptimizeResume.V1;
 
 
-internal class OptimizeResumeWithAIHandler : ICommandHandler<OptimizeResumeWithAICommand, OptimizeResumeWithAICommandResult>
+internal class OptimizeResumeWithAIHandler : ICommandHandler<OptimizeResumeCommand, OptimizeResumeCommandResult>
 {
     private readonly ResumeDbContext _dbContext;
     private readonly IAiOrchestrator _chatClient;
@@ -21,7 +21,7 @@ internal class OptimizeResumeWithAIHandler : ICommandHandler<OptimizeResumeWithA
         _chatClient = chatClient;
     }
 
-    public async Task<OptimizeResumeWithAICommandResult> Handle(OptimizeResumeWithAICommand request, CancellationToken cancellationToken)
+    public async Task<OptimizeResumeCommandResult> Handle(OptimizeResumeCommand request, CancellationToken cancellationToken)
     {
         Guard.Against.NullOrEmpty(request.ResumeContent, nameof(request.ResumeContent));
         Guard.Against.NullOrEmpty(request.JobDescription, nameof(request.JobDescription));

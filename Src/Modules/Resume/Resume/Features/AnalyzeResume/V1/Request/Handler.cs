@@ -10,7 +10,7 @@ using AiOrchestration.Services;
 namespace Resume.Features.AnalyzeResume.V1;
 
 
-internal class AnalyzeResumeWithAIHandler : ICommandHandler<AnalyzeResumeWithAICommand, AnalyzeResumeWithAICommandResult>
+internal class AnalyzeResumeWithAIHandler : ICommandHandler<AnalyzeResumeCommand, AnalyzeResumeCommandResult>
 {
     private readonly ResumeDbContext _dbContext;
     private readonly IAiOrchestrator _chatClient;
@@ -21,7 +21,7 @@ internal class AnalyzeResumeWithAIHandler : ICommandHandler<AnalyzeResumeWithAIC
         _chatClient = chatClient;
     }
 
-    public async Task<AnalyzeResumeWithAICommandResult> Handle(AnalyzeResumeWithAICommand request, CancellationToken cancellationToken)
+    public async Task<AnalyzeResumeCommandResult> Handle(AnalyzeResumeCommand request, CancellationToken cancellationToken)
     {
         Guard.Against.NullOrEmpty(request.ResumeContent, nameof(request.ResumeContent));
 

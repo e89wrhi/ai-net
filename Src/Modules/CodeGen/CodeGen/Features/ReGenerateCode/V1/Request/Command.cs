@@ -2,6 +2,6 @@
 
 namespace CodeGen.Features.ReGenerateCode.V1;
 
-public record ReGenerateCodeCommand(Guid SessionId, string Instruction) : ICommand<ReGenerateCodeCommandResult>;
+public record ReGenerateCodeCommand(Guid SessionId, string Instruction, string? ModelId = null) : ICommand<ReGenerateCodeCommandResult>;
 
-public record ReGenerateCodeCommandResult(Guid ResultId, string Code);
+public record ReGenerateCodeCommandResult(Guid ResultId, string Code, string ModelId, string? ProviderName);

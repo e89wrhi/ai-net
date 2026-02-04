@@ -2,7 +2,7 @@
 
 namespace Sentiment.Features.AnalyzeSentiment.V1;
 
-public class AnalyzeSentimentWithAICommandValidator : AbstractValidator<AnalyzeSentimentWithAICommand>
+public class AnalyzeSentimentWithAICommandValidator : AbstractValidator<AnalyzeSentimentCommand>
 {
     public AnalyzeSentimentWithAICommandValidator()
     {

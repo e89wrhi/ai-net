@@ -13,7 +13,7 @@ public class AnalyzeSentimentEndpoint : IMinimalEndpoint
     public IEndpointRouteBuilder MapEndpoint(IEndpointRouteBuilder builder)
     {
         builder.MapPost($"{EndpointConfig.BaseApiPath}/sentiment/analyze",
-                async (AnalyzeSentimentWithAIRequestDto request, IMediator mediator, IHttpContextAccessor httpContextAccessor, CancellationToken cancellationToken) =>
+                async (AnalyzeSentimentRequestDto request, IMediator mediator, IHttpContextAccessor httpContextAccessor, CancellationToken cancellationToken) =>
                 {
                     // current user id
                     var userIdClaim = httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -23,14 +23,16 @@ public class AnalyzeSentimentEndpoint : IMinimalEndpoint
                         return Results.Unauthorized();
                     }
 
-                    var command = new AnalyzeSentimentWithAICommand(request.Text);
+                    var command = new AnalyzeSentimentCommand(request.Text, request.ModelId);
                     var result = await mediator.Send(command, cancellationToken);
-                    return Results.Ok(new AnalyzeSentimentWithAIResponseDto(result.SessionId, result.ResultId, result.Sentiment, result.Score));
+                    return Results.Ok(new AnalyzeSentimentResponseDto(result.SessionId, result.ResultId, 
+                        result.Sentiment, result.Score,
+                        result.ModelId, result.ProviderName));
                 })
             .RequireAuthorization(nameof(ApiScope))
             .WithName("AnalyzeSentiment")
             .WithApiVersionSet(builder.NewApiVersionSet("Sentiment").Build())
-            .Produces<AnalyzeSentimentWithAIResponseDto>()
+            .Produces<AnalyzeSentimentResponseDto>()
             .ProducesProblem(StatusCodes.Status400BadRequest).ProducesProblem(StatusCodes.Status401Unauthorized)
             .WithSummary("Analyze Sentiment with AI")
             .WithDescription("Uses AI to analyze the sentiment of the provided text, returning sentiment type and confidence score.")
