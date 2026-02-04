@@ -23,7 +23,8 @@ public class AnalyzeMeetingTranscriptEndpoint : IMinimalEndpoint
                         return Results.Unauthorized();
                     }
 
-                    var command = new AnalyzeMeetingTranscriptCommand(userId, request.Transcript, request.ModelId);
+                    var command = new AnalyzeMeetingTranscriptCommand(userId, request.Transcript,
+                        request.IncludeActionItems, request.IncludeDescisions, request.Language, request.ModelId);
                     var result = await mediator.Send(command, cancellationToken);
                     return Results.Ok(new AnalyzeMeetingTranscriptResponseDto(result.MeetingId, 
                         result.TranscriptId, result.Summary,

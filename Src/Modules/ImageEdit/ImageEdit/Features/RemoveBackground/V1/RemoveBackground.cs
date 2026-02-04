@@ -23,7 +23,8 @@ public class RemoveBackgroundEndpoint : IMinimalEndpoint
                         return Results.Unauthorized();
                     }
 
-                    var command = new RemoveBackgroundCommand(userId, request.ImageUrlOrBase64, request.ModelId);
+                    var command = new RemoveBackgroundCommand(userId, request.ImageUrlOrBase64,
+                       request.Quality, request.Format, request.ModelId);
                     var result = await mediator.Send(command, cancellationToken);
                     return Results.Ok(new RemoveBackgroundResponseDto(result.SessionId, result.ResultId, 
                         result.ResultImageUrl,

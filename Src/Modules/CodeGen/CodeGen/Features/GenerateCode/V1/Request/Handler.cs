@@ -69,10 +69,10 @@ internal class GenerateCodeHandler : ICommandHandler<GenerateCodeCommand, Genera
         var sessionId = CodeGenId.Of(Guid.NewGuid());
         var userId = UserId.Of(request.UserId);
         var config = new CodeGenerationConfiguration(
-            Temperature.Of(0),
+            Temperature.Of(0.7f),
             TokenCount.Of(tokenUsage),
-            CodeStyle.Minimal,
-            includeComments: false);
+            request.Style,
+            includeComments: request.IncludeComments);
 
         var session = CodeGenerationSession.Create(sessionId, userId, modelId, config);
 
@@ -88,7 +88,7 @@ internal class GenerateCodeHandler : ICommandHandler<GenerateCodeCommand, Genera
             promptVo,
             codeVo,
             languageVo,
-            CodeQualityLevel.Optimized,
+            request.Quality,
             tokenCountVo,
             costVo);
 

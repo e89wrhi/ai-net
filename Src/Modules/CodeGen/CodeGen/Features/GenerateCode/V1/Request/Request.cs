@@ -1,4 +1,6 @@
-﻿namespace CodeGen.Features.GenerateCode.V1;
+﻿using CodeGen.Enums;
 
-public record GenerateCodeRequestDto(string Prompt, string Language, string? ModelId = null);
+namespace CodeGen.Features.GenerateCode.V1;
+
+public record GenerateCodeRequestDto(string Prompt, string Language, CodeQualityLevel Quality, CodeStyle Style, bool IncludeComments, string? ModelId = null);
 public record GenerateCodeResponseDto(Guid SessionId, Guid ResultId, string Code, string ModelId, string? ProviderName);

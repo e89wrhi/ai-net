@@ -67,8 +67,11 @@ internal class AnalyzeMeetingTranscriptHandler : ICommandHandler<AnalyzeMeetingT
         var userId = UserId.Of(request.UserId);
 
         // Note: Check MeetingAnalysisConfiguration constructor
-        var langCode = LanguageCode.Of("en");
-        var config = new MeetingAnalysisConfiguration(true, true, langCode);
+        var langCode = LanguageCode.Of(request.Language);
+        var config = new MeetingAnalysisConfiguration(
+                         request.IncludeActionItems,
+                         request.IncludeDescisions, 
+                         langCode);
 
         var session = MeetingAnalysisSession.Create(meetingId, userId, modelId, config);
 

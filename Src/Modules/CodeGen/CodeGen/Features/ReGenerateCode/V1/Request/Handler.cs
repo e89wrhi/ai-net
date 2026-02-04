@@ -90,7 +90,7 @@ internal class ReGenerateCodeHandler : ICommandHandler<ReGenerateCodeCommand, Re
             promptVo,
             codeVo,
             lastResult.Language, // Maintain same language
-            CodeQualityLevel.Optimized,
+            lastResult.QualityLevel,
             tokenCountVo,
             costVo);
 

@@ -67,8 +67,8 @@ internal class GenerateAIQuizHandler : ICommandHandler<GenerateQuizCommand, Gene
         var sessionId = LearningId.Of(Guid.NewGuid());
         var userId = UserId.Of(request.UserId);
         var config = new LearningConfiguration(
-            mode: Enums.LearningMode.Quiz,
-            difficulty: Enums.DifficultyLevel.Medium);
+            mode: request.Mode,
+            difficulty: request.DifficultyLevel);
 
         var session = LearningSession.Create(sessionId, userId, modelId, config);
 

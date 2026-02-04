@@ -94,8 +94,8 @@ internal class AnalyzeCodeHandler : ICommandHandler<AnalyzeCodeCommand, AnalyzeC
         //  user
         var userId = UserId.Of(request.UserId);
         var config = new CodeDebugConfiguration(
-            depth: Enums.DebugDepth.Surface,
-            includeSuggestions: false);
+            depth: request.Depth,
+            includeSuggestions: request.IncludeSuggestion);
 
         var session = CodeDebugSession.Create(sessionId, userId, modelId, config);
 

@@ -80,12 +80,12 @@ internal class GenerateFixHandler : ICommandHandler<GenerateFixCommand, Generate
             throw new CodeDebugReportNotFoundException(request.ReportId);
 
         // Heuristic split of Code vs Explanation (assuming markdown code blocks)
-        var fixedCode = response;
+        var fixedCode = responseText;
         var explanation = "See code changes.";
 
-        if (response.Contains("```"))
+        if (responseText.Contains("```"))
         {
-            var parts = response.Split("```", StringSplitOptions.RemoveEmptyEntries);
+            var parts = responseText.Split("```", StringSplitOptions.RemoveEmptyEntries);
             // parts[0] might be intro, parts[1] code (if language tag present), parts[2] outro/explanation
             foreach (var part in parts)
             {
@@ -109,7 +109,7 @@ internal class GenerateFixHandler : ICommandHandler<GenerateFixCommand, Generate
                 }
             }
             // Just return full response as explanation if parsing fails or stick to full response in explanation.
-            explanation = response.Replace(fixedCode, "").Replace("```", "").Trim();
+            explanation = responseText.Replace(fixedCode, "").Replace("```", "").Trim();
         }
 
         // We could create a "FixedReport" or track fixes in the session.

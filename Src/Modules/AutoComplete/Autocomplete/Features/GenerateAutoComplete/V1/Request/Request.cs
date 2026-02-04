@@ -1,4 +1,6 @@
-﻿namespace AutoComplete.Features.GenerateAutoComplete.V1;
+﻿using AutoComplete.Enums;
 
-public record GenerateAutoCompleteRequestDto(string Prompt, string? ModelId = null);
+namespace AutoComplete.Features.GenerateAutoComplete.V1;
+
+public record GenerateAutoCompleteRequestDto(string Prompt, CompletionMode Mode, string? ModelId = null);
 public record GenerateAutoCompleteResponseDto(string Completion, long TokensUsed, decimal EstimatedCost, string ModelId, string? ProviderName);

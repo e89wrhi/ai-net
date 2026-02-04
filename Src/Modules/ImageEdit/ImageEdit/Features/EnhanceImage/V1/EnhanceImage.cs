@@ -23,7 +23,8 @@ public class EnhanceImageEndpoint : IMinimalEndpoint
                         return Results.Unauthorized();
                     }
 
-                    var command = new AIEnhanceImageCommand(userId, request.ImageUrlOrBase64, request.Prompt, request.ModelId);
+                    var command = new AIEnhanceImageCommand(userId, request.ImageUrlOrBase64, request.Prompt, 
+                        request.Quality, request.Format, request.ModelId);
                     var result = await mediator.Send(command, cancellationToken);
                     return Results.Ok(new EnhanceImageResponseDto(result.SessionId, result.ResultId, 
                         result.ResultImageUrl,

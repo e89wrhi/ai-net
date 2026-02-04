@@ -1,4 +1,6 @@
-﻿namespace ImageEdit.Features.RemoveBackground.V1;
+﻿using ImageEdit.Enums;
 
-public record RemoveBackgroundRequestDto(string ImageUrlOrBase64, string? ModelId = null);
+namespace ImageEdit.Features.RemoveBackground.V1;
+
+public record RemoveBackgroundRequestDto(string ImageUrlOrBase64, ImageEditQuality Quality, ImageFormat Format, string? ModelId = null);
 public record RemoveBackgroundResponseDto(Guid SessionId, Guid ResultId, string ResultImageUrl, string ModelId, string? ProviderName);

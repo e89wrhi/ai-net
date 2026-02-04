@@ -70,8 +70,8 @@ internal class TranscribeAudioHandler : ICommandHandler<TranscribeAudioCommand, 
         var userId = UserId.Of(request.UserId);
         var config = new SpeechToTextConfiguration(
             LanguageCode.Of(request.Language),
-            includePunctuation: true,
-            detailLevel: Enums.SpeechToTextDetailLevel.Basic);
+            includePunctuation: request.IncludePunctuation,
+            detailLevel: request.DetailLevel);
 
         var session = SpeechToTextSession.Create(sessionId, userId, modelId, config);
 

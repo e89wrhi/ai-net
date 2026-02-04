@@ -72,7 +72,7 @@ internal class GenerateAICompletionHandler : ICommandHandler<GenerateAutoComplet
         var config = new AutoCompleteConfiguration(
             Temperature.Of(0.7f),
             TokenCount.Of(tokenUsage),
-            Enums.CompletionMode.Text
+            request.Mode
         );
 
         // Create Session Aggregate

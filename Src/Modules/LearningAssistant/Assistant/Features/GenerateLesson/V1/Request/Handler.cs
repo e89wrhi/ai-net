@@ -33,7 +33,7 @@ internal class GenerateAILessonHandler : ICommandHandler<GenerateLessonCommand, 
         {
             new ChatMessage(
                     role: ChatRole.System, 
-                    content: $"You are a professional teacher. Generate a comprehensive lesson about the topic provided for a {request.Level} level student."),
+                    content: $"You are a professional teacher. Generate a comprehensive lesson about the topic provided for a {request.DifficultyLevel} level student."),
             new ChatMessage(
                     role: ChatRole.User, 
                     content : $"Explain: {request.Topic}")
@@ -67,8 +67,8 @@ internal class GenerateAILessonHandler : ICommandHandler<GenerateLessonCommand, 
         var sessionId = LearningId.Of(Guid.NewGuid());
         var userId = UserId.Of(request.UserId);
         var config = new LearningConfiguration(
-            Enums.LearningMode.Quiz,
-            Enums.DifficultyLevel.Medium);
+            request.Mode,
+            request.DifficultyLevel);
 
         var session = LearningSession.Create(sessionId, userId, modelId, config);
 

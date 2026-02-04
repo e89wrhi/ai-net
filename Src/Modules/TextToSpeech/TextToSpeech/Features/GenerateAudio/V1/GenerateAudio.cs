@@ -23,7 +23,7 @@ public class GenerateAudioEndpoint : IMinimalEndpoint
                         return Results.Unauthorized();
                     }
 
-                    var command = new GenerateAudioCommand(userId, request.Text, request.Voice, request.ModelId);
+                    var command = new GenerateAudioCommand(userId, request.Text, request.Voice, request.Speed, request.ModelId);
                     var result = await mediator.Send(command, cancellationToken);
                     return Results.Ok(new GenerateAudioResponseDto(result.SessionId, result.AudioUrl,
                         result.ModelId, result.ProviderName));

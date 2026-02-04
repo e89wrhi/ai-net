@@ -79,7 +79,8 @@ internal class AIEnhanceImageHandler : ICommandHandler<AIEnhanceImageCommand, AI
         // Persist
         var sessionId = ImageEditId.Of(Guid.NewGuid());
         var userId = UserId.Of(request.UserId);
-        var config = new ImageEditConfiguration(ImageEditQuality.Low, ImageFormat.Png);
+        var config = new ImageEditConfiguration(
+            request.Quality, request.Format);
 
         var session = ImageEditSession.Create(sessionId, userId, modelId, config);
 

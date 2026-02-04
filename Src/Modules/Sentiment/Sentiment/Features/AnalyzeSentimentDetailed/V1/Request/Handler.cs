@@ -88,8 +88,8 @@ internal class AnalyzeSentimentDetailedHandler : ICommandHandler<AnalyzeSentimen
         var sessionId = SentimentId.Of(Guid.NewGuid());
         var userId = UserId.Of(request.UserId);
         var config = new TextSentimentConfiguration(
-            detailLevel: Enums.SentimentDetailLevel.Standard, 
-            language: LanguageCode.Of("en"));
+            detailLevel: request.DetailLevel, 
+            language: LanguageCode.Of(request.Language));
 
         var session = TextSentimentSession.Create(sessionId, userId, modelId, config);
 

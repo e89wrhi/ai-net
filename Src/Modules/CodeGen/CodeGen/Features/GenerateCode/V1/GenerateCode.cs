@@ -23,7 +23,8 @@ public class GenerateCodeEndpoint : IMinimalEndpoint
                         return Results.Unauthorized();
                     }
 
-                    var command = new GenerateCodeCommand(userId, request.Prompt, request.Language, request.ModelId);
+                    var command = new GenerateCodeCommand(userId, request.Prompt, request.Language
+                        , request.Quality, request.Style, request.IncludeComments, request.ModelId);
                     var result = await mediator.Send(command, cancellationToken);
 
                     return Results.Ok(new GenerateCodeResponseDto(result.SessionId, result.ResultId, result.Code,

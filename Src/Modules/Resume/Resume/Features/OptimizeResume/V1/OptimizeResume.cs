@@ -23,7 +23,8 @@ public class OptimizeResumeEndpoint : IMinimalEndpoint
                         return Results.Unauthorized();
                     }
 
-                    var command = new OptimizeResumeCommand(userId, request.ResumeContent, request.JobDescription, request.ModelId);
+                    var command = new OptimizeResumeCommand(userId, request.ResumeContent, request.JobDescription,
+                        request.IncludeSkill, request.IncludeEducation, request.IncludeExpireance, request.ModelId);
                     var result = await mediator.Send(command, cancellationToken);
                     return Results.Ok(new OptimizeResumeResponseDto(result.ResultId, result.OptimizedResume,
                         result.ModelId, result.ProviderName));

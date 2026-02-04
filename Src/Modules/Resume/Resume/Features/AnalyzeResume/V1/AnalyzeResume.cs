@@ -23,7 +23,8 @@ public class AnalyzeResumeEndpoint : IMinimalEndpoint
                         return Results.Unauthorized();
                     }
 
-                    var command = new AnalyzeResumeCommand(userId, request.ResumeContent, request.ModelId);
+                    var command = new AnalyzeResumeCommand(userId, request.ResumeContent,
+                        request.IncludeSkill, request.IncludeEducation, request.IncludeExpireance, request.ModelId);
                     var result = await mediator.Send(command, cancellationToken);
                     return Results.Ok(new AnalyzeResumeResponseDto(result.SessionId, result.ResultId, 
                         result.Summary, result.Score,

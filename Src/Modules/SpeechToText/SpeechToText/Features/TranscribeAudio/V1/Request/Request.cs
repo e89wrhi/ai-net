@@ -1,4 +1,6 @@
-﻿namespace SpeechToText.Features.TranscribeAudio.V1;
+﻿using SpeechToText.Enums;
 
-public record TranscribeAudioRequestDto(string AudioUrl, string Language, string? ModelId = null);
+namespace SpeechToText.Features.TranscribeAudio.V1;
+
+public record TranscribeAudioRequestDto(string AudioUrl, string Language, bool IncludePunctuation, SpeechToTextDetailLevel DetailLevel, string? ModelId = null);
 public record TranscribeAudioResponseDto(Guid SessionId, Guid ResultId, string Transcript, string ModelId, string? ProviderName);

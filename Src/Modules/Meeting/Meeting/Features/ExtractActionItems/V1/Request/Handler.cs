@@ -66,8 +66,11 @@ internal class ExtractActionItemsHandler : ICommandHandler<ExtractActionItemsCom
         // Persist
         var meetingId = MeetingId.Of(Guid.NewGuid());
         var userId = UserId.Of(request.UserId);
-        var langCode = LanguageCode.Of("en");
-        var config = new MeetingAnalysisConfiguration(true, false, langCode);
+        var langCode = LanguageCode.Of(request.Language);
+        var config = new MeetingAnalysisConfiguration(
+                        request.IncludeActionItems,
+                        request.IncludeDescisions,
+                        langCode);
 
         var session = MeetingAnalysisSession.Create(meetingId, userId, modelId, config);
 

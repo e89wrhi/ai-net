@@ -70,7 +70,10 @@ internal class AnalyzeResumeWithAIHandler : ICommandHandler<AnalyzeResumeCommand
         // Persist
         var sessionId = ResumeId.Of(Guid.NewGuid());
         var userId = UserId.Of(request.UserId);
-        var config = new ResumeAnalysisConfiguration(true, true, true);
+        var config = new ResumeAnalysisConfiguration(
+                       request.IncludeSkill,
+                       request.IncludeExpireance,
+                       request.IncludeEducation);
 
         var session = ResumeAnalysisSession.Create(sessionId, userId, modelId, config);
 

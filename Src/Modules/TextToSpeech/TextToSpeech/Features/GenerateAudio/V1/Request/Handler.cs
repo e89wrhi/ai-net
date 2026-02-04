@@ -70,7 +70,7 @@ internal class GenerateAudioWithAIHandler : ICommandHandler<GenerateAudioCommand
         // Persist
         var sessionId = TextToSpeechId.Of(Guid.NewGuid());
         var userId = UserId.Of(request.UserId);
-        var config = new TextToSpeechConfiguration(request.Voice, SpeechSpeed.Normal, LanguageCode.Of("en"));
+        var config = new TextToSpeechConfiguration(request.Voice, request.Speed, LanguageCode.Of("en"));
 
         var session = TextToSpeechSession.Create(sessionId, userId, modelId, config);
 

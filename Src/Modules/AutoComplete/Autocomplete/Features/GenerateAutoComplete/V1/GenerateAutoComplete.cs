@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using AI.Common.Web;
+using AutoComplete.Enums;
 using Duende.IdentityServer.EntityFramework.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
@@ -23,7 +24,7 @@ public class GenerateAutoCompleteEndpoint : IMinimalEndpoint
                         return Results.Unauthorized();
                     }
 
-                    var command = new GenerateAutoCompleteCommand(userId, request.Prompt, request.ModelId);
+                    var command = new GenerateAutoCompleteCommand(userId, request.Prompt, request.Mode, request.ModelId);
                     var result = await mediator.Send(command, cancellationToken);
 
                     var response = new GenerateAutoCompleteResponseDto(result.Completion, result.TokensUsed, 

@@ -72,7 +72,7 @@ internal class AnalyzeImageHandler : ICommandHandler<AnalyzeImageCommand, Analyz
         // Persist
         var sessionId = ImageCaptionId.Of(Guid.NewGuid());
         var userId = UserId.Of(request.UserId);
-        var config = new ImageCaptionConfiguration(Enums.CaptionDetailLevel.Detailed,
+        var config = new ImageCaptionConfiguration(request.Level,
             LanguageCode.Of("en"));
 
         var session = ImageCaptionSession.Create(sessionId, userId, modelId, config);

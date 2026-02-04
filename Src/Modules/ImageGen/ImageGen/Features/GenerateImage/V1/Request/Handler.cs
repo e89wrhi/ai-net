@@ -71,9 +71,9 @@ internal class GenerateImageHandler : ICommandHandler<GenerateImageCommand, Gene
         var sessionId = ImageGenId.Of(Guid.NewGuid());
         var userId = UserId.Of(request.UserId);
         var config = new ImageGenerationConfiguration(
-            Enums.ImageSize.Large,
-            Enums.ImageStyle.Realistic,
-            Enums.ImageQuality.Low,
+            request.Size,
+            request.Style,
+            request.Quality,
             LanguageCode.Of("en"));
         var session = ImageGenerationSession.Create(sessionId, userId, modelId, config);
 
