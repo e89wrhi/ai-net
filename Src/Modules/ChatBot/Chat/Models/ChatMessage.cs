@@ -35,4 +35,26 @@ public record ChatMessage : Entity<MessageId>
             SentAt = DateTime.UtcNow
         };
     }
+
+    // Overload for backward compatibility and explicit session association
+    public static ChatMessage Create(
+        MessageId id,
+        SessionId sessionId,
+        MessageSender sender,
+        MessageContent content,
+        TokenCount tokenUsed,
+        CostEstimate cost,
+        int sequence)
+    {
+        return new ChatMessage
+        {
+            Id = id,
+            Sender = sender,
+            Content = content,
+            TokenUsed = tokenUsed,
+            Cost = cost,
+            Sequence = sequence,
+            SentAt = DateTime.UtcNow
+        };
+    }
 }

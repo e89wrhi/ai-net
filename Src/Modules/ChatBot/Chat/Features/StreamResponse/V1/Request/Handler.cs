@@ -1,98 +1,128 @@
-﻿using AiOrchestration.ValueObjects;
+﻿using AiOrchestration.Models;
+using AiOrchestration.Services;
+using AiOrchestration.ValueObjects;
+using Ardalis.GuardClauses;
 using ChatBot.Data;
 using ChatBot.Enums;
 using ChatBot.Exceptions;
 using ChatBot.Models;
-using Ardalis.GuardClauses;
-using AiOrchestration.Services;
 using ChatBot.ValueObjects;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.AI;
 using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace ChatBot.Features.StreamResponse.V1;
 
-
 internal class StreamAiResponseHandler : IStreamRequestHandler<StreamAiResponseCommand, string>
 {
     private readonly ChatDbContext _dbContext;
-    private readonly IAiOrchestrator _chatClient;
+    private readonly IAiOrchestrator _orchestrator;
+    private readonly IAiModelService _modelService;
 
-    public StreamAiResponseHandler(ChatDbContext dbContext, IAiOrchestrator chatClient)
+    public StreamAiResponseHandler(ChatDbContext dbContext, IAiOrchestrator orchestrator, IAiModelService modelService)
     {
         _dbContext = dbContext;
-        _chatClient = chatClient;
+        _orchestrator = orchestrator;
+        _modelService = modelService;
     }
 
     public async IAsyncEnumerable<string> Handle(StreamAiResponseCommand request, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         Guard.Against.Null(request, nameof(request));
 
-        // Load Session (Basic load)
-        var chat = await _dbContext.Chats.FindAsync(new object[] { SessionId.Of(request.SessionId) }, cancellationToken);
-        if (chat == null) throw new ChatNotFoundException(request.SessionId);
+        // Load chat session with messages for context
+        var chat = await _dbContext.Chats
+            .Include(c => c.Messages)
+            .FirstOrDefaultAsync(c => c.Id == SessionId.Of(request.SessionId), cancellationToken);
 
-        // NOTE: Context loading logic is simplified here same as GenerateAiResponse.
-        // Ideally we fetch recent messages.
+        if (chat == null) 
+            throw new ChatNotFoundException(request.SessionId);
 
-        var chatMessages = new List<Microsoft.Extensions.AI.ChatMessage>
+        // Build conversation history for AI context
+        var chatMessages = new List<Microsoft.Extensions.AI.ChatMessage>();
+        
+        // Add system prompt if configured
+        if (!string.IsNullOrEmpty(chat.Configuration.SystemPrompt.Value))
         {
-             new(ChatRole.System, $"You are a helpful assistant for session: {chat.Title}")
-             // Add history here
-        };
+            chatMessages.Add(new Microsoft.Extensions.AI.ChatMessage(ChatRole.System, chat.Configuration.SystemPrompt.Value));
+        }
+
+        // Add message history for context
+        foreach (var msg in chat.Messages.OrderBy(m => m.Sequence))
+        {
+            var role = msg.Sender switch
+            {
+                MessageSender.User => ChatRole.User,
+                MessageSender.Assistant => ChatRole.Assistant,
+                MessageSender.System => ChatRole.System,
+                _ => ChatRole.User
+            };
+            chatMessages.Add(new Microsoft.Extensions.AI.ChatMessage(role, msg.Content.Value));
+        }
+
+        // Get AI client from orchestrator
+        var criteria = new ModelCriteria { ModelId = chat.AiModelId.Value };
+        var chatClient = await _orchestrator.GetClientAsync(criteria, cancellationToken);
+
+        // Get model metadata
+        var clientMetadata = chatClient.GetService(typeof(ChatClientMetadata)) as ChatClientMetadata;
+        var modelIdStr = clientMetadata?.DefaultModelId ?? chat.AiModelId.Value;
 
         var fullResponseBuilder = new StringBuilder();
-        int tokenEstimate = 0;
+        int totalTokens = 0;
+        int tokensTracked = 0;
 
-        // Use chatClient to get the best client
-        var chatClient = await _chatClient.GetClientAsync(cancellationToken: cancellationToken);
-        var response = await chatClient.GetResponseAsync(chatMessages, cancellationToken: cancellationToken);
-        foreach (var update in response.Messages)
+        // Stream the AI response
+        await foreach (var update in chatClient.GetStreamingResponseAsync(chatMessages, cancellationToken: cancellationToken))
         {
             if (!string.IsNullOrEmpty(update.Text))
             {
                 fullResponseBuilder.Append(update.Text);
-                tokenEstimate++;
+                tokensTracked++;
                 yield return update.Text;
             }
         }
 
-        // Persist interaction
-        await PersistMessageAsync(chat, fullResponseBuilder.ToString(), tokenEstimate, cancellationToken);
+        // After streaming completes, try to get final completion for accurate token count
+        // For now, estimate based on content
+        totalTokens = fullResponseBuilder.Length / 4; // Rough estimate
+
+        // Calculate cost
+        var modelId = ModelId.Of(modelIdStr);
+        var costPerToken = _modelService.GetCostPerToken(modelId);
+        var costValue = (decimal)totalTokens * costPerToken;
+
+        // Persist the complete message
+        await PersistMessageAsync(chat, fullResponseBuilder.ToString(), totalTokens, costValue, cancellationToken);
     }
 
-    private async Task PersistMessageAsync(ChatSession chat, string content, int tokenUsage, CancellationToken cancellationToken)
+    private async Task PersistMessageAsync(ChatSession chat, string content, int tokenUsage, decimal cost, CancellationToken cancellationToken)
     {
         try
         {
             var messageId = MessageId.Of(Guid.NewGuid());
-            // Need to know latest sequence. 
-            // Since we didn't lock or load full collection, this is optimistic.
-            // But simple increment is better than nothing.
-            int sequence = 999;
+            var sequence = chat.Messages.Count + 1;
 
-            var aiMessage = ChatMessage.Create(
+            var aiMessage = Models.ChatMessage.Create(
                 messageId,
+                chat.Id,
                 MessageSender.Assistant,
                 MessageContent.Of(content),
                 TokenCount.Of(tokenUsage),
-                CostEstimate.Of(0),
+                CostEstimate.Of(cost),
                 sequence
             );
 
             chat.AddMessage(aiMessage);
-            // Re-attach if needed or just save if tracked
-            if (_dbContext.Entry(chat).State == Microsoft.EntityFrameworkCore.EntityState.Detached)
-            {
-                _dbContext.Chats.Attach(chat);
-                // Mark modified if needed, but AddMessage modifies state via helper usually
-            }
+            
             await _dbContext.SaveChangesAsync(cancellationToken);
         }
-        catch
+        catch (Exception ex)
         {
-            // Log error
+            // Log error - in production use proper logging
+            Console.WriteLine($"Error persisting streamed message: {ex.Message}");
         }
     }
 }

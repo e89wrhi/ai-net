@@ -15,15 +15,15 @@ public class GenerateAiResponseEndpoint : IMinimalEndpoint
         builder.MapPost($"{EndpointConfig.BaseApiPath}/chat/generate-response",
                 async (GenerateResponseRequestDto request, IMediator mediator, IHttpContextAccessor httpContextAccessor, CancellationToken cancellationToken) =>
                 {
-                    // current user id
+                    // Verify authentication (ownership checked in handler via chat session)
                     var userIdClaim = httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-                    if (!Guid.TryParse(userIdClaim, out var userId))
+                    if (!Guid.TryParse(userIdClaim, out _))
                     {
                         return Results.Unauthorized();
                     }
 
-                    var command = new GenerateAiResponseCommand(userId, request.SessionId, request.ModelId);
+                    var command = new GenerateAiResponseCommand(request.SessionId, request.ModelId);
                     var result = await mediator.Send(command, cancellationToken);
                     return Results.Ok(new GenerateResponseResponseDto(result.MessageId, result.Content,
                         result.ModelId, result.ProviderName));
@@ -35,7 +35,7 @@ public class GenerateAiResponseEndpoint : IMinimalEndpoint
             .ProducesProblem(StatusCodes.Status400BadRequest).ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .WithSummary("Generate AI Response")
-            .WithDescription("Triggers the AI to generate a response for the given chat session.")
+            .WithDescription("Triggers the AI to generate a response based on the chat history.")
             .WithOpenApi()
             .HasApiVersion(1.0);
 

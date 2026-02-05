@@ -56,19 +56,19 @@ public record ChatSession : Aggregate<SessionId>
         _messages.Add(message);
         LastSentAt = DateTime.UtcNow;
         var totalcount = TotalTokens.Value;
-        TotalTokens = TokenCount.Of(totalcount += message.TokenUsed);
+        TotalTokens = TokenCount.Of((int)(totalcount + message.TokenUsed.Value));
         var totalcost = TotalCost.Value;
-        TotalCost = CostEstimate.Of(totalcost += message.Cost);
+        TotalCost = CostEstimate.Of(totalcost + message.Cost.Value);
 
         AddDomainEvent(message.Sender switch
         {
             MessageSender.User =>
                 new Events.MessageReceivedDomainEvent(
-                    Id, message.Id, message.Content.Value, message.TokenUsed.Value),
+                    Id, message.Id, message.Content.Value, (int)message.TokenUsed.Value),
 
             _ =>
                 new Events.MessageRespondedDomainEvent(
-                    Id, message.Id, message.Content.Value, message.TokenUsed.Value)
+                    Id, message.Id, message.Content.Value, (int)message.TokenUsed.Value)
         });
     }
 
@@ -84,9 +84,20 @@ public record ChatSession : Aggregate<SessionId>
         AddDomainEvent(new Events.ChatSessionFailedDomainEvent(Id, reason));
     }
 
+    public void UpdateTitle(string title)
+    {
+        if (string.IsNullOrWhiteSpace(title))
+            throw new DomainException("Title cannot be empty.");
+
+        Title = title;
+        LastModified = DateTime.UtcNow;
+    }
+
     public void Delete()
     {
         SessionStatus = SessionStatus.Deleted;
         AddDomainEvent(new Events.ChatSessionDeletedDomainEvent(Id));
     }
+
+
 }

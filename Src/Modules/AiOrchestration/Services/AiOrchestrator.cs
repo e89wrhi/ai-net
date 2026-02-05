@@ -15,7 +15,7 @@ public class AiOrchestrator : IAiOrchestrator
         _defaultChatClient = defaultChatClient;
     }
 
-    public ChatClientMetadata Metadata => _defaultChatClient.GetService(typeof(ChatClientMetadata)) as ChatClientMetadata ?? new ChatClientMetadata("Default", new Uri("http://localhost"));
+    public ChatClientMetadata Metadata => _defaultChatClient.GetService(typeof(ChatClientMetadata)) as ChatClientMetadata ?? new ChatClientMetadata("Default", null);
 
     public async Task<IChatClient> GetClientAsync(ModelCriteria? criteria = null, CancellationToken cancellationToken = default)
     {
@@ -64,7 +64,7 @@ internal class ChatClientMetadataWrapper : IChatClient
         var innerMetadata = innerClient.GetService(typeof(ChatClientMetadata)) as ChatClientMetadata;
         _metadata = new ChatClientMetadata(
             innerMetadata?.ProviderName ?? "UnknownProvider",
-            innerMetadata?.Uri,
+            null, // Uri can be null
             modelId);
     }
 

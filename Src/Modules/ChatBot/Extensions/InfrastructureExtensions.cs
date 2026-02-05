@@ -40,7 +40,7 @@ public static class InfrastructureExtensions
     public static WebApplication UseChatModules(this WebApplication app)
     { 
         app.UseMigration<ChatDbContext>();
-        app.MapGrpcService<ChatGrpcService>();
+        // app.MapGrpcService<ChatGrpcService>();
 
         return app;
     }
