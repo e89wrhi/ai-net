@@ -1,6 +1,9 @@
 ﻿using AI.Common.Core;
+using Ardalis.GuardClauses;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.AI;
 using Payment.Data;
+using Payment.ValueObjects;
 
 namespace Payment.Features.ForecastSpending.V1;
 
@@ -34,7 +37,7 @@ internal class ForecastSpendingWithAIHandler : ICommandHandler<ForecastSpendingW
             return new ForecastSpendingWithAICommandResult(0, "USD", "No usage data found to generate a forecast.");
         }
 
-        var chargesData = string.Join(", ", charges.Select(c => $"Date: {c.CreatedAt:yyyy-MM-dd}, Cost: {c.Cost.Amount} {c.Cost.Currency.Code}, Module: {c.Module}"));
+        var chargesData = string.Join(", ", charges.Select(c => $"Date: {c.CreatedAt:yyyy-MM-dd}, Cost: {c.Cost.Amount} {c.Cost.Currency}, Module: {c.Module}"));
 
         var systemPrompt = "You are a financial analyst specializing in AI cloud costs. Analyze the provided historical usage data and forecast the next month's spending. Provide the forecasted numeric value and a brief insight in JSON format with fields: forecastedAmount, insights.";
 
@@ -44,8 +47,8 @@ internal class ForecastSpendingWithAIHandler : ICommandHandler<ForecastSpendingW
             new ChatMessage(ChatRole.User, $"Historical Charges: {chargesData}")
         };
 
-        var completion = await _chatClient.CompleteAsync(messages, cancellationToken: cancellationToken);
-        var responseJson = completion.Message.Text ?? "{\"forecastedAmount\": 0, \"insights\": \"Forecast failed.\"}";
+        var completion = await _chatClient.GetResponseAsync(messages, cancellationToken: cancellationToken);
+        var responseJson = completion.Messages[0].Text ?? "{\"forecastedAmount\": 0, \"insights\": \"Forecast failed.\"}";
 
         decimal forecastedAmount = 0;
         string insights = "Based on your current trend, your spending is expected to remain stable.";
@@ -61,6 +64,6 @@ internal class ForecastSpendingWithAIHandler : ICommandHandler<ForecastSpendingW
         }
         catch { }
 
-        return new ForecastSpendingWithAIResult(forecastedAmount, charges.First().Cost.Currency.Code, insights);
+        return new ForecastSpendingWithAICommandResult(forecastedAmount, charges.First().Cost.Currency, insights);
     }
 }

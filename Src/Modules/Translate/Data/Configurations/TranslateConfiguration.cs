@@ -5,16 +5,15 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 namespace Translate.Data.Configurations;
 
 using AI.Common.Core;
-using Translate.ValueObjects;
 using global::Translate.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.Extensions.Logging;
 using System;
 
-public class TranslateConfiguration : IEntityTypeConfiguration<TranslateModel>
+public class TranslateConfiguration : IEntityTypeConfiguration<Translate>
 {
-    public void Configure(EntityTypeBuilder<TranslateModel> builder)
+    public void Configure(EntityTypeBuilder<Translate> builder)
     {
 
         builder.ToTable("translations");

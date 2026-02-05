@@ -3,6 +3,7 @@ using MassTransit;
 using MediatR;
 using Payment.Data;
 using Payment.Exceptions;
+using Payment.Models;
 using Payment.ValueObjects;
 
 namespace Payment.Features.GenerateInvoice.V1;
@@ -28,10 +29,10 @@ internal class GenerateInvoiceHandler : IRequestHandler<GenerateInvoiceCommand, 
         }
 
         var invoiceNumber = $"INV-{subscription.Id.Value.ToString().Substring(0, 8)}-{DateTime.UtcNow:yyyyMMdd}";
-        var invoice = Invoice.Create(
+        var invoice = Payment.Models.Invoice.Create(
             InvoiceId.Of(NewId.NextGuid()),
             invoiceNumber,
-            Money.Of(request.Amount),
+            Money.Of(request.Amount, request.Currency),
             CurrencyCode.Of(request.Currency));
 
         subscription.AddInvoice(invoice);

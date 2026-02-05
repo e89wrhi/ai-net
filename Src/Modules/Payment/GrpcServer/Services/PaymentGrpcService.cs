@@ -10,11 +10,11 @@ using Payment.Features.GetInvoices.V1;
 
 namespace Payment.GrpcServer.Services;
 
-public class PaymentGrpcService : Payment.PaymentGrpcService.PaymentGrpcServiceBase
+public class PaymentGrpcServiceImplementation : Payment.PaymentGrpcService.PaymentGrpcServiceBase
 {
     private readonly IMediator _mediator;
 
-    public PaymentGrpcService(IMediator mediator)
+    public PaymentGrpcServiceImplementation(IMediator mediator)
     {
         _mediator = mediator;
     }
@@ -36,7 +36,7 @@ public class PaymentGrpcService : Payment.PaymentGrpcService.PaymentGrpcServiceB
 
     public override async Task<GetInvoicesResponse> GetInvoices(GetInvoicesRequest request, ServerCallContext context)
     {
-        var query = new GetInvoices(Guid.Parse(request.SubscriptionId), request.UserId);
+        var query = new GetInvoices(Guid.Parse(request.SubscriptionId), Guid.Parse(request.UserId));
         var result = await _mediator.Send(query, context.CancellationToken);
 
         var response = new GetInvoicesResponse();

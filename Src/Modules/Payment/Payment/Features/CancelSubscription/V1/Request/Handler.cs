@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using Ardalis.GuardClauses;
+using MediatR;
 using Payment.Data;
 using Payment.Exceptions;
 using Payment.ValueObjects;

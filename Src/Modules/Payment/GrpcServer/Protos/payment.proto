@@ -23,6 +23,7 @@ message RecordUsageChargeResponse {
 
 message GetInvoicesRequest {
   string subscription_id = 1;
+  string user_id = 2;
 }
 
 message Invoice {

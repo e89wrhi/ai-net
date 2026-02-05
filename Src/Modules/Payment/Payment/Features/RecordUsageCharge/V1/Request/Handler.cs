@@ -1,4 +1,5 @@
-﻿using MassTransit;
+﻿using Ardalis.GuardClauses;
+using MassTransit;
 using MediatR;
 using Payment.Data;
 using Payment.Exceptions;
@@ -34,7 +35,7 @@ internal class RecordUsageChargeHandler : IRequestHandler<RecordUsageChargeComma
             subscription.UserId,
             request.TokenUsed,
             request.Description,
-            Money.Of(request.Cost),
+            Money.Of(request.Cost, request.Currency),
             request.Module);
 
         subscription.AddCharge(charge);

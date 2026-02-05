@@ -4,25 +4,27 @@ namespace Payment.ValueObjects;
 
 public record Money
 {
-    public decimal Value { get; }
+    public decimal Amount { get; }
+    public string Currency { get; }
 
-    private Money(decimal value)
+    private Money(decimal amount, string currency)
     {
-        Value = value;
-    }
-
-    public static Money Of(decimal value)
-    {
-        if (value < 0)
+        if (amount < 0)
         {
-            throw new MoneyException(value);
+            throw new MoneyException(amount);
         }
 
-        return new Money(value);
+        Amount = amount;
+        Currency = currency;
+    }
+
+    public static Money Of(decimal amount, string currency = "USD")
+    {
+        return new Money(amount, currency);
     }
 
     public static implicit operator decimal(Money @value)
     {
-        return @value.Value;
+        return @value.Amount;
     }
 }

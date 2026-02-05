@@ -1,4 +1,5 @@
-﻿using MassTransit;
+﻿using Ardalis.GuardClauses;
+using MassTransit;
 using MediatR;
 using Payment.Data;
 using Payment.Models;

@@ -1,6 +1,9 @@
 ﻿using AI.Common.Core;
+using Ardalis.GuardClauses;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.AI;
 using Payment.Data;
+using Payment.Models;
 using Payment.ValueObjects;
 
 namespace Payment.Features.AnalyzeInvoice.V1;
@@ -23,7 +26,7 @@ internal class AnalyzeInvoiceWithAIHandler : ICommandHandler<AnalyzeInvoiceWithA
 
         var invoiceId = InvoiceId.Of(request.InvoiceId);
 
-        var invoice = await _dbContext.Invoices
+        var invoice = await _dbContext.Set<Payment.Models.Invoice>()
             .FirstOrDefaultAsync(x => x.Id == invoiceId, cancellationToken);
 
         if (invoice == null)
@@ -34,7 +37,7 @@ internal class AnalyzeInvoiceWithAIHandler : ICommandHandler<AnalyzeInvoiceWithA
         // To provide context, we could also fetch related usage charges for that period
         // For simplicity, we'll analyze the invoice details itself
 
-        var invoiceData = $"Number: {invoice.InvoiceNumber}, Amount: {invoice.Amount.Amount} {invoice.Currency.Code}, Issued: {invoice.IssuedAt:yyyy-MM-dd}, Status: {invoice.Status}";
+        var invoiceData = $"Number: {invoice.InvoiceNumber}, Amount: {invoice.Amount.Amount} {invoice.Currency.Value}, Issued: {invoice.IssuedAt:yyyy-MM-dd}, Status: {invoice.Status}";
 
         var systemPrompt = "You are an automated billing auditor. Analyze the provided invoice details. Provide a concise summary, a detailed analysis of the spending, and flag if there are any obvious anomalies. Output in JSON format with fields: summary, analysis, hasAnomalies (boolean).";
 
@@ -44,8 +47,8 @@ internal class AnalyzeInvoiceWithAIHandler : ICommandHandler<AnalyzeInvoiceWithA
             new ChatMessage(ChatRole.User, $"Invoice Details: {invoiceData}")
         };
 
-        var completion = await _chatClient.CompleteAsync(messages, cancellationToken: cancellationToken);
-        var responseJson = completion.Message.Text ?? "{\"summary\": \"Audit failed.\", \"analysis\": \"Unable to process invoice data.\", \"hasAnomalies\": false}";
+        var completion = await _chatClient.GetResponseAsync(messages, cancellationToken: cancellationToken);
+        var responseJson = completion.Messages[0].Text ?? "{\"summary\": \"Audit failed.\", \"analysis\": \"Unable to process invoice data.\", \"hasAnomalies\": false}";
 
         string summary = "Invoice Audit Result";
         string analysis = "The invoice appears to be in order based on the provided details.";
@@ -57,8 +60,8 @@ internal class AnalyzeInvoiceWithAIHandler : ICommandHandler<AnalyzeInvoiceWithA
             if (responseJson.Contains("\"analysis\":")) analysis = responseJson.Split("\"analysis\":")[1].Split("\"")[1];
             if (responseJson.Contains("\"hasAnomalies\":"))
             {
-                var val = responseJson.Split("\"hasAnomalies\":")[1].Split(",")[0].Split("}")[0].Trim().ToLower();
-                hasAnomalies = val == "true";
+                var valStr = responseJson.Split("\"hasAnomalies\":")[1].Split(",")[0].Split("}")[0].Trim().ToLower();
+                hasAnomalies = valStr == "true";
             }
         }
         catch { }

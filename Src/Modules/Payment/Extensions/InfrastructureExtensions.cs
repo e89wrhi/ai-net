@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Payment.Data;
 using Payment.Data.Seed;
+using Payment.GrpcServer.Services;
 
 namespace Payment.Extensions;
 
@@ -30,7 +31,7 @@ public static class InfrastructureExtensions
     public static WebApplication UsePaymentModules(this WebApplication app)
     { 
         app.UseMigration<PaymentDbContext>();
-        app.MapGrpcService<PaymentGrpcService>();
+        app.MapGrpcService<PaymentGrpcServiceImplementation>();
 
         return app;
     }

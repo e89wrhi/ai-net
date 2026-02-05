@@ -4,4 +4,4 @@ using Payment.ValueObjects;
 
 namespace Payment.Events;
 
-public record InvoiceCreatedDomainEvent(PaymentId Id, InvoiceId InvoiceId, Money Amount) : IDomainEvent;
+public record InvoiceCreatedDomainEvent(Guid OwnerId, InvoiceId InvoiceId, Money Amount) : IDomainEvent;
