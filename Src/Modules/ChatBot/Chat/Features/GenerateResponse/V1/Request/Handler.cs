@@ -43,7 +43,7 @@ internal class GenerateAiResponseHandler : ICommandHandler<GenerateAiResponseCom
         };
         #endregion
 
-        Guard.Against.NullOrEmpty(request.Prompt, nameof(request.Prompt));
+        Guard.Against.NullOrEmpty(request.Message, nameof(request.Message));
 
         // Use orchestrator to get the client based on requested model criteria
         var criteria = new ModelCriteria { ModelId = request.ModelId };
@@ -105,7 +105,7 @@ internal class GenerateAiResponseHandler : ICommandHandler<GenerateAiResponseCom
         // we might fail to provide context. 
         // Let's rely on explicit loading if needed, or assume for this iteration we just prompt "Continue conversation".
         // Actually, let's try to get the messages via explicit query if chat.Messages is empty but shouldn't be.
-        var messages = _dbContext.Entry(chat).Collection(c => c.Messages).IsLoaded
+        var messages2 = _dbContext.Entry(chat).Collection(c => c.Messages).IsLoaded
             ? chat.Messages
             : await _dbContext.Messages
                 .Where(m => m.Id == MessageId.Of(request.SessionId)) // Wait, Message.Id is PK. foreign key needed.
@@ -123,7 +123,7 @@ internal class GenerateAiResponseHandler : ICommandHandler<GenerateAiResponseCom
         var chatMessages = new List<Microsoft.Extensions.AI.ChatMessage>();
         if (messages.Any())
         {
-            foreach (var msg in messages.OrderBy(m => m.Sequence))
+            foreach (var msg in messages2.OrderBy(m => m.Sequence))
             {
                 var role = msg.Sender switch
                 {

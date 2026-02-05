@@ -30,17 +30,27 @@ internal class AIEnhanceImageHandler : ICommandHandler<AIEnhanceImageCommand, AI
     public async Task<AIEnhanceImageCommandResult> Handle(AIEnhanceImageCommand request, CancellationToken cancellationToken)
     {
         #region Prompt
+        var imageContent = request.ImageUrlOrBase64.StartsWith("http")
+            ? new DataContent(System.Text.Encoding.UTF8.GetBytes(request.ImageUrlOrBase64), "text/uri-list")
+            : new DataContent(
+                Convert.FromBase64String(request.ImageUrlOrBase64.Contains(",") 
+                    ? request.ImageUrlOrBase64.Split(',')[1] 
+                    : request.ImageUrlOrBase64),
+                "image/jpeg");
+
+        var contents = new List<AIContent>()
+        {
+            new TextContent($"User wants to enhance this image with the following prompt: {request.Prompt}. Analyze what needs to be changed."),
+            imageContent
+        };
+
         var messages = new List<ChatMessage>
         {
-            new ChatMessage(
-                    role: ChatRole.User, 
-                    content: new List<AIContent>
-                        {
-                            new TextContent($"User wants to enhance this image with the following prompt: {request.Prompt}. Analyze what needs to be changed."),
-                            request.ImageUrlOrBase64.StartsWith("http")
-                                ? new AIContent() { RawRepresentation = new Uri(request.ImageUrlOrBase64) }
-                                : new AIContent() { RawRepresentation = Convert.FromBase64String(request.ImageUrlOrBase64.Contains(",") ? request.ImageUrlOrBase64 : request.ImageUrlOrBase64) }
-                        })
+            new ChatMessage
+            {
+                Role = ChatRole.User,
+                Contents = contents
+            }
         };
         #endregion
 

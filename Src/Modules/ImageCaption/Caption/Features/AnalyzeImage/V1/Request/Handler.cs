@@ -28,13 +28,38 @@ internal class AnalyzeImageHandler : ICommandHandler<AnalyzeImageCommand, Analyz
     public async Task<AnalyzeImageCommandResult> Handle(AnalyzeImageCommand request, CancellationToken cancellationToken)
     {
         #region Prompt
+        Guard.Against.NullOrEmpty(request.ImageUrlOrBase64, nameof(request.ImageUrlOrBase64));
+
+        AIContent imageContent;
+        if (request.ImageUrlOrBase64.StartsWith("http"))
+        {
+            // Download the image and convert to byte[] if you want to support URLs, or throw NotSupportedException if not supported.
+            throw new NotSupportedException("Image URL is not supported. Please provide a base64-encoded image.");
+        }
+        else
+        {
+            imageContent = new DataContent(
+                Convert.FromBase64String(request.ImageUrlOrBase64.Contains(",") 
+                    ? request.ImageUrlOrBase64.Split(',')[1] 
+                    : request.ImageUrlOrBase64),
+                "image/png");
+        }
+
+        var contents = new List<AIContent>
+        {
+            new TextContent("Provide a detailed analysis of this image. Identify key objects, the setting, colors, and overall mood."),
+            imageContent
+        };
+
         var messages = new List<ChatMessage>
         {
-            new ChatMessage(role: ChatRole.User, content: "Provide a detailed analysis of this image. Identify key objects, the setting, colors, and overall mood.")
+            new ChatMessage
+            {
+                Role = ChatRole.User,
+                Contents = contents
+            }
         };
         #endregion
-
-        Guard.Against.NullOrEmpty(request.ImageUrlOrBase64, nameof(request.ImageUrlOrBase64));
 
         // Use orchestrator to get the client based on requested model criteria
         var criteria = new ModelCriteria { ModelId = request.ModelId };
@@ -56,18 +81,6 @@ internal class AnalyzeImageHandler : ICommandHandler<AnalyzeImageCommand, Analyz
         // Get cost per token from model service
         var costPerToken = _modelService.GetCostPerToken(modelId);
         var costValue = (decimal)tokenUsage * costPerToken;
-
-        if (request.ImageUrlOrBase64.StartsWith("http"))
-        {
-            contents.Add(new AIContent() { RawRepresentation = new Uri(request.ImageUrlOrBase64) });
-        }
-        else
-        {
-            var base64Data = request.ImageUrlOrBase64;
-            if (base64Data.Contains(",")) base64Data = base64Data.Split(',')[1];
-            contents.Add(new AIContent() { RawRepresentation = Convert.FromBase64String(base64Data) });
-        }
-
 
         // Persist
         var sessionId = ImageCaptionId.Of(Guid.NewGuid());

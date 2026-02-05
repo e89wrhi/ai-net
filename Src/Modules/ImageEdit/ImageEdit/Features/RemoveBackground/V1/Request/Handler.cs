@@ -29,17 +29,25 @@ internal class RemoveBackgroundHandler : ICommandHandler<RemoveBackgroundCommand
     public async Task<RemoveBackgroundCommandResult> Handle(RemoveBackgroundCommand request, CancellationToken cancellationToken)
     {
         #region Prompt
+        var imageContent = request.ImageUrlOrBase64.StartsWith("http")
+            ? new AIContent { RawRepresentation = new Uri(request.ImageUrlOrBase64) }
+            : new DataContent(
+                Convert.FromBase64String(request.ImageUrlOrBase64.Contains(",") 
+                    ? request.ImageUrlOrBase64.Split(',')[1] 
+                    : request.ImageUrlOrBase64),
+                "image/png");
+
         var messages = new List<ChatMessage>
         {
-            new ChatMessage(
-                role: ChatRole.User,
-                content: new List<AIContent>
+            new ChatMessage
+            {
+                Role = ChatRole.User,
+                Contents = new List<AIContent>
                 {
                     new TextContent("Identify the subject of this image and prepare it for background removal."),
-                        request.ImageUrlOrBase64.StartsWith("http")
-                        ? new AIContent() { RawRepresentation = new Uri(request.ImageUrlOrBase64) }
-                        : new AIContent() { RawRepresentation = Convert.FromBase64String(request.ImageUrlOrBase64.Contains(",") ? request.ImageUrlOrBase64.Split(',')[1] : request.ImageUrlOrBase64) }
-                })
+                    imageContent
+                }
+            }
         };
         #endregion
 

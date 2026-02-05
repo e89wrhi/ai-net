@@ -29,9 +29,18 @@ internal class AIImageCaptionHandler : ICommandHandler<ImageCaptionCommand, Imag
     public async Task<ImageCaptionCommandResult> Handle(ImageCaptionCommand request, CancellationToken cancellationToken)
     {
         #region Prompt
+        Guard.Against.NullOrEmpty(request.ImageUrlOrBase64, nameof(request.ImageUrlOrBase64));
+
+        var imageContent = new DataContent(
+                Convert.FromBase64String(request.ImageUrlOrBase64.Contains(",")
+                    ? request.ImageUrlOrBase64.Split(',')[1]
+                    : request.ImageUrlOrBase64),
+                "image/png");
+
         List<AIContent> contents = new()
         {
-            new TextContent("Describe this image in one concise sentence.")
+            new TextContent("Describe this image in one concise sentence."),
+            imageContent
         };
 
         var messages = new List<ChatMessage>
@@ -39,14 +48,13 @@ internal class AIImageCaptionHandler : ICommandHandler<ImageCaptionCommand, Imag
              new ChatMessage(
                     role: ChatRole.System,
                     content: ""),
-             new ChatMessage(
-                    role: ChatRole.User,
-                    content: contents)
+             new ChatMessage
+             {
+                 Role = ChatRole.User,
+                 Contents = contents
+             }
         };
         #endregion
-
-
-        Guard.Against.NullOrEmpty(request.ImageUrlOrBase64, nameof(request.ImageUrlOrBase64));
 
         // Use orchestrator to get the client based on requested model criteria
         var criteria = new ModelCriteria { ModelId = request.ModelId };
@@ -68,21 +76,6 @@ internal class AIImageCaptionHandler : ICommandHandler<ImageCaptionCommand, Imag
         // Get cost per token from model service
         var costPerToken = _modelService.GetCostPerToken(modelId);
         var costValue = (decimal)tokenUsage * costPerToken;
-
-        // Construct multi-modal message
-        // Note: Microsoft.Extensions.AI supports multi-modal content via AIContent objects in ChatMessage
-
-        if (request.ImageUrlOrBase64.StartsWith("http"))
-        {
-            contents.Add(new AIContent() { RawRepresentation = new Uri(request.ImageUrlOrBase64) });
-        }
-        else
-        {
-            // Assume base64
-            var base64Data = request.ImageUrlOrBase64;
-            if (base64Data.Contains(",")) base64Data = base64Data.Split(',')[1];
-            contents.Add(new AIContent() { RawRepresentation = Convert.FromBase64String(base64Data) });
-        }
 
         // Persist
         var sessionId = ImageCaptionId.Of(Guid.NewGuid());
