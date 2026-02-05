@@ -12,9 +12,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.Extensions.Logging;
 using System;
 
-public class MeetingConfiguration : IEntityTypeConfiguration<MeetingModel>
+public class MeetingConfiguration : IEntityTypeConfiguration<MeetingAnalysisSession>
 {
-    public void Configure(EntityTypeBuilder<MeetingModel> builder)
+    public void Configure(EntityTypeBuilder<MeetingAnalysisSession> builder)
     {
 
         builder.ToTable("meetings");

@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 namespace CodeDebug.Data.Configurations;
 
 using AI.Common.Core;
-using CodeDebug.ValueObjects;
+using global::CodeDebug.ValueObjects;
 using global::CodeDebug.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -21,7 +21,7 @@ public class CodeDebugConfiguration : IEntityTypeConfiguration<CodeDebugSession>
 
         builder.HasKey(r => r.Id);
         builder.Property(r => r.Id).ValueGeneratedNever()
-            .HasConversion<Guid>(itemId => itemId.Value, dbId => SessionId.Of(dbId));
+            .HasConversion<Guid>(itemId => itemId.Value, dbId => CodeDebugId.Of(dbId));
 
         builder.Property(r => r.Version).IsConcurrencyToken();
 

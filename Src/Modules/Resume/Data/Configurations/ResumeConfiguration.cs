@@ -12,9 +12,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.Extensions.Logging;
 using System;
 
-public class ResumeConfiguration : IEntityTypeConfiguration<ResumeModel>
+public class ResumeConfiguration : IEntityTypeConfiguration<ResumeAnalysisSession>
 {
-    public void Configure(EntityTypeBuilder<ResumeModel> builder)
+    public void Configure(EntityTypeBuilder<ResumeAnalysisSession> builder)
     {
 
         builder.ToTable("resumes");

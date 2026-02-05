@@ -12,16 +12,16 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.Extensions.Logging;
 using System;
 
-public class ImageConfiguration : IEntityTypeConfiguration<ImageModel>
+public class ImageConfiguration : IEntityTypeConfiguration<ImageCaptionSession>
 {
-    public void Configure(EntityTypeBuilder<ImageModel> builder)
+    public void Configure(EntityTypeBuilder<ImageCaptionSession> builder)
     {
 
         builder.ToTable("image_captions");
 
         builder.HasKey(r => r.Id);
         builder.Property(r => r.Id).ValueGeneratedNever()
-            .HasConversion<Guid>(itemId => itemId.Value, dbId => ImageCaptionResultId.Of(dbId));
+            .HasConversion<Guid>(itemId => itemId.Value, dbId => ImageCaptionId.Of(dbId));
 
         builder.Property(r => r.Version).IsConcurrencyToken();
 

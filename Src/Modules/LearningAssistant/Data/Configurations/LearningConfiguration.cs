@@ -12,16 +12,16 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.Extensions.Logging;
 using System;
 
-public class LearningConfiguration : IEntityTypeConfiguration<ProfileModel>
+public class LearningConfiguration : IEntityTypeConfiguration<LearningSession>
 {
-    public void Configure(EntityTypeBuilder<ProfileModel> builder)
+    public void Configure(EntityTypeBuilder<LearningSession> builder)
     {
 
         builder.ToTable("learnings");
 
         builder.HasKey(r => r.Id);
         builder.Property(r => r.Id).ValueGeneratedNever()
-            .HasConversion<Guid>(itemId => itemId.Value, dbId => ActivityId.Of(dbId));
+            .HasConversion<Guid>(itemId => itemId.Value, dbId => LearningId.Of(dbId));
 
         builder.Property(r => r.Version).IsConcurrencyToken();
 
