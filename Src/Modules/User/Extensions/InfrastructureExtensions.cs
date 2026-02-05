@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using User.Data;
 using User.Data.Seed;
+using User.GrpcServer.Services;
 
 namespace User.Extensions;
 

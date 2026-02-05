@@ -5,6 +5,7 @@ using AiOrchestration.Extensions;
 using FluentValidation;
 using ImageCaption.Data;
 using ImageCaption.Data.Seed;
+using ImageCaption.GrpcServer.Services;
 using ImageCaption.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.AI;
@@ -40,7 +41,7 @@ public static class InfrastructureExtensions
     public static WebApplication UseImageModules(this WebApplication app)
     { 
         app.UseMigration<ImageCaptionDbContext>();
-        app.MapGrpcService<ImageGrpcService>();
+        app.MapGrpcService<ImageCaptionGrpcService>();
 
         return app;
     }

@@ -1,55 +1,42 @@
 syntax = "proto3";
 
 package Summary;
-import "google/protobuf/timestamp.proto";
+
+option csharp_namespace = "Summary.GrpcServer.Protos";
 
 service SummaryGrpcService {
-  rpc StartSummary (StartSummaryRequest) returns (StartSummaryResponse);
-  rpc DeleteSummary (DeleteSummaryRequest) returns (DeleteSummaryResponse);
-  rpc GetSummaryHistory (GetSummaryHistoryRequest) returns (GetSummaryHistoryResponse);
+  rpc SummarizeText (SummarizeTextRequest) returns (SummarizeTextResponse);
+  rpc StreamSummarizeText (StreamSummarizeTextRequest) returns (stream StreamSummarizeTextResponse);
 }
 
-message StartSummaryRequest {
+enum SummaryDetailLevel {
+  SHORT = 0;
+  STANDARD = 1;
+  DETAILED = 2;
+}
+
+message SummarizeTextRequest {
   string user_id = 1;
-  string title = 2;
-  string ai_model_id = 3;
+  string text = 2;
+  SummaryDetailLevel detail_level = 3;
+  string language = 4;
+  string model_id = 5;
 }
 
-message StartSummaryResponse {
+message SummarizeTextResponse {
   string session_id = 1;
-}
-
-message DeleteSummaryRequest {
-  string session_id = 1;
-}
-
-message DeleteSummaryResponse {
-  string session_id = 1;
-}
-
-message GetSummaryHistoryRequest {
-  string user_id = 1;
-}
-
-message Summary {
-  string id = 1;
-  string content = 2;
-  string sender = 3;
-  google.protobuf.Timestamp sent_at = 4;
-  int32 token_used = 5;
-}
-
-message SummarySummary {
-  string id = 1;
-  string title = 2;
+  string result_id = 2;
   string summary = 3;
-  string ai_model_id = 4;
-  string session_status = 5;
-  google.protobuf.Timestamp last_sent_at = 6;
-  int32 total_tokens = 7;
-  repeated Summary messages = 8;
+  string model_id = 4;
+  string provider_name = 5;
 }
 
-message GetSummaryHistoryResponse {
-  repeated SummarySummary summarys = 1;
+message StreamSummarizeTextRequest {
+  string text = 1;
+  SummaryDetailLevel detail_level = 2;
+  string language = 3;
+}
+
+message StreamSummarizeTextResponse {
+  string text = 1;
 }

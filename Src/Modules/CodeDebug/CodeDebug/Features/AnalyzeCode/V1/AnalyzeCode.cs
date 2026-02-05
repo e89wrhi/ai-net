@@ -23,7 +23,8 @@ public class AnalyzeCodeEndpoint : IMinimalEndpoint
                         return Results.Unauthorized();
                     }
 
-                    var command = new AnalyzeCodeCommand(userId, request.Code, request.Language, request.ModelId);
+                    var command = new AnalyzeCodeCommand(userId, request.Code, request.Language,
+                        request.Depth, request.IncludeSuggestion, request.ModelId);
                     var result = await mediator.Send(command, cancellationToken);
 
                     return Results.Ok(new AnalyzeCodeResponseDto(result.SessionId, result.ReportId, 

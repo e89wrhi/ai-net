@@ -1,4 +1,5 @@
-﻿using ImageCaption.Exceptions;
+﻿using CodeGen.Exceptions;
+using ImageCaption.Exceptions;
 
 namespace ImageCaption.ValueObjects;
 

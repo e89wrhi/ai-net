@@ -4,6 +4,7 @@ using AI.Common.Web;
 using AiOrchestration.Extensions;
 using CodeGen.Data;
 using CodeGen.Data.Seed;
+using CodeGen.GrpcServer.Services;
 using CodeGen.Services;
 using FluentValidation;
 using Microsoft.AspNetCore.Builder;

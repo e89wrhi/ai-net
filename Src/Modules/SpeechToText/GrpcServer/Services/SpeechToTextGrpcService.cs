@@ -3,12 +3,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Grpc.Core;
 using MediatR;
-using Google.Protobuf.WellKnownTypes;
-using SpeechToText;
+using SpeechToText.GrpcServer.Protos;
+
+using Protos = SpeechToText.GrpcServer.Protos;
 
 namespace SpeechToText.GrpcServer.Services;
 
-public class SpeechToTextGrpcService : SpeechToText.SpeechToTextGrpcService.SpeechToTextGrpcServiceBase
+public class SpeechToTextGrpcService : Protos.SpeechToTextGrpcService.SpeechToTextGrpcServiceBase
 {
     private readonly IMediator _mediator;
 
@@ -17,62 +18,42 @@ public class SpeechToTextGrpcService : SpeechToText.SpeechToTextGrpcService.Spee
         _mediator = mediator;
     }
 
-    public override async Task<StartSpeechToTextResponse> StartSpeechToText(StartSpeechToTextRequest request, ServerCallContext context)
+    public override async Task<TranscribeAudioResponse> TranscribeAudio(TranscribeAudioRequest request, ServerCallContext context)
     {
-        var cmd = new SpeechToText.Features.StartSpeechToText.V1.StartSpeechToTextCommand(
+        var cmd = new SpeechToText.Features.TranscribeAudio.V1.TranscribeAudioCommand(
             Guid.Parse(request.UserId),
-            request.Title,
-            request.AiModelId);
+            request.AudioUrl,
+            request.Language,
+            request.IncludePunctuation,
+            (SpeechToText.Enums.SpeechToTextDetailLevel)(int)request.DetailLevel,
+            request.ModelId);
 
         var result = await _mediator.Send(cmd, context.CancellationToken);
 
-        return new StartSpeechToTextResponse
+        return new TranscribeAudioResponse
         {
-            SessionId = result.Id.ToString()
+            SessionId = result.SessionId.ToString(),
+            ResultId = result.ResultId.ToString(),
+            Transcript = result.Transcript,
+            ModelId = result.ModelId,
+            ProviderName = result.ProviderName ?? string.Empty
         };
     }
 
-    public override async Task<DeleteSpeechToTextResponse> DeleteSpeechToText(DeleteSpeechToTextRequest request, ServerCallContext context)
+    public override async Task StreamTranscribeAudio(StreamTranscribeAudioRequest request, IServerStreamWriter<StreamTranscribeAudioResponse> responseStream, ServerCallContext context)
     {
-        var cmd = new SpeechToText.Features.DeleteSpeechToText.V1.DeleteSpeechToTextCommand(Guid.Parse(request.SessionId));
-        var result = await _mediator.Send(cmd, context.CancellationToken);
+        var cmd = new SpeechToText.Features.StreamTranscribeAudio.V1.StreamTranscribeAudioCommand(
+            request.AudioUrl,
+            request.Language);
 
-        return new DeleteSpeechToTextResponse
+        var stream = _mediator.CreateStream(cmd, context.CancellationToken);
+
+        await foreach (var item in stream)
         {
-            SessionId = result.Id.ToString()
-        };
-    }
-
-    public override async Task<GetSpeechToTextHistoryResponse> GetSpeechToTextHistory(GetSpeechToTextHistoryRequest request, ServerCallContext context)
-    {
-        var query = new SpeechToText.Features.GetSpeechToTextHistory.V1.GetSpeechToTextHistory(Guid.Parse(request.UserId));
-        var result = await _mediator.Send(query, context.CancellationToken);
-
-        var response = new GetSpeechToTextHistoryResponse();
-
-        foreach (var dto in result.SpeechToTextDtos)
-        {
-            var summary = new SpeechToTextSummary
+            await responseStream.WriteAsync(new StreamTranscribeAudioResponse
             {
-                Id = dto.Id.ToString(),
-                Title = dto.Title,
-                Summary = dto.Summary,
-                AiModelId = dto.AiModelId,
-                SessionStatus = dto.SessionStatus,
-                TotalTokens = dto.TotalTokens
-            };
-
-            // Map last sent timestamp if available
-            if (dto.LastSentAt != default)
-            {
-                var utc = DateTime.SpecifyKind(dto.LastSentAt.ToUniversalTime(), DateTimeKind.Utc);
-                summary.LastSentAt = Timestamp.FromDateTime(utc);
-            }
-
-            // SpeechToTexts are not included in SpeechToTextDto currently; leave messages empty.
-            response.SpeechToTexts.Add(summary);
+                Text = item
+            });
         }
-
-        return response;
     }
 }

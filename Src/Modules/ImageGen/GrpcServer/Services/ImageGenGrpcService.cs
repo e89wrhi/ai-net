@@ -3,12 +3,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Grpc.Core;
 using MediatR;
-using Google.Protobuf.WellKnownTypes;
-using ImageGen;
+using ImageGen.GrpcServer.Protos;
+
+using Protos = ImageGen.GrpcServer.Protos;
 
 namespace ImageGen.GrpcServer.Services;
 
-public class ImageGenGrpcService : ImageGen.ImageGenGrpcService.ImageGenGrpcServiceBase
+public class ImageGenGrpcService : Protos.ImageGenGrpcService.ImageGenGrpcServiceBase
 {
     private readonly IMediator _mediator;
 
@@ -17,62 +18,45 @@ public class ImageGenGrpcService : ImageGen.ImageGenGrpcService.ImageGenGrpcServ
         _mediator = mediator;
     }
 
-    public override async Task<StartImageGenResponse> StartImageGen(StartImageGenRequest request, ServerCallContext context)
+    public override async Task<GenerateImageResponse> GenerateImage(GenerateImageRequest request, ServerCallContext context)
     {
-        var cmd = new ImageGen.Features.StartImageGen.V1.StartImageGenCommand(
+        var cmd = new ImageGen.Features.GenerateImage.V1.GenerateImageCommand(
             Guid.Parse(request.UserId),
-            request.Title,
-            request.AiModelId);
+            request.Prompt,
+            (ImageGen.Enums.ImageSize)(int)request.Size,
+            (ImageGen.Enums.ImageStyle)(int)request.Style,
+            (ImageGen.Enums.ImageQuality)(int)request.Quality,
+            request.ModelId);
 
         var result = await _mediator.Send(cmd, context.CancellationToken);
 
-        return new StartImageGenResponse
+        return new GenerateImageResponse
         {
-            SessionId = result.Id.ToString()
+            SessionId = result.SessionId.ToString(),
+            ResultId = result.ResultId.ToString(),
+            ImageUrl = result.ImageUrl,
+            ModelId = result.ModelId,
+            ProviderName = result.ProviderName ?? string.Empty
         };
     }
 
-    public override async Task<DeleteImageGenResponse> DeleteImageGen(DeleteImageGenRequest request, ServerCallContext context)
+    public override async Task<ReGenerateImageResponse> ReGenerateImage(ReGenerateImageRequest request, ServerCallContext context)
     {
-        var cmd = new ImageGen.Features.DeleteImageGen.V1.DeleteImageGenCommand(Guid.Parse(request.SessionId));
+        var cmd = new ImageGen.Features.ReGenerateImage.V1.ReGenerateImageCommand(
+            Guid.Parse(request.UserId),
+            Guid.Parse(request.SessionId),
+            request.Instruction,
+            request.ModelId);
+
         var result = await _mediator.Send(cmd, context.CancellationToken);
 
-        return new DeleteImageGenResponse
+        return new ReGenerateImageResponse
         {
-            SessionId = result.Id.ToString()
+            ResultId = result.ResultId.ToString(),
+            ImageUrl = result.ImageUrl,
+            ModelId = result.ModelId,
+            ProviderName = result.ProviderName ?? string.Empty
         };
-    }
-
-    public override async Task<GetImageGenHistoryResponse> GetImageGenHistory(GetImageGenHistoryRequest request, ServerCallContext context)
-    {
-        var query = new ImageGen.Features.GetImageGenHistory.V1.GetImageGenHistory(Guid.Parse(request.UserId));
-        var result = await _mediator.Send(query, context.CancellationToken);
-
-        var response = new GetImageGenHistoryResponse();
-
-        foreach (var dto in result.ImageGenDtos)
-        {
-            var summary = new ImageGenSummary
-            {
-                Id = dto.Id.ToString(),
-                Title = dto.Title,
-                Summary = dto.Summary,
-                AiModelId = dto.AiModelId,
-                SessionStatus = dto.SessionStatus,
-                TotalTokens = dto.TotalTokens
-            };
-
-            // Map last sent timestamp if available
-            if (dto.LastSentAt != default)
-            {
-                var utc = DateTime.SpecifyKind(dto.LastSentAt.ToUniversalTime(), DateTimeKind.Utc);
-                summary.LastSentAt = Timestamp.FromDateTime(utc);
-            }
-
-            // ImageGens are not included in ImageGenDto currently; leave messages empty.
-            response.ImageGens.Add(summary);
-        }
-
-        return response;
     }
 }
+

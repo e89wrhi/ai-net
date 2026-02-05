@@ -3,11 +3,17 @@ using System.Threading;
 using System.Threading.Tasks;
 using Grpc.Core;
 using MediatR;
-using Google.Protobuf.WellKnownTypes;
+using Meeting.Features.AnalyzeMeetingTranscript.V1;
+using Meeting.Features.ExtractActionItems.V1;
+using Meeting.Features.StreamMeetingAnalysis.V1;
+using Meeting.Features.UploadMeetingAudio.V1;
+using Meeting.GrpcServer.Protos;
+
+using Protos = Meeting.GrpcServer.Protos;
 
 namespace Meeting.GrpcServer.Services;
 
-public class MeetingGrpcService : Meeting.MeetingGrpcService.MeetingGrpcServiceBase
+public class MeetingGrpcService : Protos.MeetingGrpcService.MeetingGrpcServiceBase
 {
     private readonly IMediator _mediator;
 
@@ -18,7 +24,7 @@ public class MeetingGrpcService : Meeting.MeetingGrpcService.MeetingGrpcServiceB
 
     public override async Task<UploadMeetingAudioResponse> UploadMeetingAudio(UploadMeetingAudioRequest request, ServerCallContext context)
     {
-        var cmd = new Meeting.Features.UploadMeetingAudio.V1.UploadMeetingAudioCommand(
+        var cmd = new UploadMeetingAudioCommand(
             request.OrganizerId,
             request.Title,
             request.AudioUrl);
@@ -28,44 +34,61 @@ public class MeetingGrpcService : Meeting.MeetingGrpcService.MeetingGrpcServiceB
         return new UploadMeetingAudioResponse { Id = result.Id.ToString() };
     }
 
-    public override async Task<TranscribeMeetingResponse> TranscribeMeeting(TranscribeMeetingRequest request, ServerCallContext context)
+    public override async Task<AnalyzeMeetingTranscriptResponse> AnalyzeMeetingTranscript(AnalyzeMeetingTranscriptRequest request, ServerCallContext context)
     {
-        var cmd = new Meeting.Features.SummarizeMeetingAudio.V1.SummarizeMeetingAudioCommand(
-            Guid.Parse(request.MeetingId),
-            request.TranscriptText,
+        var cmd = new AnalyzeMeetingTranscriptCommand(
+            Guid.Parse(request.UserId),
+            request.Transcript,
+            request.IncludeActionItems,
+            request.IncludeDescisions,
             request.Language,
-            request.Confidence,
-            request.Summary);
+            request.ModelId);
 
         var result = await _mediator.Send(cmd, context.CancellationToken);
 
-        return new TranscribeMeetingResponse { Id = result.Id.ToString() };
+        return new AnalyzeMeetingTranscriptResponse
+        {
+            MeetingId = result.MeetingId.ToString(),
+            TranscriptId = result.TranscriptId.ToString(),
+            Summary = result.Summary,
+            ModelId = result.ModelId,
+            ProviderName = result.ProviderName ?? string.Empty
+        };
     }
 
-    public override async Task<GetMeetingSummaryResponse> GetMeetingSummary(GetMeetingSummaryRequest request, ServerCallContext context)
+    public override async Task<ExtractActionItemsResponse> ExtractActionItems(ExtractActionItemsRequest request, ServerCallContext context)
     {
-        var query = new Meeting.Features.GetMeetingSummary.V1.GetMeetingSummary(Guid.Parse(request.MeetingId));
-        var result = await _mediator.Send(query, context.CancellationToken);
+        var cmd = new ExtractActionItemsCommand(
+            Guid.Parse(request.UserId),
+            request.Transcript,
+            request.IncludeActionItems,
+            request.IncludeDescisions,
+            request.Language,
+            request.ModelId);
 
-        var dto = result.MeetingSummaryDto;
+        var result = await _mediator.Send(cmd, context.CancellationToken);
 
-        var response = new GetMeetingSummaryResponse
+        return new ExtractActionItemsResponse
         {
-            Summary = new MeetingSummary
-            {
-                Id = dto.Id.ToString(),
-                Title = dto.Title ?? string.Empty,
-                Summary = dto.Summary ?? string.Empty,
-                Status = dto.Status ?? string.Empty
-            }
+            MeetingId = result.MeetingId.ToString(),
+            ActionItems = result.ActionItems,
+            ModelId = result.ModelId,
+            ProviderName = result.ProviderName ?? string.Empty
         };
+    }
 
-        if (dto.CreatedAt != default)
+    public override async Task StreamMeetingAnalysis(StreamMeetingAnalysisRequest request, IServerStreamWriter<StreamMeetingAnalysisResponse> responseStream, ServerCallContext context)
+    {
+        var cmd = new StreamMeetingAnalysisCommand(request.Transcript);
+
+        var stream = _mediator.CreateStream(cmd, context.CancellationToken);
+
+        await foreach (var item in stream)
         {
-            var utc = DateTime.SpecifyKind(dto.CreatedAt.ToUniversalTime(), DateTimeKind.Utc);
-            response.Summary.CreatedAt = Timestamp.FromDateTime(utc);
+            await responseStream.WriteAsync(new StreamMeetingAnalysisResponse
+            {
+                Text = item
+            });
         }
-
-        return response;
     }
 }

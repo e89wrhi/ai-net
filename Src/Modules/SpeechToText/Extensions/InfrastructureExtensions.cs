@@ -8,6 +8,7 @@ using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using SpeechToText.Data;
 using SpeechToText.Data.Seed;
+using SpeechToText.GrpcServer.Services;
 using SpeechToText.Services;
 
 namespace SpeechToText.Extensions;

@@ -3,18 +3,49 @@ syntax = "proto3";
 package learningAssistant;
 import "google/protobuf/timestamp.proto";
 
+option csharp_namespace = "LearningAssistant.GrpcServer.Protos";
+
 service AssistantGrpcService {
   rpc GenerateLesson (GenerateLessonRequest) returns (GenerateLessonResponse);
+  rpc StreamLesson (StreamLessonRequest) returns (stream StreamLessonResponse);
+}
+
+enum LearningMode {
+    GUIDED = 0;
+    SELF_PACED = 1;
+    QUIZ = 2;
+    INTERACTIVE = 3;
+}
+
+enum DifficultyLevel {
+    EASY = 0;
+    MEDIUM = 1;
+    HARD = 2;
+    EXPERT = 3;
 }
 
 message GenerateLessonRequest {
-  string profile_id = 1;
-  string title = 2;
-  string content = 3;
-  // Difficulty level as integer (aligns with backend enum)
-  int32 level = 4;
+  string user_id = 1;
+  string topic = 2;
+  LearningMode mode = 3;
+  DifficultyLevel difficulty = 4;
+  string model_id = 5;
 }
 
 message GenerateLessonResponse {
-  string lesson_id = 1;
+  string session_id = 1;
+  string activity_id = 2;
+  string content = 3;
+  string model_id = 4;
+  string provider_name = 5;
+}
+
+message StreamLessonRequest {
+  string topic = 1;
+  LearningMode mode = 2;
+  DifficultyLevel difficulty = 3;
+}
+
+message StreamLessonResponse {
+  string text = 1;
 }

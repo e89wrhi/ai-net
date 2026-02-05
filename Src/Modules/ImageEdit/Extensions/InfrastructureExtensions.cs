@@ -5,6 +5,7 @@ using AiOrchestration.Extensions;
 using FluentValidation;
 using ImageEdit.Data;
 using ImageEdit.Data.Seed;
+using ImageEdit.GrpcServer.Services;
 using ImageEdit.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.AI;

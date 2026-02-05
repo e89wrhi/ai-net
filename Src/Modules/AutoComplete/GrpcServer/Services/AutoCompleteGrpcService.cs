@@ -3,12 +3,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Grpc.Core;
 using MediatR;
-using Google.Protobuf.WellKnownTypes;
-using AutoComplete;
+using AutoComplete.GrpcServer.Protos;
+
+using Protos = AutoComplete.GrpcServer.Protos;
 
 namespace AutoComplete.GrpcServer.Services;
 
-public class AutoCompleteGrpcService : AutoComplete.AutoCompleteGrpcService.AutoCompleteGrpcServiceBase
+public class AutoCompleteGrpcService : Protos.AutoCompleteGrpcService.AutoCompleteGrpcServiceBase
 {
     private readonly IMediator _mediator;
 
@@ -17,62 +18,40 @@ public class AutoCompleteGrpcService : AutoComplete.AutoCompleteGrpcService.Auto
         _mediator = mediator;
     }
 
-    public override async Task<StartAutoCompleteResponse> StartAutoComplete(StartAutoCompleteRequest request, ServerCallContext context)
+    public override async Task<GenerateAutoCompleteResponse> GenerateAutoComplete(GenerateAutoCompleteRequest request, ServerCallContext context)
     {
-        var cmd = new AutoComplete.Features.StartAutoComplete.V1.StartAutoCompleteCommand(
+        var cmd = new AutoComplete.Features.GenerateAutoComplete.V1.GenerateAutoCompleteCommand(
             Guid.Parse(request.UserId),
-            request.Title,
-            request.AiModelId);
+            request.Prompt,
+            (AutoComplete.Enums.CompletionMode)(int)request.Mode,
+            request.ModelId);
 
         var result = await _mediator.Send(cmd, context.CancellationToken);
 
-        return new StartAutoCompleteResponse
+        return new GenerateAutoCompleteResponse
         {
-            SessionId = result.Id.ToString()
+            Completion = result.Completion,
+            TokensUsed = result.TokensUsed,
+            EstimatedCost = (double)result.EstimatedCost,
+            ModelId = result.ModelId,
+            ProviderName = result.ProviderName ?? string.Empty
         };
     }
 
-    public override async Task<DeleteAutoCompleteResponse> DeleteAutoComplete(DeleteAutoCompleteRequest request, ServerCallContext context)
+    public override async Task StreamAutoComplete(StreamAutoCompleteRequest request, IServerStreamWriter<StreamAutoCompleteResponse> responseStream, ServerCallContext context)
     {
-        var cmd = new AutoComplete.Features.DeleteAutoComplete.V1.DeleteAutoCompleteCommand(Guid.Parse(request.SessionId));
-        var result = await _mediator.Send(cmd, context.CancellationToken);
+        var cmd = new AutoComplete.Features.StreamAutoComplete.V1.StreamAutoCompleteCommand(
+            Guid.Parse(request.UserId),
+            request.Prompt);
 
-        return new DeleteAutoCompleteResponse
+        var stream = _mediator.CreateStream(cmd, context.CancellationToken);
+
+        await foreach (var item in stream)
         {
-            SessionId = result.Id.ToString()
-        };
-    }
-
-    public override async Task<GetAutoCompleteHistoryResponse> GetAutoCompleteHistory(GetAutoCompleteHistoryRequest request, ServerCallContext context)
-    {
-        var query = new AutoComplete.Features.GetAutoCompleteHistory.V1.GetAutoCompleteHistory(Guid.Parse(request.UserId));
-        var result = await _mediator.Send(query, context.CancellationToken);
-
-        var response = new GetAutoCompleteHistoryResponse();
-
-        foreach (var dto in result.AutoCompleteDtos)
-        {
-            var summary = new AutoCompleteSummary
+            await responseStream.WriteAsync(new StreamAutoCompleteResponse
             {
-                Id = dto.Id.ToString(),
-                Title = dto.Title,
-                Summary = dto.Summary,
-                AiModelId = dto.AiModelId,
-                SessionStatus = dto.SessionStatus,
-                TotalTokens = dto.TotalTokens
-            };
-
-            // Map last sent timestamp if available
-            if (dto.LastSentAt != default)
-            {
-                var utc = DateTime.SpecifyKind(dto.LastSentAt.ToUniversalTime(), DateTimeKind.Utc);
-                summary.LastSentAt = Timestamp.FromDateTime(utc);
-            }
-
-            // AutoCompletes are not included in AutoCompleteDto currently; leave messages empty.
-            response.AutoCompletes.Add(summary);
+                Text = item
+            });
         }
-
-        return response;
     }
 }

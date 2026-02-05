@@ -8,6 +8,7 @@ using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Resume.Data;
 using Resume.Data.Seed;
+using Resume.GrpcServer.Services;
 using Resume.Services;
 
 namespace Resume.Extensions;

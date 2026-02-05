@@ -3,12 +3,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Grpc.Core;
 using MediatR;
-using Google.Protobuf.WellKnownTypes;
-using CodeGen;
+using CodeGen.GrpcServer.Protos;
+
+using Protos = CodeGen.GrpcServer.Protos;
 
 namespace CodeGen.GrpcServer.Services;
 
-public class CodeGenGrpcService : CodeGen.CodeGenGrpcService.CodeGenGrpcServiceBase
+public class CodeGenGrpcService : Protos.CodeGenGrpcService.CodeGenGrpcServiceBase
 {
     private readonly IMediator _mediator;
 
@@ -17,62 +18,63 @@ public class CodeGenGrpcService : CodeGen.CodeGenGrpcService.CodeGenGrpcServiceB
         _mediator = mediator;
     }
 
-    public override async Task<StartCodeGenResponse> StartCodeGen(StartCodeGenRequest request, ServerCallContext context)
+    public override async Task<GenerateCodeResponse> GenerateCode(GenerateCodeRequest request, ServerCallContext context)
     {
-        var cmd = new CodeGen.Features.StartCodeGen.V1.StartCodeGenCommand(
+        var cmd = new CodeGen.Features.GenerateCode.V1.GenerateCodeCommand(
             Guid.Parse(request.UserId),
-            request.Title,
-            request.AiModelId);
+            request.Prompt,
+            request.Language,
+            (CodeGen.Enums.CodeQualityLevel)(int)request.Quality,
+            (CodeGen.Enums.CodeStyle)(int)request.Style,
+            request.IncludeComments,
+            request.ModelId);
 
         var result = await _mediator.Send(cmd, context.CancellationToken);
 
-        return new StartCodeGenResponse
+        return new GenerateCodeResponse
         {
-            SessionId = result.Id.ToString()
+            SessionId = result.SessionId.ToString(),
+            ResultId = result.ResultId.ToString(),
+            Code = result.Code,
+            ModelId = result.ModelId,
+            ProviderName = result.ProviderName ?? string.Empty
         };
     }
 
-    public override async Task<DeleteCodeGenResponse> DeleteCodeGen(DeleteCodeGenRequest request, ServerCallContext context)
+    public override async Task<ReGenerateCodeResponse> ReGenerateCode(ReGenerateCodeRequest request, ServerCallContext context)
     {
-        var cmd = new CodeGen.Features.DeleteCodeGen.V1.DeleteCodeGenCommand(Guid.Parse(request.SessionId));
+        var cmd = new CodeGen.Features.ReGenerateCode.V1.ReGenerateCodeCommand(
+            Guid.Parse(request.UserId),
+            Guid.Parse(request.SessionId),
+            request.Instruction,
+            request.ModelId);
+
         var result = await _mediator.Send(cmd, context.CancellationToken);
 
-        return new DeleteCodeGenResponse
+        return new ReGenerateCodeResponse
         {
-            SessionId = result.Id.ToString()
+            ResultId = result.ResultId.ToString(),
+            Code = result.Code,
+            ModelId = result.ModelId,
+            ProviderName = result.ProviderName ?? string.Empty
         };
     }
 
-    public override async Task<GetCodeGenHistoryResponse> GetCodeGenHistory(GetCodeGenHistoryRequest request, ServerCallContext context)
+    public override async Task StreamGenerateCode(StreamGenerateCodeRequest request, IServerStreamWriter<StreamGenerateCodeResponse> responseStream, ServerCallContext context)
     {
-        var query = new CodeGen.Features.GetCodeGenHistory.V1.GetCodeGenHistory(Guid.Parse(request.UserId));
-        var result = await _mediator.Send(query, context.CancellationToken);
+        var cmd = new CodeGen.Features.StreamGenerateCode.V1.StreamGenerateCodeCommand(
+            request.Prompt,
+            request.Language);
 
-        var response = new GetCodeGenHistoryResponse();
+        var stream = _mediator.CreateStream(cmd, context.CancellationToken);
 
-        foreach (var dto in result.CodeGenDtos)
+        await foreach (var item in stream)
         {
-            var summary = new CodeGenSummary
+            await responseStream.WriteAsync(new StreamGenerateCodeResponse
             {
-                Id = dto.Id.ToString(),
-                Title = dto.Title,
-                Summary = dto.Summary,
-                AiModelId = dto.AiModelId,
-                SessionStatus = dto.SessionStatus,
-                TotalTokens = dto.TotalTokens
-            };
-
-            // Map last sent timestamp if available
-            if (dto.LastSentAt != default)
-            {
-                var utc = DateTime.SpecifyKind(dto.LastSentAt.ToUniversalTime(), DateTimeKind.Utc);
-                summary.LastSentAt = Timestamp.FromDateTime(utc);
-            }
-
-            // CodeGens are not included in CodeGenDto currently; leave messages empty.
-            response.CodeGens.Add(summary);
+                Text = item
+            });
         }
-
-        return response;
     }
 }
+

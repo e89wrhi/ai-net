@@ -1,55 +1,41 @@
 syntax = "proto3";
 
 package AutoComplete;
-import "google/protobuf/timestamp.proto";
+
+option csharp_namespace = "AutoComplete.GrpcServer.Protos";
 
 service AutoCompleteGrpcService {
-  rpc StartAutoComplete (StartAutoCompleteRequest) returns (StartAutoCompleteResponse);
-  rpc DeleteAutoComplete (DeleteAutoCompleteRequest) returns (DeleteAutoCompleteResponse);
-  rpc GetAutoCompleteHistory (GetAutoCompleteHistoryRequest) returns (GetAutoCompleteHistoryResponse);
+  rpc GenerateAutoComplete (GenerateAutoCompleteRequest) returns (GenerateAutoCompleteResponse);
+  rpc StreamAutoComplete (StreamAutoCompleteRequest) returns (stream StreamAutoCompleteResponse);
 }
 
-message StartAutoCompleteRequest {
+enum CompletionMode {
+  INLINE = 0;
+  MULTI_LINE = 1;
+  CODE = 2;
+  TEXT = 3;
+}
+
+message GenerateAutoCompleteRequest {
   string user_id = 1;
-  string title = 2;
-  string ai_model_id = 3;
+  string prompt = 2;
+  CompletionMode mode = 3;
+  string model_id = 4;
 }
 
-message StartAutoCompleteResponse {
-  string session_id = 1;
+message GenerateAutoCompleteResponse {
+  string completion = 1;
+  int64 tokens_used = 2;
+  double estimated_cost = 3;
+  string model_id = 4;
+  string provider_name = 5;
 }
 
-message DeleteAutoCompleteRequest {
-  string session_id = 1;
-}
-
-message DeleteAutoCompleteResponse {
-  string session_id = 1;
-}
-
-message GetAutoCompleteHistoryRequest {
+message StreamAutoCompleteRequest {
   string user_id = 1;
+  string prompt = 2;
 }
 
-message AutoComplete {
-  string id = 1;
-  string content = 2;
-  string sender = 3;
-  google.protobuf.Timestamp sent_at = 4;
-  int32 token_used = 5;
-}
-
-message AutoCompleteSummary {
-  string id = 1;
-  string title = 2;
-  string summary = 3;
-  string ai_model_id = 4;
-  string session_status = 5;
-  google.protobuf.Timestamp last_sent_at = 6;
-  int32 total_tokens = 7;
-  repeated AutoComplete messages = 8;
-}
-
-message GetAutoCompleteHistoryResponse {
-  repeated AutoCompleteSummary autoCompletes = 1;
+message StreamAutoCompleteResponse {
+  string text = 1;
 }

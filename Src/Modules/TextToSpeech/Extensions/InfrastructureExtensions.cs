@@ -8,6 +8,7 @@ using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using TextToSpeech.Data;
 using TextToSpeech.Data.Seed;
+using TextToSpeech.GrpcServer.Services;
 using TextToSpeech.Services;
 
 namespace TextToSpeech.Extensions;

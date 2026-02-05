@@ -3,22 +3,62 @@ syntax = "proto3";
 package payment;
 import "google/protobuf/timestamp.proto";
 
+option csharp_namespace = "Payment.GrpcServer.Protos";
+
 service PaymentGrpcService {
-  rpc RecordUsageCharge (RecordUsageChargeRequest) returns (RecordUsageChargeResponse);
+  rpc CreateSubscription (CreateSubscriptionRequest) returns (CreateSubscriptionResponse);
+  rpc CancelSubscription (CancelSubscriptionRequest) returns (CancelSubscriptionResponse);
+  rpc GetSubscription (GetSubscriptionRequest) returns (GetSubscriptionResponse);
   rpc GetInvoices (GetInvoicesRequest) returns (GetInvoicesResponse);
+  rpc GenerateInvoice (GenerateInvoiceRequest) returns (GenerateInvoiceResponse);
+  rpc RecordUsageCharge (RecordUsageChargeRequest) returns (RecordUsageChargeResponse);
+  rpc AnalyzeInvoice (AnalyzeInvoiceRequest) returns (AnalyzeInvoiceResponse);
+  rpc ForecastSpending (ForecastSpendingRequest) returns (ForecastSpendingResponse);
 }
 
-message RecordUsageChargeRequest {
-  string subscription_id = 1;
-  string token_used = 2;
-  string description = 3;
-  double cost = 4;
-  string currency = 5;
-  string module = 6;
+enum BillingCycle {
+  MONTHLY = 0;
+  QUARTERLY = 1;
+  YEARLY = 2;
 }
 
-message RecordUsageChargeResponse {
+message CreateSubscriptionRequest {
+  string user_id = 1;
+  string plan_name = 2;
+  double plan_price = 3;
+  string plan_currency = 4;
+  BillingCycle plan_cycle = 5;
+  int32 max_requests_per_day = 6;
+  int32 max_tokens_per_month = 7;
+}
+
+message CreateSubscriptionResponse {
   string id = 1;
+}
+
+message CancelSubscriptionRequest {
+  string subscription_id = 1;
+}
+
+message CancelSubscriptionResponse {
+  string id = 1;
+}
+
+message GetSubscriptionRequest {
+  string user_id = 1;
+}
+
+message Subscription {
+  string id = 1;
+  string user_id = 2;
+  string plan = 3;
+  string status = 4;
+  google.protobuf.Timestamp started_at = 5;
+  google.protobuf.Timestamp expires_at = 6;
+}
+
+message GetSubscriptionResponse {
+  Subscription subscription = 1;
 }
 
 message GetInvoicesRequest {
@@ -37,4 +77,48 @@ message Invoice {
 
 message GetInvoicesResponse {
   repeated Invoice invoices = 1;
+}
+
+message GenerateInvoiceRequest {
+  string subscription_id = 1;
+  double amount = 2;
+  string currency = 3;
+  string line_items = 4;
+}
+
+message GenerateInvoiceResponse {
+  string id = 1;
+}
+
+message RecordUsageChargeRequest {
+  string subscription_id = 1;
+  string token_used = 2;
+  string description = 3;
+  double cost = 4;
+  string currency = 5;
+  string module = 6;
+}
+
+message RecordUsageChargeResponse {
+  string id = 1;
+}
+
+message AnalyzeInvoiceRequest {
+  string invoice_id = 1;
+}
+
+message AnalyzeInvoiceResponse {
+  string summary = 1;
+  string analysis = 2;
+  bool has_anomalies = 3;
+}
+
+message ForecastSpendingRequest {
+  string user_id = 1;
+}
+
+message ForecastSpendingResponse {
+  double forecasted_amount = 1;
+  string currency = 2;
+  string insights = 3;
 }

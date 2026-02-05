@@ -8,6 +8,7 @@ using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Sentiment.Data;
 using Sentiment.Data.Seed;
+using Sentiment.GrpcServer.Services;
 using Sentiment.Services;
 
 namespace Sentiment.Extensions;

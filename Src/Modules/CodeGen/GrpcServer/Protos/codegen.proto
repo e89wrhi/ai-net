@@ -1,55 +1,65 @@
 syntax = "proto3";
 
 package CodeGen;
-import "google/protobuf/timestamp.proto";
+
+option csharp_namespace = "CodeGen.GrpcServer.Protos";
 
 service CodeGenGrpcService {
-  rpc StartCodeGen (StartCodeGenRequest) returns (StartCodeGenResponse);
-  rpc DeleteCodeGen (DeleteCodeGenRequest) returns (DeleteCodeGenResponse);
-  rpc GetCodeGenHistory (GetCodeGenHistoryRequest) returns (GetCodeGenHistoryResponse);
+  rpc GenerateCode (GenerateCodeRequest) returns (GenerateCodeResponse);
+  rpc ReGenerateCode (ReGenerateCodeRequest) returns (ReGenerateCodeResponse);
+  rpc StreamGenerateCode (StreamGenerateCodeRequest) returns (stream StreamGenerateCodeResponse);
 }
 
-message StartCodeGenRequest {
+enum CodeQualityLevel {
+  DRAFT = 0;
+  PRODUCTION_READY = 1;
+  OPTIMIZED = 2;
+}
+
+enum CodeStyle {
+  MINIMAL = 0;
+  STANDARD = 1;
+  ENTERPRISE = 2;
+  FUNCTIONAL = 3;
+}
+
+message GenerateCodeRequest {
   string user_id = 1;
-  string title = 2;
-  string ai_model_id = 3;
+  string prompt = 2;
+  string language = 3;
+  CodeQualityLevel quality = 4;
+  CodeStyle style = 5;
+  bool include_comments = 6;
+  string model_id = 7;
 }
 
-message StartCodeGenResponse {
+message GenerateCodeResponse {
   string session_id = 1;
+  string result_id = 2;
+  string code = 3;
+  string model_id = 4;
+  string provider_name = 5;
 }
 
-message DeleteCodeGenRequest {
-  string session_id = 1;
-}
-
-message DeleteCodeGenResponse {
-  string session_id = 1;
-}
-
-message GetCodeGenHistoryRequest {
+message ReGenerateCodeRequest {
   string user_id = 1;
+  string session_id = 2;
+  string instruction = 3;
+  string model_id = 4;
 }
 
-message CodeGen {
-  string id = 1;
-  string content = 2;
-  string sender = 3;
-  google.protobuf.Timestamp sent_at = 4;
-  int32 token_used = 5;
+message ReGenerateCodeResponse {
+  string result_id = 1;
+  string code = 2;
+  string model_id = 3;
+  string provider_name = 4;
 }
 
-message CodeGenSummary {
-  string id = 1;
-  string title = 2;
-  string summary = 3;
-  string ai_model_id = 4;
-  string session_status = 5;
-  google.protobuf.Timestamp last_sent_at = 6;
-  int32 total_tokens = 7;
-  repeated CodeGen messages = 8;
+message StreamGenerateCodeRequest {
+  string prompt = 1;
+  string language = 2;
 }
 
-message GetCodeGenHistoryResponse {
-  repeated CodeGenSummary codegens = 1;
+message StreamGenerateCodeResponse {
+  string text = 1;
 }

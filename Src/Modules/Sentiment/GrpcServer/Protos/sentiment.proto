@@ -1,55 +1,49 @@
 syntax = "proto3";
 
 package Sentiment;
-import "google/protobuf/timestamp.proto";
+
+option csharp_namespace = "Sentiment.GrpcServer.Protos";
 
 service SentimentGrpcService {
-  rpc StartSentiment (StartSentimentRequest) returns (StartSentimentResponse);
-  rpc DeleteSentiment (DeleteSentimentRequest) returns (DeleteSentimentResponse);
-  rpc GetSentimentHistory (GetSentimentHistoryRequest) returns (GetSentimentHistoryResponse);
+  rpc AnalyzeSentiment (AnalyzeSentimentRequest) returns (AnalyzeSentimentResponse);
+  rpc AnalyzeSentimentDetailed (AnalyzeSentimentDetailedRequest) returns (AnalyzeSentimentDetailedResponse);
 }
 
-message StartSentimentRequest {
+enum SentimentDetailLevel {
+  BASIC = 0;
+  STANDARD = 1;
+  DETAILED = 2;
+}
+
+message AnalyzeSentimentRequest {
   string user_id = 1;
-  string title = 2;
-  string ai_model_id = 3;
+  string text = 2;
+  string model_id = 3;
 }
 
-message StartSentimentResponse {
+message AnalyzeSentimentResponse {
   string session_id = 1;
+  string result_id = 2;
+  string sentiment = 3;
+  double score = 4;
+  string model_id = 5;
+  string provider_name = 6;
 }
 
-message DeleteSentimentRequest {
-  string session_id = 1;
-}
-
-message DeleteSentimentResponse {
-  string session_id = 1;
-}
-
-message GetSentimentHistoryRequest {
+message AnalyzeSentimentDetailedRequest {
   string user_id = 1;
+  string text = 2;
+  string language = 3;
+  SentimentDetailLevel detail_level = 4;
+  string model_id = 5;
 }
 
-message Sentiment {
-  string id = 1;
-  string content = 2;
-  string sender = 3;
-  google.protobuf.Timestamp sent_at = 4;
-  int32 token_used = 5;
-}
-
-message SentimentSummary {
-  string id = 1;
-  string title = 2;
-  string summary = 3;
-  string ai_model_id = 4;
-  string session_status = 5;
-  google.protobuf.Timestamp last_sent_at = 6;
-  int32 total_tokens = 7;
-  repeated Sentiment messages = 8;
-}
-
-message GetSentimentHistoryResponse {
-  repeated SentimentSummary sentiments = 1;
+message AnalyzeSentimentDetailedResponse {
+  string session_id = 1;
+  string result_id = 2;
+  string sentiment = 3;
+  double score = 4;
+  string explanation = 5;
+  string model_id = 6;
+  string provider_name = 7;
 }

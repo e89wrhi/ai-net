@@ -5,6 +5,7 @@ using AiOrchestration.Extensions;
 using FluentValidation;
 using LearningAssistant.Data;
 using LearningAssistant.Data.Seed;
+using LearningAssistant.GrpcServer.Services;
 using LearningAssistant.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.AI;
@@ -40,7 +41,7 @@ public static class InfrastructureExtensions
     public static WebApplication UseAssistantModules(this WebApplication app)
     { 
         app.UseMigration<LearningDbContext>();
-        app.MapGrpcService<AssistantGrpcService>();
+        app.MapGrpcService<LearningAssistantGrpcService>();
 
         return app;
     }

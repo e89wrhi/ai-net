@@ -1,55 +1,42 @@
 syntax = "proto3";
 
 package SpeechToText;
-import "google/protobuf/timestamp.proto";
+
+option csharp_namespace = "SpeechToText.GrpcServer.Protos";
 
 service SpeechToTextGrpcService {
-  rpc StartSpeechToText (StartSpeechToTextRequest) returns (StartSpeechToTextResponse);
-  rpc DeleteSpeechToText (DeleteSpeechToTextRequest) returns (DeleteSpeechToTextResponse);
-  rpc GetSpeechToTextHistory (GetSpeechToTextHistoryRequest) returns (GetSpeechToTextHistoryResponse);
+  rpc TranscribeAudio (TranscribeAudioRequest) returns (TranscribeAudioResponse);
+  rpc StreamTranscribeAudio (StreamTranscribeAudioRequest) returns (stream StreamTranscribeAudioResponse);
 }
 
-message StartSpeechToTextRequest {
+enum SpeechToTextDetailLevel {
+  BASIC = 0;
+  STANDARD = 1;
+  DETAILED = 2;
+}
+
+message TranscribeAudioRequest {
   string user_id = 1;
-  string title = 2;
-  string ai_model_id = 3;
+  string audio_url = 2;
+  string language = 3;
+  bool include_punctuation = 4;
+  SpeechToTextDetailLevel detail_level = 5;
+  string model_id = 6;
 }
 
-message StartSpeechToTextResponse {
+message TranscribeAudioResponse {
   string session_id = 1;
+  string result_id = 2;
+  string transcript = 3;
+  string model_id = 4;
+  string provider_name = 5;
 }
 
-message DeleteSpeechToTextRequest {
-  string session_id = 1;
+message StreamTranscribeAudioRequest {
+  string audio_url = 1;
+  string language = 2;
 }
 
-message DeleteSpeechToTextResponse {
-  string session_id = 1;
-}
-
-message GetSpeechToTextHistoryRequest {
-  string user_id = 1;
-}
-
-message SpeechToText {
-  string id = 1;
-  string content = 2;
-  string sender = 3;
-  google.protobuf.Timestamp sent_at = 4;
-  int32 token_used = 5;
-}
-
-message SpeechToTextSummary {
-  string id = 1;
-  string title = 2;
-  string summary = 3;
-  string ai_model_id = 4;
-  string session_status = 5;
-  google.protobuf.Timestamp last_sent_at = 6;
-  int32 total_tokens = 7;
-  repeated SpeechToText messages = 8;
-}
-
-message GetSpeechToTextHistoryResponse {
-  repeated SpeechToTextSummary speechtotexts = 1;
+message StreamTranscribeAudioResponse {
+  string text = 1;
 }

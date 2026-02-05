@@ -5,6 +5,7 @@ using AiOrchestration.Extensions;
 using FluentValidation;
 using ImageGen.Data;
 using ImageGen.Data.Seed;
+using ImageGen.GrpcServer.Services;
 using ImageGen.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.AI;

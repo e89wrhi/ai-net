@@ -3,12 +3,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Grpc.Core;
 using MediatR;
-using Google.Protobuf.WellKnownTypes;
-using Summary;
+using Summary.GrpcServer.Protos;
+
+using Protos = Summary.GrpcServer.Protos;
 
 namespace Summary.GrpcServer.Services;
 
-public class SummaryGrpcService : Summary.SummaryGrpcService.SummaryGrpcServiceBase
+public class SummaryGrpcService : Protos.SummaryGrpcService.SummaryGrpcServiceBase
 {
     private readonly IMediator _mediator;
 
@@ -17,62 +18,43 @@ public class SummaryGrpcService : Summary.SummaryGrpcService.SummaryGrpcServiceB
         _mediator = mediator;
     }
 
-    public override async Task<StartSummaryResponse> StartSummary(StartSummaryRequest request, ServerCallContext context)
+    public override async Task<SummarizeTextResponse> SummarizeText(SummarizeTextRequest request, ServerCallContext context)
     {
-        var cmd = new Summary.Features.StartSummary.V1.StartSummaryCommand(
+        var cmd = new Summary.Features.SummarizeText.V1.SummarizeTextCommand(
             Guid.Parse(request.UserId),
-            request.Title,
-            request.AiModelId);
+            request.Text,
+            (Summary.Enums.SummaryDetailLevel)(int)request.DetailLevel,
+            request.Language,
+            request.ModelId);
 
         var result = await _mediator.Send(cmd, context.CancellationToken);
 
-        return new StartSummaryResponse
+        return new SummarizeTextResponse
         {
-            SessionId = result.Id.ToString()
+            SessionId = result.SessionId.ToString(),
+            ResultId = result.ResultId.ToString(),
+            Summary = result.Summary,
+            ModelId = result.ModelId,
+            ProviderName = result.ProviderName ?? string.Empty
         };
     }
 
-    public override async Task<DeleteSummaryResponse> DeleteSummary(DeleteSummaryRequest request, ServerCallContext context)
+    public override async Task StreamSummarizeText(StreamSummarizeTextRequest request, IServerStreamWriter<StreamSummarizeTextResponse> responseStream, ServerCallContext context)
     {
-        var cmd = new Summary.Features.DeleteSummary.V1.DeleteSummaryCommand(Guid.Parse(request.SessionId));
-        var result = await _mediator.Send(cmd, context.CancellationToken);
+        var cmd = new Summary.Features.StreamSummarizeText.V1.StreamSummarizeTextCommand(
+            request.Text,
+            (Summary.Enums.SummaryDetailLevel)(int)request.DetailLevel,
+            request.Language);
 
-        return new DeleteSummaryResponse
+        var stream = _mediator.CreateStream(cmd, context.CancellationToken);
+
+        await foreach (var item in stream)
         {
-            SessionId = result.Id.ToString()
-        };
-    }
-
-    public override async Task<GetSummaryHistoryResponse> GetSummaryHistory(GetSummaryHistoryRequest request, ServerCallContext context)
-    {
-        var query = new Summary.Features.GetSummaryHistory.V1.GetSummaryHistory(Guid.Parse(request.UserId));
-        var result = await _mediator.Send(query, context.CancellationToken);
-
-        var response = new GetSummaryHistoryResponse();
-
-        foreach (var dto in result.SummaryDtos)
-        {
-            var summary = new SummarySummary
+            await responseStream.WriteAsync(new StreamSummarizeTextResponse
             {
-                Id = dto.Id.ToString(),
-                Title = dto.Title,
-                Summary = dto.Summary,
-                AiModelId = dto.AiModelId,
-                SessionStatus = dto.SessionStatus,
-                TotalTokens = dto.TotalTokens
-            };
-
-            // Map last sent timestamp if available
-            if (dto.LastSentAt != default)
-            {
-                var utc = DateTime.SpecifyKind(dto.LastSentAt.ToUniversalTime(), DateTimeKind.Utc);
-                summary.LastSentAt = Timestamp.FromDateTime(utc);
-            }
-
-            // Summarys are not included in SummaryDto currently; leave messages empty.
-            response.Summarys.Add(summary);
+                Text = item
+            });
         }
-
-        return response;
     }
 }
+

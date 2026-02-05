@@ -8,6 +8,7 @@ using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Summary.Data;
 using Summary.Data.Seed;
+using Summary.GrpcServer.Services;
 using Summary.Services;
 
 namespace Summary.Extensions;

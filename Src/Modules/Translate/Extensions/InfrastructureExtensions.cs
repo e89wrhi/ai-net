@@ -8,6 +8,7 @@ using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Translate.Data;
 using Translate.Data.Seed;
+using Translate.GrpcServer.Services;
 using Translate.Services;
 
 namespace Translate.Extensions;

@@ -4,6 +4,7 @@ using AI.Common.Web;
 using AiOrchestration.Extensions;
 using CodeDebug.Data;
 using CodeDebug.Data.Seed;
+using CodeDebug.GrpcServer.Services;
 using CodeDebug.Services;
 using FluentValidation;
 using Microsoft.AspNetCore.Builder;

@@ -3,12 +3,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Grpc.Core;
 using MediatR;
-using Google.Protobuf.WellKnownTypes;
-using Sentiment;
+using Sentiment.GrpcServer.Protos;
+
+using Protos = Sentiment.GrpcServer.Protos;
 
 namespace Sentiment.GrpcServer.Services;
 
-public class SentimentGrpcService : Sentiment.SentimentGrpcService.SentimentGrpcServiceBase
+public class SentimentGrpcService : Protos.SentimentGrpcService.SentimentGrpcServiceBase
 {
     private readonly IMediator _mediator;
 
@@ -17,62 +18,47 @@ public class SentimentGrpcService : Sentiment.SentimentGrpcService.SentimentGrpc
         _mediator = mediator;
     }
 
-    public override async Task<StartSentimentResponse> StartSentiment(StartSentimentRequest request, ServerCallContext context)
+    public override async Task<AnalyzeSentimentResponse> AnalyzeSentiment(AnalyzeSentimentRequest request, ServerCallContext context)
     {
-        var cmd = new Sentiment.Features.StartSentiment.V1.StartSentimentCommand(
+        var cmd = new Sentiment.Features.AnalyzeSentiment.V1.AnalyzeSentimentCommand(
             Guid.Parse(request.UserId),
-            request.Title,
-            request.AiModelId);
+            request.Text,
+            request.ModelId);
 
         var result = await _mediator.Send(cmd, context.CancellationToken);
 
-        return new StartSentimentResponse
+        return new AnalyzeSentimentResponse
         {
-            SessionId = result.Id.ToString()
+            SessionId = result.SessionId.ToString(),
+            ResultId = result.ResultId.ToString(),
+            Sentiment = result.Sentiment,
+            Score = result.Score,
+            ModelId = result.ModelId,
+            ProviderName = result.ProviderName ?? string.Empty
         };
     }
 
-    public override async Task<DeleteSentimentResponse> DeleteSentiment(DeleteSentimentRequest request, ServerCallContext context)
+    public override async Task<AnalyzeSentimentDetailedResponse> AnalyzeSentimentDetailed(AnalyzeSentimentDetailedRequest request, ServerCallContext context)
     {
-        var cmd = new Sentiment.Features.DeleteSentiment.V1.DeleteSentimentCommand(Guid.Parse(request.SessionId));
+        var cmd = new Sentiment.Features.AnalyzeSentimentDetailed.V1.AnalyzeSentimentDetailedCommand(
+            Guid.Parse(request.UserId),
+            request.Text,
+            request.Language,
+            (Sentiment.Enums.SentimentDetailLevel)(int)request.DetailLevel,
+            request.ModelId);
+
         var result = await _mediator.Send(cmd, context.CancellationToken);
 
-        return new DeleteSentimentResponse
+        return new AnalyzeSentimentDetailedResponse
         {
-            SessionId = result.Id.ToString()
+            SessionId = result.SessionId.ToString(),
+            ResultId = result.ResultId.ToString(),
+            Sentiment = result.Sentiment,
+            Score = result.Score,
+            Explanation = result.Explanation,
+            ModelId = result.ModelId,
+            ProviderName = result.ProviderName ?? string.Empty
         };
-    }
-
-    public override async Task<GetSentimentHistoryResponse> GetSentimentHistory(GetSentimentHistoryRequest request, ServerCallContext context)
-    {
-        var query = new Sentiment.Features.GetSentimentHistory.V1.GetSentimentHistory(Guid.Parse(request.UserId));
-        var result = await _mediator.Send(query, context.CancellationToken);
-
-        var response = new GetSentimentHistoryResponse();
-
-        foreach (var dto in result.SentimentDtos)
-        {
-            var summary = new SentimentSummary
-            {
-                Id = dto.Id.ToString(),
-                Title = dto.Title,
-                Summary = dto.Summary,
-                AiModelId = dto.AiModelId,
-                SessionStatus = dto.SessionStatus,
-                TotalTokens = dto.TotalTokens
-            };
-
-            // Map last sent timestamp if available
-            if (dto.LastSentAt != default)
-            {
-                var utc = DateTime.SpecifyKind(dto.LastSentAt.ToUniversalTime(), DateTimeKind.Utc);
-                summary.LastSentAt = Timestamp.FromDateTime(utc);
-            }
-
-            // Sentiments are not included in SentimentDto currently; leave messages empty.
-            response.Sentiments.Add(summary);
-        }
-
-        return response;
     }
 }
+

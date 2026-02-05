@@ -3,12 +3,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Grpc.Core;
 using MediatR;
-using Google.Protobuf.WellKnownTypes;
-using Translate;
+using Translate.GrpcServer.Protos;
+
+using Protos = Translate.GrpcServer.Protos;
 
 namespace Translate.GrpcServer.Services;
 
-public class TranslateGrpcService : Translate.TranslateGrpcService.TranslateGrpcServiceBase
+public class TranslateGrpcService : Protos.TranslateGrpcService.TranslateGrpcServiceBase
 {
     private readonly IMediator _mediator;
 
@@ -17,62 +18,63 @@ public class TranslateGrpcService : Translate.TranslateGrpcService.TranslateGrpc
         _mediator = mediator;
     }
 
-    public override async Task<StartTranslateResponse> StartTranslate(StartTranslateRequest request, ServerCallContext context)
+    public override async Task<TranslateTextResponse> TranslateText(TranslateTextRequest request, ServerCallContext context)
     {
-        var cmd = new Translate.Features.StartTranslate.V1.StartTranslateCommand(
+        var cmd = new Translate.Features.TranslateText.V1.TranslateTextCommand(
             Guid.Parse(request.UserId),
-            request.Title,
-            request.AiModelId);
+            request.Text,
+            request.SourceLanguage,
+            request.TargetLanguage,
+            (Translate.Enums.TranslationDetailLevel)(int)request.DetailLevel,
+            request.ModelId);
 
         var result = await _mediator.Send(cmd, context.CancellationToken);
 
-        return new StartTranslateResponse
+        return new TranslateTextResponse
         {
-            SessionId = result.Id.ToString()
+            SessionId = result.SessionId.ToString(),
+            ResultId = result.ResultId.ToString(),
+            TranslatedText = result.TranslatedText,
+            ModelId = result.ModelId,
+            ProviderName = result.ProviderName ?? string.Empty
         };
     }
 
-    public override async Task<DeleteTranslateResponse> DeleteTranslate(DeleteTranslateRequest request, ServerCallContext context)
+    public override async Task StreamTranslateText(StreamTranslateTextRequest request, IServerStreamWriter<StreamTranslateTextResponse> responseStream, ServerCallContext context)
     {
-        var cmd = new Translate.Features.DeleteTranslate.V1.DeleteTranslateCommand(Guid.Parse(request.SessionId));
-        var result = await _mediator.Send(cmd, context.CancellationToken);
+        var cmd = new Translate.Features.StreamTranslateText.V1.StreamTranslateTextCommand(
+            request.Text,
+            request.SourceLanguage,
+            request.TargetLanguage,
+            (Translate.Enums.TranslationDetailLevel)(int)request.DetailLevel);
 
-        return new DeleteTranslateResponse
+        var stream = _mediator.CreateStream(cmd, context.CancellationToken);
+
+        await foreach (var item in stream)
         {
-            SessionId = result.Id.ToString()
-        };
-    }
-
-    public override async Task<GetTranslateHistoryResponse> GetTranslateHistory(GetTranslateHistoryRequest request, ServerCallContext context)
-    {
-        var query = new Translate.Features.GetTranslateHistory.V1.GetTranslateHistory(Guid.Parse(request.UserId));
-        var result = await _mediator.Send(query, context.CancellationToken);
-
-        var response = new GetTranslateHistoryResponse();
-
-        foreach (var dto in result.TranslateDtos)
-        {
-            var summary = new TranslateSummary
+            await responseStream.WriteAsync(new StreamTranslateTextResponse
             {
-                Id = dto.Id.ToString(),
-                Title = dto.Title,
-                Summary = dto.Summary,
-                AiModelId = dto.AiModelId,
-                SessionStatus = dto.SessionStatus,
-                TotalTokens = dto.TotalTokens
-            };
-
-            // Map last sent timestamp if available
-            if (dto.LastSentAt != default)
-            {
-                var utc = DateTime.SpecifyKind(dto.LastSentAt.ToUniversalTime(), DateTimeKind.Utc);
-                summary.LastSentAt = Timestamp.FromDateTime(utc);
-            }
-
-            // Translates are not included in TranslateDto currently; leave messages empty.
-            response.Translates.Add(summary);
+                Text = item
+            });
         }
+    }
 
-        return response;
+    public override async Task<DetectLanguageResponse> DetectLanguage(DetectLanguageRequest request, ServerCallContext context)
+    {
+        var cmd = new Translate.Features.DetectLanguage.V1.DetectLanguageCommand(
+            Guid.Parse(request.UserId),
+            request.Text,
+            request.ModelId);
+
+        var result = await _mediator.Send(cmd, context.CancellationToken);
+
+        return new DetectLanguageResponse
+        {
+            DetectedLanguageCode = result.DetectedLanguageCode,
+            Confidence = result.Confidence,
+            ModelId = result.ModelId,
+            ProviderName = result.ProviderName ?? string.Empty
+        };
     }
 }
+

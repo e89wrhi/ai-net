@@ -1,12 +1,20 @@
 syntax = "proto3";
 
 package chatBot;
+
 import "google/protobuf/timestamp.proto";
+
+option csharp_namespace = "ChatBot.GrpcServer.Protos";
 
 service ChatGrpcService {
   rpc StartChat (StartChatRequest) returns (StartChatResponse);
+  rpc SendMessage (SendMessageRequest) returns (SendMessageResponse);
+  rpc GenerateResponse (GenerateResponseRequest) returns (GenerateResponseResponse);
+  rpc StreamResponse (StreamResponseRequest) returns (stream StreamResponseResponse);
   rpc DeleteChat (DeleteChatRequest) returns (DeleteChatResponse);
   rpc GetChatHistory (GetChatHistoryRequest) returns (GetChatHistoryResponse);
+  rpc GetChatById (GetChatByIdRequest) returns (GetChatByIdResponse);
+  rpc UpdateChat (UpdateChatRequest) returns (UpdateChatResponse);
 }
 
 message StartChatRequest {
@@ -19,6 +27,35 @@ message StartChatResponse {
   string session_id = 1;
 }
 
+message SendMessageRequest {
+  string session_id = 1;
+  string content = 2;
+}
+
+message SendMessageResponse {
+  string message_id = 1;
+}
+
+message GenerateResponseRequest {
+  string session_id = 1;
+  string model_id = 4;
+}
+
+message GenerateResponseResponse {
+  string message_id = 1;
+  string content = 2;
+  string model_id = 3;
+  string provider_name = 4;
+}
+
+message StreamResponseRequest {
+  string session_id = 1;
+}
+
+message StreamResponseResponse {
+  string text = 1;
+}
+
 message DeleteChatRequest {
   string session_id = 1;
 }
@@ -29,6 +66,25 @@ message DeleteChatResponse {
 
 message GetChatHistoryRequest {
   string user_id = 1;
+}
+
+message GetChatByIdRequest {
+  string session_id = 1;
+  string user_id = 2;
+}
+
+message GetChatByIdResponse {
+  ChatSummary chat = 1;
+}
+
+message UpdateChatRequest {
+  string session_id = 1;
+  string user_id = 2;
+  string title = 3;
+}
+
+message UpdateChatResponse {
+  bool success = 1;
 }
 
 message Message {

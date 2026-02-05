@@ -1,6 +1,6 @@
 namespace Identity.Data.Configurations;
 
-using Identity.Identity.Models;
+using global::Identity.Identity.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

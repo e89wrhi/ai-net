@@ -3,11 +3,36 @@ syntax = "proto3";
 package user;
 import "google/protobuf/timestamp.proto";
 
+option csharp_namespace = "User.GrpcServer.Protos";
+
 service UserGrpcService {
-  rpc GetUser (GetUserRequest) returns (GetUserResponse);
+  rpc CreateUser (CreateUserRequest) returns (CreateUserResponse);
+  rpc UpdateUser (UpdateUserRequest) returns (UpdateUserResponse);
+  rpc GetUserActivity (GetUserActivityRequest) returns (GetUserActivityResponse);
+  rpc GetUserUsageSummary (GetUserUsageSummaryRequest) returns (GetUserUsageSummaryResponse);
+  rpc ResetUsageCounters (ResetUsageCountersRequest) returns (ResetUsageCountersResponse);
+  rpc TrackActivity (TrackActivityRequest) returns (TrackActivityResponse);
 }
 
-message GetUserRequest {
+message CreateUserRequest {
+  string user_id = 1;
+}
+
+message CreateUserResponse {
+  string id = 1;
+}
+
+message UpdateUserRequest {
+  string session_id = 1;
+  string full_name = 2;
+  string email = 3;
+}
+
+message UpdateUserResponse {
+  bool success = 1;
+}
+
+message GetUserActivityRequest {
   string user_id = 1;
 }
 
@@ -19,6 +44,14 @@ message UserActivity {
   google.protobuf.Timestamp timestamp = 5;
 }
 
+message GetUserActivityResponse {
+  repeated UserActivity activities = 1;
+}
+
+message GetUserUsageSummaryRequest {
+  string user_id = 1;
+}
+
 message UserUsage {
   string id = 1;
   string period = 2;
@@ -26,11 +59,27 @@ message UserUsage {
   int32 requests_count = 4;
 }
 
-message GetUserResponse {
+message GetUserUsageSummaryResponse {
+  repeated UserUsage usages = 1;
+}
+
+message ResetUsageCountersRequest {
+  string user_id = 1;
+}
+
+message ResetUsageCountersResponse {
   string id = 1;
-  string username = 2;
-  string email = 3;
-  string full_name = 4;
-  repeated UserActivity activities = 5;
-  repeated UserUsage usages = 6;
+}
+
+message TrackActivityRequest {
+  string user_id = 1;
+  int32 module = 2;
+  string action = 3;
+  string resource_id = 4;
+  string ip_address = 5;
+  string user_agent = 6;
+}
+
+message TrackActivityResponse {
+  string id = 1;
 }

@@ -1,12 +1,14 @@
 syntax = "proto3";
 
 package meeting;
-import "google/protobuf/timestamp.proto";
+
+option csharp_namespace = "Meeting.GrpcServer.Protos";
 
 service MeetingGrpcService {
   rpc UploadMeetingAudio (UploadMeetingAudioRequest) returns (UploadMeetingAudioResponse);
-  rpc TranscribeMeeting (TranscribeMeetingRequest) returns (TranscribeMeetingResponse);
-  rpc GetMeetingSummary (GetMeetingSummaryRequest) returns (GetMeetingSummaryResponse);
+  rpc AnalyzeMeetingTranscript (AnalyzeMeetingTranscriptRequest) returns (AnalyzeMeetingTranscriptResponse);
+  rpc ExtractActionItems (ExtractActionItemsRequest) returns (ExtractActionItemsResponse);
+  rpc StreamMeetingAnalysis (StreamMeetingAnalysisRequest) returns (stream StreamMeetingAnalysisResponse);
 }
 
 message UploadMeetingAudioRequest {
@@ -19,30 +21,43 @@ message UploadMeetingAudioResponse {
   string id = 1;
 }
 
-message TranscribeMeetingRequest {
+message AnalyzeMeetingTranscriptRequest {
+  string user_id = 1;
+  string transcript = 2;
+  bool include_action_items = 3;
+  bool include_descisions = 4;
+  string language = 5;
+  string model_id = 6;
+}
+
+message AnalyzeMeetingTranscriptResponse {
   string meeting_id = 1;
-  string transcript_text = 2;
-  string language = 3;
-  double confidence = 4;
-  string summary = 5;
-}
-
-message TranscribeMeetingResponse {
-  string id = 1;
-}
-
-message GetMeetingSummaryRequest {
-  string meeting_id = 1;
-}
-
-message MeetingSummary {
-  string id = 1;
-  string title = 2;
+  string transcript_id = 2;
   string summary = 3;
-  string status = 4;
-  google.protobuf.Timestamp created_at = 5;
+  string model_id = 4;
+  string provider_name = 5;
 }
 
-message GetMeetingSummaryResponse {
-  MeetingSummary summary = 1;
+message ExtractActionItemsRequest {
+  string user_id = 1;
+  string transcript = 2;
+  bool include_action_items = 3;
+  bool include_descisions = 4;
+  string language = 5;
+  string model_id = 6;
+}
+
+message ExtractActionItemsResponse {
+  string meeting_id = 1;
+  string action_items = 2;
+  string model_id = 3;
+  string provider_name = 4;
+}
+
+message StreamMeetingAnalysisRequest {
+  string transcript = 1;
+}
+
+message StreamMeetingAnalysisResponse {
+  string text = 1;
 }

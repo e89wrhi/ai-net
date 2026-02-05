@@ -1,55 +1,69 @@
 syntax = "proto3";
 
 package CodeDebug;
-import "google/protobuf/timestamp.proto";
+
+option csharp_namespace = "CodeDebug.GrpcServer.Protos";
 
 service CodeDebugGrpcService {
-  rpc StartCodeDebug (StartCodeDebugRequest) returns (StartCodeDebugResponse);
-  rpc DeleteCodeDebug (DeleteCodeDebugRequest) returns (DeleteCodeDebugResponse);
-  rpc GetCodeDebugHistory (GetCodeDebugHistoryRequest) returns (GetCodeDebugHistoryResponse);
+  rpc AnalyzeCode (AnalyzeCodeRequest) returns (AnalyzeCodeResponse);
+  rpc StreamAnalyzeCode (StreamAnalyzeCodeRequest) returns (stream StreamAnalyzeCodeResponse);
+  rpc GenerateFix (GenerateFixRequest) returns (GenerateFixResponse);
 }
 
-message StartCodeDebugRequest {
+enum ProgrammingLanguage {
+  CSHARP = 0;
+  JAVASCRIPT = 1;
+  TYPESCRIPT = 2;
+  PYTHON = 3;
+  JAVA = 4;
+  GO = 5;
+  RUST = 6;
+  OTHER = 7;
+}
+
+enum DebugDepth {
+  SURFACE = 0;
+  STANDARD = 1;
+  DEEP = 2;
+}
+
+message AnalyzeCodeRequest {
   string user_id = 1;
-  string title = 2;
-  string ai_model_id = 3;
+  string code = 2;
+  ProgrammingLanguage language = 3;
+  DebugDepth depth = 4;
+  bool include_suggestion = 5;
+  string model_id = 6;
 }
 
-message StartCodeDebugResponse {
+message AnalyzeCodeResponse {
   string session_id = 1;
-}
-
-message DeleteCodeDebugRequest {
-  string session_id = 1;
-}
-
-message DeleteCodeDebugResponse {
-  string session_id = 1;
-}
-
-message GetCodeDebugHistoryRequest {
-  string user_id = 1;
-}
-
-message CodeDebug {
-  string id = 1;
-  string content = 2;
-  string sender = 3;
-  google.protobuf.Timestamp sent_at = 4;
-  int32 token_used = 5;
-}
-
-message CodeDebugSummary {
-  string id = 1;
-  string title = 2;
+  string report_id = 2;
   string summary = 3;
-  string ai_model_id = 4;
-  string session_status = 5;
-  google.protobuf.Timestamp last_sent_at = 6;
-  int32 total_tokens = 7;
-  repeated CodeDebug messages = 8;
+  int32 issue_count = 4;
+  string model_id = 5;
+  string provider_name = 6;
 }
 
-message GetCodeDebugHistoryResponse {
-  repeated CodeDebugSummary codedebugs = 1;
+message StreamAnalyzeCodeRequest {
+  string code = 1;
+  ProgrammingLanguage language = 2;
+}
+
+message StreamAnalyzeCodeResponse {
+  string text = 1;
+}
+
+message GenerateFixRequest {
+  string user_id = 1;
+  string session_id = 2;
+  string report_id = 3;
+  string model_id = 4;
+}
+
+message GenerateFixResponse {
+  string fixed_code = 1;
+  string explanation = 2;
+  string model_id = 3;
+  string provider_name = 4;
 }

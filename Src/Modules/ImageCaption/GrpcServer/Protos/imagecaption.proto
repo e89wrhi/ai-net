@@ -1,36 +1,46 @@
 syntax = "proto3";
 
-package imageCaption;
-import "google/protobuf/timestamp.proto";
+package ImageCaption;
 
-service ImageGrpcService {
-  rpc GenerateCaption (GenerateCaptionRequest) returns (GenerateCaptionResponse);
-  rpc GetImageCaptions (GetImageCaptionsRequest) returns (GetImageCaptionsResponse);
+option csharp_namespace = "ImageCaption.GrpcServer.Protos";
+
+service ImageCaptionGrpcService {
+  rpc CaptionImage (CaptionImageRequest) returns (CaptionImageResponse);
+  rpc AnalyzeImage (AnalyzeImageRequest) returns (AnalyzeImageResponse);
 }
 
-message GenerateCaptionRequest {
-  string image_id = 1;
-  string caption_text = 2;
-  double confidence = 3;
-  string language = 4;
+enum CaptionDetailLevel {
+  SHORT = 0;
+  STANDARD = 1;
+  DETAILED = 2;
 }
 
-message GenerateCaptionResponse {
-  string id = 1;
+message CaptionImageRequest {
+  string user_id = 1;
+  string image_url_or_base64 = 2;
+  CaptionDetailLevel level = 3;
+  string model_id = 4;
 }
 
-message GetImageCaptionsRequest {
-  string image_id = 1;
+message CaptionImageResponse {
+  string session_id = 1;
+  string result_id = 2;
+  string caption = 3;
+  string model_id = 4;
+  string provider_name = 5;
 }
 
-message Caption {
-  string id = 1;
-  string text = 2;
-  double confidence = 3;
-  string language = 4;
-  google.protobuf.Timestamp created_at = 5;
+message AnalyzeImageRequest {
+  string user_id = 1;
+  string image_url_or_base64 = 2;
+  CaptionDetailLevel level = 3;
+  string model_id = 4;
 }
 
-message GetImageCaptionsResponse {
-  repeated Caption captions = 1;
+message AnalyzeImageResponse {
+  string session_id = 1;
+  string result_id = 2;
+  string analysis = 3;
+  string model_id = 4;
+  string provider_name = 5;
 }

@@ -3,12 +3,15 @@ using System.Threading;
 using System.Threading.Tasks;
 using Grpc.Core;
 using MediatR;
-using Google.Protobuf.WellKnownTypes;
-using ImageEdit;
+using ImageEdit.Features.EnhanceImage.V1;
+using ImageEdit.Features.RemoveBackground.V1;
+using ImageEdit.GrpcServer.Protos;
+
+using Protos = ImageEdit.GrpcServer.Protos;
 
 namespace ImageEdit.GrpcServer.Services;
 
-public class ImageEditGrpcService : ImageEdit.ImageEditGrpcService.ImageEditGrpcServiceBase
+public class ImageEditGrpcService : Protos.ImageEditGrpcService.ImageEditGrpcServiceBase
 {
     private readonly IMediator _mediator;
 
@@ -17,62 +20,47 @@ public class ImageEditGrpcService : ImageEdit.ImageEditGrpcService.ImageEditGrpc
         _mediator = mediator;
     }
 
-    public override async Task<StartImageEditResponse> StartImageEdit(StartImageEditRequest request, ServerCallContext context)
+    public override async Task<EnhanceImageResponse> EnhanceImage(EnhanceImageRequest request, ServerCallContext context)
     {
-        var cmd = new ImageEdit.Features.StartImageEdit.V1.StartImageEditCommand(
+        var cmd = new AIEnhanceImageCommand(
             Guid.Parse(request.UserId),
-            request.Title,
-            request.AiModelId);
+            request.ImageUrlOrBase64,
+            request.Prompt,
+            (ImageEdit.Enums.ImageEditQuality)(int)request.Quality,
+            (ImageEdit.Enums.ImageFormat)(int)request.Format,
+             request.ModelId);
 
         var result = await _mediator.Send(cmd, context.CancellationToken);
 
-        return new StartImageEditResponse
+        return new EnhanceImageResponse
         {
-            SessionId = result.Id.ToString()
+            SessionId = result.SessionId.ToString(),
+            ResultId = result.ResultId.ToString(),
+            ResultImageUrl = result.ResultImageUrl,
+            ModelId = result.ModelId,
+            ProviderName = result.ProviderName ?? string.Empty
         };
     }
 
-    public override async Task<DeleteImageEditResponse> DeleteImageEdit(DeleteImageEditRequest request, ServerCallContext context)
+    public override async Task<RemoveBackgroundResponse> RemoveBackground(RemoveBackgroundRequest request, ServerCallContext context)
     {
-        var cmd = new ImageEdit.Features.DeleteImageEdit.V1.DeleteImageEditCommand(Guid.Parse(request.SessionId));
+        var cmd = new RemoveBackgroundCommand(
+            Guid.Parse(request.UserId),
+            request.ImageUrlOrBase64,
+            (ImageEdit.Enums.ImageEditQuality)(int)request.Quality,
+            (ImageEdit.Enums.ImageFormat)(int)request.Format,
+             request.ModelId);
+
         var result = await _mediator.Send(cmd, context.CancellationToken);
 
-        return new DeleteImageEditResponse
+        return new RemoveBackgroundResponse
         {
-            SessionId = result.Id.ToString()
+            SessionId = result.SessionId.ToString(),
+            ResultId = result.ResultId.ToString(),
+            ResultImageUrl = result.ResultImageUrl,
+            ModelId = result.ModelId,
+            ProviderName = result.ProviderName ?? string.Empty
         };
-    }
-
-    public override async Task<GetImageEditHistoryResponse> GetImageEditHistory(GetImageEditHistoryRequest request, ServerCallContext context)
-    {
-        var query = new ImageEdit.Features.GetImageEditHistory.V1.GetImageEditHistory(Guid.Parse(request.UserId));
-        var result = await _mediator.Send(query, context.CancellationToken);
-
-        var response = new GetImageEditHistoryResponse();
-
-        foreach (var dto in result.ImageEditDtos)
-        {
-            var summary = new ImageEditSummary
-            {
-                Id = dto.Id.ToString(),
-                Title = dto.Title,
-                Summary = dto.Summary,
-                AiModelId = dto.AiModelId,
-                SessionStatus = dto.SessionStatus,
-                TotalTokens = dto.TotalTokens
-            };
-
-            // Map last sent timestamp if available
-            if (dto.LastSentAt != default)
-            {
-                var utc = DateTime.SpecifyKind(dto.LastSentAt.ToUniversalTime(), DateTimeKind.Utc);
-                summary.LastSentAt = Timestamp.FromDateTime(utc);
-            }
-
-            // ImageEdits are not included in ImageEditDto currently; leave messages empty.
-            response.ImageEdits.Add(summary);
-        }
-
-        return response;
     }
 }
+
