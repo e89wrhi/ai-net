@@ -1,6 +1,8 @@
 ﻿using AI.Common.Core;
 using Microsoft.Extensions.AI;
+using Microsoft.EntityFrameworkCore;
 using User.Data;
+using Ardalis.GuardClauses;
 
 namespace User.Features.AnalyzeUserUsage.V1;
 
@@ -18,7 +20,7 @@ internal class AnalyzeUserUsageWithAIHandler : ICommandHandler<AnalyzeUserUsageW
 
     public async Task<AnalyzeUserUsageWithAICommandResult> Handle(AnalyzeUserUsageWithAICommand request, CancellationToken cancellationToken)
     {
-        Guard.Against.Default(request.UserId, nameof(request.UserId));
+        Ardalis.GuardClauses.Guard.Against.Default(request.UserId, nameof(request.UserId));
 
         var userId = UserId.Of(request.UserId);
 
@@ -33,9 +35,9 @@ internal class AnalyzeUserUsageWithAIHandler : ICommandHandler<AnalyzeUserUsageW
             ? $"Total Requests: {userAnalytics.TotalRequests}, Today: {userAnalytics.TodayRequests}, Week: {userAnalytics.WeekRequests}, Month: {userAnalytics.MonthRequests}."
             : "No global usage data available.";
 
-        var moduleStats = string.Join("; ", moduleAnalytics.Select(m => $"{m.Module.Value}: {m.TotalRequests} total"));
+        var moduleStats = string.Join("; ", moduleAnalytics.Select(m => $"{m.Module}: {m.TotalRequests} total"));
 
-        var systemPrompt = "You are an AI usage analyst. Analyze the following stats for a user and provide a professional summary of their behavior and personalized recommendations to improve their productivity with AI.";
+        var systemPrompt = "You are an AI usage analyst. Analyze the following stats for a user and provide a professional summary of their behavior and personalized recommendations to improve their productivity with AI. Please use the following format:\nSummary: [The summary]\nRecommendations: [The recommendations]";
 
         var messages = new List<ChatMessage>
         {
@@ -46,15 +48,19 @@ internal class AnalyzeUserUsageWithAIHandler : ICommandHandler<AnalyzeUserUsageW
         var completion = await _chatClient.CompleteAsync(messages, cancellationToken: cancellationToken);
         var responseText = completion.Message.Text ?? "Analysis failed.";
 
-        // Split response into summary and recommendations (or mock split)
+        // Split response into summary and recommendations
         var summary = responseText;
-        var recommendations = "Try exploring new generative styles or automating repetitive tasks with our CodeGen module.";
+        var recommendations = "Continue exploring the platform to see more personalized recommendations.";
 
-        if (responseText.Contains("Recommendations:"))
+        if (responseText.Contains("Recommendations:", StringComparison.OrdinalIgnoreCase))
         {
-            var parts = responseText.Split("Recommendations:");
-            summary = parts[0].Trim();
+            var parts = responseText.Split(new[] { "Recommendations:", "recommendations:" }, StringSplitOptions.None);
+            summary = parts[0].Replace("Summary:", "", StringComparison.OrdinalIgnoreCase).Trim();
             recommendations = parts[1].Trim();
+        }
+        else if (responseText.Contains("Summary:", StringComparison.OrdinalIgnoreCase))
+        {
+            summary = responseText.Replace("Summary:", "", StringComparison.OrdinalIgnoreCase).Trim();
         }
 
         return new AnalyzeUserUsageWithAIResult(summary, recommendations);

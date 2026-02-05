@@ -8,7 +8,7 @@ using TextToSpeech;
 
 namespace TextToSpeech.GrpcServer.Services;
 
-public class TextToSpeechGrpcService : TextToSpeech.TextToSpeechGrpcService.TextToSpeechGrpcServiceBase
+public class TextToSpeechGrpcService : TextToSpeechGrpcService.TextToSpeechGrpcServiceBase
 {
     private readonly IMediator _mediator;
 

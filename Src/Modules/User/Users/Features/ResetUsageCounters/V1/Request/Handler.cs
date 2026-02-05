@@ -1,5 +1,10 @@
-﻿using MediatR;
+﻿using AI.Common.Core;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 using User.Data;
+using User.ValueObjects;
+using User.Exceptions;
+using Ardalis.GuardClauses;
 
 namespace User.Features.ResetUsageCounters.V1;
 
@@ -17,18 +22,22 @@ internal class ResetUsageCounterHandler : IRequestHandler<ResetUsageCounterComma
     {
         Guard.Against.Null(request, nameof(request));
 
-        var user = await _dbContext.Users.FindAsync(new object[] { UserId.Of(request.UserId) }, cancellationToken);
+        var userId = UserId.Of(request.UserId);
+        var analytics = await _dbContext.UserAnalytics
+            .FirstOrDefaultAsync(x => x.User == userId, cancellationToken);
 
-        if (user == null)
+        if (analytics == null)
         {
             throw new UserNotFoundException(request.UserId);
         }
 
-        user.ResetUsages();
+        analytics.ResetDaily();
+        analytics.ResetWeekly();
+        analytics.ResetMonthly();
 
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        return new ResetUsageCounterCommandResponse(user.Id.Value);
+        return new ResetUsageCounterCommandResponse(analytics.Id.Value);
     }
 }
 

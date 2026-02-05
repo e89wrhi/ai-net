@@ -6,6 +6,6 @@ public class CreateUserCommandValidator : AbstractValidator<CreateUserCommand>
 {
     public CreateUserCommandValidator()
     {
-        RuleFor(x => x.SessionId).NotEmpty();
+        RuleFor(x => x.UserId).NotEmpty();
     }
 }

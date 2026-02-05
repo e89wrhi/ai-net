@@ -5,73 +5,86 @@ using System.Threading.Tasks;
 using Grpc.Core;
 using MediatR;
 using Google.Protobuf.WellKnownTypes;
+using Microsoft.EntityFrameworkCore;
 using User.Data;
-using MongoDB.Driver;
-using MongoDB.Driver.Linq;
 
 namespace User.GrpcServer.Services;
 
 public class UserGrpcService : User.UserGrpcService.UserGrpcServiceBase
 {
     private readonly IMediator _mediator;
-    private readonly UserReadDbContext _readDbContext;
+    private readonly UserDbContext _dbContext;
 
-    public UserGrpcService(IMediator mediator, UserReadDbContext readDbContext)
+    public UserGrpcService(IMediator mediator, UserDbContext dbContext)
     {
         _mediator = mediator;
-        _readDbContext = readDbContext;
+        _dbContext = dbContext;
     }
 
     public override async Task<GetUserResponse> GetUser(GetUserRequest request, ServerCallContext context)
     {
-        var id = Guid.Parse(request.UserId);
-
-        var user = await _readDbContext.User.AsQueryable()
-            .FirstOrDefaultAsync(x => x.Id == id, context.CancellationToken);
-
-        if (user == null)
+        if (!Guid.TryParse(request.UserId, out var id))
         {
-            throw new RpcException(new Status(StatusCode.NotFound, $"User '{request.UserId}' not found"));
+            throw new RpcException(new Status(StatusCode.InvalidArgument, "Invalid UserId format"));
         }
+
+        var userId = ValueObjects.UserId.Of(id);
+
+        // Fetch analytics
+        var analytics = await _dbContext.UserAnalytics
+            .FirstOrDefaultAsync(x => x.User == userId, context.CancellationToken);
+
+        // Fetch sessions
+        var sessions = await _dbContext.Sessions
+            .Include(x => x.Actions)
+            .Where(x => x.UserId == userId)
+            .OrderByDescending(x => x.LastActivityAt)
+            .Take(10) // Limit for Grpc
+            .ToListAsync(context.CancellationToken);
 
         var response = new GetUserResponse
         {
-            Id = user.Id.ToString(),
-            Username = user.Username ?? string.Empty,
-            Email = user.Email ?? string.Empty,
-            FullName = user.FullName ?? string.Empty
+            Id = id.ToString(),
+            Username = "User_" + id.ToString().Substring(0, 8), // Placeholder as User entity is in Identity module
+            Email = string.Empty,
+            FullName = "AI User"
         };
 
-        foreach (var a in user.Activities)
+        foreach (var session in sessions)
         {
-            var act = new UserActivity
+            foreach (var a in session.Actions)
             {
-                Id = a.Id.ToString(),
-                Module = a.Module ?? string.Empty,
-                Action = a.Action ?? string.Empty,
-                ResourceId = a.ResourceId.ToString()
-            };
+                var act = new UserActivity
+                {
+                    Id = a.Id.Value.ToString(),
+                    Module = "Internal",
+                    Action = a.ActionType,
+                    ResourceId = session.Id.Value.ToString()
+                };
 
-            if (a.TimeStamp != default)
-            {
-                var utc = DateTime.SpecifyKind(a.TimeStamp.ToUniversalTime().DateTime, DateTimeKind.Utc);
+                var utc = DateTime.SpecifyKind(a.PerformedAt.ToUniversalTime(), DateTimeKind.Utc);
                 act.Timestamp = Timestamp.FromDateTime(utc);
-            }
 
-            response.Activities.Add(act);
+                response.Activities.Add(act);
+            }
         }
 
-        foreach (var u in user.Usages)
+        if (analytics != null)
         {
-            var usage = new UserUsage
+            response.Usages.Add(new UserUsage
             {
-                Id = u.Id.ToString(),
-                Period = u.Period ?? string.Empty,
-                TokenUsed = u.TokenUsed ?? string.Empty,
-                RequestsCount = u.RequestsCount
-            };
-
-            response.Usages.Add(usage);
+                Id = analytics.Id.Value.ToString(),
+                Period = "Lifetime",
+                TokenUsed = "N/A",
+                RequestsCount = (int)analytics.TotalRequests
+            });
+            
+            response.Usages.Add(new UserUsage
+            {
+                Id = analytics.Id.Value.ToString() + "_today",
+                Period = "Today",
+                RequestsCount = (int)analytics.TodayRequests
+            });
         }
 
         return response;
