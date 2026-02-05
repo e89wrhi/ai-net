@@ -52,9 +52,7 @@ internal class TrackActivityHandler : IRequestHandler<TrackActivityCommand, Trac
         analytics.Increment(DateTime.UtcNow);
 
         // Update module analytics
-        // Generate a deterministic Guid from the module enum value
-        var moduleGuid = new Guid(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, (byte)request.Module + 1);
-        var moduleId = ModuleId.Of(moduleGuid);
+        var moduleId = ModuleId.Of(request.ResourceId);
         var moduleAnalytics = await _dbContext.ModuleAnalytics
             .FirstOrDefaultAsync(x => x.Module == moduleId, cancellationToken);
         

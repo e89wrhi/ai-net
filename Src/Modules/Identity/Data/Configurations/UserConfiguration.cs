@@ -1,6 +1,6 @@
 namespace Identity.Data.Configurations;
 
-using Identity.Models;
+using Identity.Identity.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -8,9 +8,12 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 {
     public void Configure(EntityTypeBuilder<User> builder)
     {
-        builder.ToTable(nameof(User));
+        builder.ToTable("users");
 
-        // // ref: https://learn.microsoft.com/en-us/ef/core/saving/concurrency?tabs=fluent-api
+        builder.Property(r => r.FirstName).HasMaxLength(100).IsRequired();
+        builder.Property(r => r.LastName).HasMaxLength(100).IsRequired();
+        builder.Property(r => r.PassPortNumber).HasMaxLength(50);
+
         builder.Property(r => r.Version).IsConcurrencyToken();
     }
 }

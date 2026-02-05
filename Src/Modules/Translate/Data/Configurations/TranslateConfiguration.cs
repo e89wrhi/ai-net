@@ -1,28 +1,68 @@
 ﻿using Translate.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using AI.Common.Core;
+using Translate.ValueObjects;
+using global::Translate.Enums;
+using AiOrchestration.ValueObjects;
 
 namespace Translate.Data.Configurations;
 
-using AI.Common.Core;
-using global::Translate.Enums;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Microsoft.Extensions.Logging;
-using System;
-
-public class TranslateConfiguration : IEntityTypeConfiguration<Translate>
+public class TranslateConfiguration : IEntityTypeConfiguration<TranslationSession>
 {
-    public void Configure(EntityTypeBuilder<Translate> builder)
+    public void Configure(EntityTypeBuilder<TranslationSession> builder)
     {
-
-        builder.ToTable("translations");
+        builder.ToTable("translation_sessions");
 
         builder.HasKey(r => r.Id);
         builder.Property(r => r.Id).ValueGeneratedNever()
-            .HasConversion<Guid>(itemId => itemId.Value, dbId => SessionId.Of(dbId));
+            .HasConversion(itemId => itemId.Value, dbId => TranslateId.Of(dbId));
+        
+        builder.Property(r => r.UserId)
+            .HasConversion(id => id.Value, value => UserId.Of(value));
 
+        builder.Property(r => r.AiModelId)
+            .HasConversion(id => id.Value, value => ModelId.Of(value));
+
+        builder.Property(r => r.Status)
+            .HasConversion<int>();
+
+        builder.ComplexProperty(r => r.Configuration, b => 
+        {
+             b.Property(c => c.SourceLanguage)
+                .HasConversion(v => v.Value, v => LanguageCode.Of(v))
+                .HasColumnName("SourceLanguage");
+             b.Property(c => c.TargetLanguage)
+                .HasConversion(v => v.Value, v => LanguageCode.Of(v))
+                .HasColumnName("TargetLanguage");
+             b.Property(c => c.DetailLevel)
+                .HasConversion<int>()
+                .HasColumnName("DetailLevel");
+        });
+
+        builder.ComplexProperty(r => r.TotalTokens, b => 
+        {
+             b.Property(t => t.Value).HasColumnName("TotalTokens");
+        });
+
+        builder.ComplexProperty(r => r.TotalCost, b => 
+        {
+             b.Property(t => t.Value).HasColumnName("TotalCost");
+        });
+
+        builder.Property(r => r.LastTranslatedAt);
+        builder.Property(r => r.CreatedAt);
+        builder.Property(r => r.CreatedBy);
+        builder.Property(r => r.LastModified);
+        builder.Property(r => r.LastModifiedBy);
+        builder.Property(r => r.IsDeleted);
         builder.Property(r => r.Version).IsConcurrencyToken();
-
+        
+        builder.HasMany(s => s.Results)
+               .WithOne()
+               .HasForeignKey("SessionId")
+               .OnDelete(DeleteBehavior.Cascade);
+               
+        builder.Navigation(s => s.Results).AutoInclude();
     }
 }

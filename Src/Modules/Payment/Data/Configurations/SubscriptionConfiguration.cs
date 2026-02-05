@@ -1,4 +1,4 @@
-﻿using Payment.Models;
+using Payment.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using AI.Common.Core;
@@ -7,15 +7,15 @@ using global::Payment.Enums;
 
 namespace Payment.Data.Configurations;
 
-public class PaymentConfiguration : IEntityTypeConfiguration<PaymentSession>
+public class SubscriptionConfiguration : IEntityTypeConfiguration<SubscriptionModel>
 {
-    public void Configure(EntityTypeBuilder<PaymentSession> builder)
+    public void Configure(EntityTypeBuilder<SubscriptionModel> builder)
     {
-        builder.ToTable("payment_sessions");
+        builder.ToTable("subscriptions");
 
         builder.HasKey(r => r.Id);
         builder.Property(r => r.Id).ValueGeneratedNever()
-            .HasConversion(itemId => itemId.Value, dbId => PaymentId.Of(dbId));
+            .HasConversion(itemId => itemId.Value, dbId => SubscriptionId.Of(dbId));
         
         builder.Property(r => r.UserId)
             .HasConversion(id => id.Value, value => UserId.Of(value));
@@ -23,19 +23,12 @@ public class PaymentConfiguration : IEntityTypeConfiguration<PaymentSession>
         builder.Property(r => r.Status)
             .HasConversion<int>();
 
-        builder.Property(r => r.PaymentMethod)
-            .HasConversion(pm => pm.Value, v => PaymentMethod.Of(v));
+        builder.Property(r => r.StartedAt);
+        builder.Property(r => r.EndsAt);
+        builder.Property(r => r.MaxRequestsPerDay);
+        builder.Property(r => r.MaxTokensPerMonth);
+        builder.Property(r => r.PlanName).HasMaxLength(200);
 
-        builder.ComplexProperty(r => r.Amount, b => 
-        {
-             b.Property(m => m.Amount).HasColumnName("Amount");
-             b.Property(m => m.Currency).HasColumnName("Currency");
-        });
-
-        builder.Property(r => r.Currency)
-            .HasConversion(c => c.Value, v => CurrencyCode.Of(v));
-
-        builder.Property(r => r.LastUpdatedAt);
         builder.Property(r => r.CreatedAt);
         builder.Property(r => r.CreatedBy);
         builder.Property(r => r.LastModified);
@@ -45,9 +38,15 @@ public class PaymentConfiguration : IEntityTypeConfiguration<PaymentSession>
         
         builder.HasMany(s => s.Invoices)
                .WithOne()
-               .HasForeignKey("PaymentSessionId")
+               .HasForeignKey("SubscriptionId")
+               .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasMany(s => s.Charges)
+               .WithOne()
+               .HasForeignKey("SubscriptionId")
                .OnDelete(DeleteBehavior.Cascade);
                
         builder.Navigation(s => s.Invoices).AutoInclude();
+        builder.Navigation(s => s.Charges).AutoInclude();
     }
 }
