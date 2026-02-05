@@ -3,6 +3,7 @@ using Microsoft.Extensions.AI;
 using Microsoft.EntityFrameworkCore;
 using User.Data;
 using Ardalis.GuardClauses;
+using User.ValueObjects;
 
 namespace User.Features.AnalyzeUserUsage.V1;
 
@@ -45,8 +46,8 @@ internal class AnalyzeUserUsageWithAIHandler : ICommandHandler<AnalyzeUserUsageW
             new ChatMessage(ChatRole.User, $"User Stats: {statsDescription}\nModule Stats: {moduleStats}")
         };
 
-        var completion = await _chatClient.CompleteAsync(messages, cancellationToken: cancellationToken);
-        var responseText = completion.Message.Text ?? "Analysis failed.";
+        var completion = await _chatClient.GetResponseAsync(messages, cancellationToken: cancellationToken);
+        var responseText = completion.Messages[0].Text ?? "Analysis failed.";
 
         // Split response into summary and recommendations
         var summary = responseText;
@@ -63,6 +64,6 @@ internal class AnalyzeUserUsageWithAIHandler : ICommandHandler<AnalyzeUserUsageW
             summary = responseText.Replace("Summary:", "", StringComparison.OrdinalIgnoreCase).Trim();
         }
 
-        return new AnalyzeUserUsageWithAIResult(summary, recommendations);
+        return new AnalyzeUserUsageWithAICommandResult(summary, recommendations);
     }
 }

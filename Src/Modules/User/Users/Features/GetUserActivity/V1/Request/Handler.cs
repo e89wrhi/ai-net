@@ -35,7 +35,7 @@ internal class GetUserActivityHandler : IQueryHandler<GetUserActivity, GetUserAc
             Id = a.Id,
             Module = "Internal", // This could be mapped from session if available
             Action = a.ActionType,
-            TimeStamp = a.OccurredAt,
+            TimeStamp = a.PerformedAt,
             ResourceId = s.Id
         })).ToList();
 

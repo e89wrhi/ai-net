@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using User.Data;
 using System.Text.Json;
 using Ardalis.GuardClauses;
+using User.ValueObjects;
 
 namespace User.Features.GenerateUserPersona.V1;
 
@@ -46,8 +47,8 @@ internal class GenerateUserPersonaWithAIHandler : ICommandHandler<GenerateUserPe
             new ChatMessage(ChatRole.User, $"Usage Data: {stats}\nUser Summary: {userSummary}")
         };
 
-        var completion = await _chatClient.CompleteAsync(messages, cancellationToken: cancellationToken);
-        var responseJson = completion.Message.Text ?? string.Empty;
+        var completion = await _chatClient.GetResponseAsync(messages, cancellationToken: cancellationToken);
+        var responseJson = completion.Messages[0].Text ?? string.Empty;
 
         string personaName = "The Enthusiastic User";
         string description = "A dedicated explorer of AI capabilities across the platform.";
