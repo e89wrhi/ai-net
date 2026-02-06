@@ -1,4 +1,5 @@
 ﻿using AiOrchestration.ValueObjects;
+using AiOrchestration.Models;
 using CodeGen.Data;
 using CodeGen.Enums;
 using CodeGen.Models;
@@ -16,12 +17,14 @@ namespace CodeGen.Features.StreamGenerateCode.V1;
 internal class StreamGenerateCodeHandler : IStreamRequestHandler<StreamGenerateCodeCommand, string>
 {
     private readonly CodeGenDbContext _dbContext;
-    private readonly IAiOrchestrator _chatClient;
+    private readonly IAiOrchestrator _orchestrator;
+    private readonly IAiModelService _modelService;
 
-    public StreamGenerateCodeHandler(CodeGenDbContext dbContext, IAiOrchestrator chatClient)
+    public StreamGenerateCodeHandler(CodeGenDbContext dbContext, IAiOrchestrator orchestrator, IAiModelService modelService)
     {
         _dbContext = dbContext;
-        _chatClient = chatClient;
+        _orchestrator = orchestrator;
+        _modelService = modelService;
     }
 
     public async IAsyncEnumerable<string> Handle(StreamGenerateCodeCommand request, [EnumeratorCancellation] CancellationToken cancellationToken)
@@ -38,10 +41,11 @@ internal class StreamGenerateCodeHandler : IStreamRequestHandler<StreamGenerateC
         var fullCodeBuilder = new StringBuilder();
         int tokenEstimate = 0;
 
-        // Use chatClient to get the best client
-        var chatClient = await _chatClient.GetClientAsync(cancellationToken: cancellationToken);
-        var response = await chatClient.GetResponseAsync(messages, cancellationToken: cancellationToken);
-        foreach (var update in response.Messages)
+        // Use orchestrator to get the client based on requested model criteria
+        var criteria = new ModelCriteria { ModelId = request.ModelId };
+        var chatClient = await _orchestrator.GetClientAsync(criteria, cancellationToken);
+        
+        await foreach (var update in chatClient.GetStreamingResponseAsync(messages, cancellationToken: cancellationToken))
         {
             if (!string.IsNullOrEmpty(update.Text))
             {
@@ -52,17 +56,26 @@ internal class StreamGenerateCodeHandler : IStreamRequestHandler<StreamGenerateC
         }
 
         // Persist
-        await PersistResultAsync(request, fullCodeBuilder.ToString(), tokenEstimate, cancellationToken);
+        await PersistResultAsync(request, fullCodeBuilder.ToString(), tokenEstimate, chatClient, cancellationToken);
     }
 
-    private async Task PersistResultAsync(StreamGenerateCodeCommand request, string fullCode, int tokenUsage, CancellationToken cancellationToken)
+    private async Task PersistResultAsync(StreamGenerateCodeCommand request, string fullCode, int tokenUsage, IChatClient chatClient, CancellationToken cancellationToken)
     {
         try
         {
             var sessionId = CodeGenId.Of(Guid.NewGuid());
-            var userId = UserId.Of(Guid.NewGuid());
-            var modelId = ModelId.Of(_chatClient.Metadata.ModelId ?? "codegen-stream-model");
-            var config = CodeGenerationConfiguration.Of("streaming");
+            var userId = UserId.Of(request.UserId);
+
+            
+            var clientMetadata = chatClient.GetService(typeof(ChatClientMetadata)) as ChatClientMetadata;
+            var modelIdStr = clientMetadata?.DefaultModelId ?? "codegen-stream-model";
+            var modelId = ModelId.Of(modelIdStr);
+            
+            var config = new CodeGenerationConfiguration(
+                Temperature.Of(0.07f),
+                TokenCount.Of(tokenUsage),
+                style: CodeStyle.Enterprise,
+                includeComments: true);
 
             var session = CodeGenerationSession.Create(sessionId, userId, modelId, config);
 
@@ -71,14 +84,18 @@ internal class StreamGenerateCodeHandler : IStreamRequestHandler<StreamGenerateC
             var codeVo = GeneratedCode.Of(fullCode);
             var languageVo = ProgrammingLanguage.Of(request.Language);
             var tokenCountVo = TokenCount.Of(tokenUsage);
-            var costVo = CostEstimate.Of(0);
+            
+            // Get cost from model service
+            var costPerToken = _modelService.GetCostPerToken(modelId);
+            var costValue = (decimal)tokenUsage * costPerToken;
+            var costVo = CostEstimate.Of(costValue);
 
             var result = CodeGenerationResult.Create(
                 resultId,
                 promptVo,
                 codeVo,
                 languageVo,
-                CodeQualityLevel.High,
+                qualityLevel: CodeQualityLevel.Optimized,
                 tokenCountVo,
                 costVo);
 
@@ -93,3 +110,4 @@ internal class StreamGenerateCodeHandler : IStreamRequestHandler<StreamGenerateC
         }
     }
 }
+

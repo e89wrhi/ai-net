@@ -26,7 +26,8 @@ public class StreamResponseEndpoint : IMinimalEndpoint
                         return Results.Unauthorized();
                     }
 
-                    var command = new StreamAiResponseCommand(request.SessionId);
+                    var command = new StreamAiResponseCommand(request.SessionId, request.ModelId);
+
                     return Results.Ok(mediator.CreateStream(command, cancellationToken));
                 })
             .RequireAuthorization(nameof(ApiScope))

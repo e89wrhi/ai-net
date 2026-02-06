@@ -7,6 +7,6 @@ public class GenerateAILessonCommandValidator : AbstractValidator<GenerateLesson
     public GenerateAILessonCommandValidator()
     {
         RuleFor(x => x.Topic).NotEmpty();
-        RuleFor(x => x.Level).NotEmpty();
+        RuleFor(x => x.DifficultyLevel).NotEmpty();
     }
 }

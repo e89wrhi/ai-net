@@ -23,8 +23,11 @@ public class PaymentConfiguration : IEntityTypeConfiguration<PaymentSession>
         builder.Property(r => r.Status)
             .HasConversion<int>();
 
-        builder.Property(r => r.PaymentMethod)
-            .HasConversion(pm => pm.Value, v => PaymentMethod.Of(v));
+        builder.ComplexProperty(r => r.PaymentMethod, b =>
+        {
+            b.Property(m => m.AccountNumber).HasColumnName("AccountNumber");
+            b.Property(m => m.Provider).HasColumnName("Provider");
+        });
 
         builder.ComplexProperty(r => r.Amount, b => 
         {

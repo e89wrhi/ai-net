@@ -16,8 +16,11 @@ public class ResultConfiguration : IEntityTypeConfiguration<ResumeAnalysisResult
         builder.Property(r => r.Id).ValueGeneratedNever()
             .HasConversion(itemId => itemId.Value, dbId => ResultId.Of(dbId));
 
-        builder.Property(r => r.Resume)
-            .HasConversion(p => p.Value, v => ResumeFile.Of(v));
+        builder.ComplexProperty(r => r.Resume, b =>
+        {
+            b.Property(m => m.ResumeUrl).HasColumnName("ResumeUrl");
+            b.Property(m => m.FileName).HasColumnName("FileName");
+        });
 
         builder.Property(r => r.Summary)
             .HasConversion(p => p.Value, v => ResumeSummary.Of(v));

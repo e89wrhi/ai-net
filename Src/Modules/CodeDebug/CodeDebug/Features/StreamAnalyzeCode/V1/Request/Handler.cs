@@ -8,18 +8,21 @@ using Ardalis.GuardClauses;
 using AiOrchestration.Services;
 using System.Runtime.CompilerServices;
 using System.Text;
+using AiOrchestration.Models;
 
 namespace CodeDebug.Features.StreamAnalyzeCode.V1;
 
 internal class StreamAnalyzeCodeHandler : IStreamRequestHandler<StreamAnalyzeCodeCommand, string>
 {
     private readonly CodeDebugDbContext _dbContext;
-    private readonly IAiOrchestrator _chatClient;
+    private readonly IAiOrchestrator _orchestrator;
+    private readonly IAiModelService _modelService;
 
-    public StreamAnalyzeCodeHandler(CodeDebugDbContext dbContext, IAiOrchestrator chatClient)
+    public StreamAnalyzeCodeHandler(CodeDebugDbContext dbContext, IAiOrchestrator orchestrator, IAiModelService modelService)
     {
         _dbContext = dbContext;
-        _chatClient = chatClient;
+        _orchestrator = orchestrator;
+        _modelService = modelService;
     }
 
     public async IAsyncEnumerable<string> Handle(StreamAnalyzeCodeCommand request, [EnumeratorCancellation] CancellationToken cancellationToken)
@@ -36,10 +39,11 @@ internal class StreamAnalyzeCodeHandler : IStreamRequestHandler<StreamAnalyzeCod
         var fullReportBuilder = new StringBuilder();
         int tokenEstimate = 0;
 
-        // Use chatClient to get the best client
-        var chatClient = await _chatClient.GetClientAsync(cancellationToken: cancellationToken);
-        var response = await chatClient.GetResponseAsync(messages, cancellationToken: cancellationToken);
-        foreach (var update in response.Messages)
+        // Use orchestrator to get the client based on requested model criteria
+        var criteria = new ModelCriteria { ModelId = request.ModelId };
+        var chatClient = await _orchestrator.GetClientAsync(criteria, cancellationToken);
+        
+        await foreach (var update in chatClient.GetStreamingResponseAsync(messages, cancellationToken: cancellationToken))
         {
             if (!string.IsNullOrEmpty(update.Text))
             {
@@ -50,17 +54,24 @@ internal class StreamAnalyzeCodeHandler : IStreamRequestHandler<StreamAnalyzeCod
         }
 
         // Persist
-        await PersistReportAsync(request, fullReportBuilder.ToString(), tokenEstimate, cancellationToken);
+        await PersistReportAsync(request, fullReportBuilder.ToString(), tokenEstimate, chatClient, cancellationToken);
     }
 
-    private async Task PersistReportAsync(StreamAnalyzeCodeCommand request, string fullReport, int tokenUsage, CancellationToken cancellationToken)
+    private async Task PersistReportAsync(StreamAnalyzeCodeCommand request, string fullReport, int tokenUsage, IChatClient chatClient, CancellationToken cancellationToken)
     {
         try
         {
             var sessionId = CodeDebugId.Of(Guid.NewGuid());
-            var userId = UserId.Of(Guid.NewGuid());
-            var modelId = ModelId.Of(_chatClient.Metadata.ModelId ?? "debug-stream-model");
-            var config = CodeDebugConfiguration.Of("streaming");
+            var userId = UserId.Of(request.UserId);
+
+            
+            var clientMetadata = chatClient.GetService(typeof(ChatClientMetadata)) as ChatClientMetadata;
+            var modelIdStr = clientMetadata?.DefaultModelId ?? "debug-stream-model";
+            var modelId = ModelId.Of(modelIdStr);
+            
+            var config = new CodeDebugConfiguration(
+                depth: AnalysisDepth.Deep,
+                includeSuggestions: true);
 
             var session = CodeDebugSession.Create(sessionId, userId, modelId, config);
 
@@ -69,7 +80,11 @@ internal class StreamAnalyzeCodeHandler : IStreamRequestHandler<StreamAnalyzeCod
             var summaryVo = DebugSummary.Of(fullReport);
             var issueCountVo = IssueCount.Of(1); // Placeholder or parse
             var tokenCountVo = TokenCount.Of(tokenUsage);
-            var costVo = CostEstimate.Of(0);
+            
+            // Get cost from model service
+            var costPerToken = _modelService.GetCostPerToken(modelId);
+            var costValue = (decimal)tokenUsage * costPerToken;
+            var costVo = CostEstimate.Of(costValue);
 
             var report = CodeDebugReport.Create(reportId, codeVo, request.Language, summaryVo, issueCountVo, tokenCountVo, costVo);
             session.AddReport(report);
@@ -83,4 +98,5 @@ internal class StreamAnalyzeCodeHandler : IStreamRequestHandler<StreamAnalyzeCod
         }
     }
 }
+
 

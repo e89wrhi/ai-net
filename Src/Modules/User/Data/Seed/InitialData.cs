@@ -10,13 +10,14 @@ public static class InitialData
 {
     public static List<UserActivitySession> Users { get; } = new()
     {
-        //UserActivitySession.Create(UserId.Of(Guid.Parse("0f8fad5b-d9cb-469f-a165-70867728950e")), "john_doe", "john@example.com"),
-        //UserActivitySession.Create(UserId.Of(Guid.Parse("1d8fad5b-d9cb-469f-a165-70867728950f")), "jane_smith", "jane@example.com")
+        UserActivitySession.Create(
+            UserActivityId.Of(Guid.Parse("0f8fad5b-d9cb-469f-a165-70867728950e")), 
+            UserId.Of(Guid.Parse("0f8fad5b-d9cb-469f-a165-70867728950e")))
     };
 
     static InitialData()
     {
-        //Users[0].UpdateProfile("John Doe", "AI Enthusiast", "Software Engineer", "https://api.dicebear.com/7.x/avataaars/svg?seed=John");
-        //Users[1].UpdateProfile("Jane Smith", "Data Scientist", "Lead AI Researcher", "https://api.dicebear.com/7.x/avataaars/svg?seed=Jane");
+        Users[0].RecordAction(UserAction.Create("Login", "User logged in successfully"));
+        Users[0].RecordAction(UserAction.Create("ViewProfile", "User viewed their profile"));
     }
 }

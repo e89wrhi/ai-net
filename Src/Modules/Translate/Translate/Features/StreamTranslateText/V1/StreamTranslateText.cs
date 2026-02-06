@@ -25,7 +25,9 @@ public class StreamTranslateTextEndpoint : IMinimalEndpoint
                         return Results.Unauthorized();
                     }
 
-                    var command = new StreamTranslateTextCommand(request.Text, request.SourceLanguage, request.TargetLanguage, request.DetailLevel);
+                    var command = new StreamTranslateTextCommand(userId, request.Text, request.SourceLanguage, request.TargetLanguage, request.DetailLevel, request.ModelId);
+
+
                     return Results.Ok(mediator.CreateStream(command, cancellationToken));
                 })
             .RequireAuthorization(nameof(ApiScope))

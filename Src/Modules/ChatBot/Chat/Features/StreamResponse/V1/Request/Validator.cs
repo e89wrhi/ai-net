@@ -7,5 +7,7 @@ public class StreamAiResponseCommandValidator : AbstractValidator<StreamAiRespon
     public StreamAiResponseCommandValidator()
     {
         RuleFor(x => x.SessionId).NotEmpty();
+        RuleFor(x => x.ModelId).MaximumLength(250).When(x => x.ModelId != null);
+
     }
 }

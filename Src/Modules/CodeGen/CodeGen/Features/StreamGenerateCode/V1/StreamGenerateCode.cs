@@ -23,7 +23,9 @@ public class StreamGenerateCodeEndpoint : IMinimalEndpoint
                         return Results.Unauthorized();
                     }
 
-                    var command = new StreamGenerateCodeCommand(request.Prompt, request.Language);
+                    var command = new StreamGenerateCodeCommand(userId, request.Prompt, request.Language, request.ModelId);
+
+
                     return Results.Ok(mediator.CreateStream(command, cancellationToken));
                 })
             .RequireAuthorization(nameof(ApiScope))

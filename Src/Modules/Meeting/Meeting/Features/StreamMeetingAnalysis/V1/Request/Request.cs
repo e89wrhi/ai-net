@@ -1,3 +1,4 @@
 ﻿namespace Meeting.Features.StreamMeetingAnalysis.V1;
 
-public record StreamMeetingAnalysisRequestDto(string Transcript);
+public record StreamMeetingAnalysisRequestDto(string Transcript, string? ModelId = null);
+

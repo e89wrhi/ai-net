@@ -3,4 +3,6 @@ using MediatR;
 
 namespace CodeDebug.Features.StreamAnalyzeCode.V1;
 
-public record StreamAnalyzeCodeCommand(string Code, ProgrammingLanguage Language) : IStreamRequest<string>;
+public record StreamAnalyzeCodeCommand(Guid UserId, string Code, ProgrammingLanguage Language, string? ModelId = null) : IStreamRequest<string>;
+
+

@@ -2,4 +2,6 @@
 
 namespace Meeting.Features.StreamMeetingAnalysis.V1;
 
-public record StreamMeetingAnalysisCommand(string Transcript) : IStreamRequest<string>;
+public record StreamMeetingAnalysisCommand(Guid UserId, string Transcript, string? ModelId = null) : IStreamRequest<string>;
+
+

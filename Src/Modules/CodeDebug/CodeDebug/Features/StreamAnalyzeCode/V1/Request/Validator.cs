@@ -7,6 +7,8 @@ public class StreamAnalyzeCodeCommandValidator : AbstractValidator<StreamAnalyze
     public StreamAnalyzeCodeCommandValidator()
     {
         RuleFor(x => x.Code).NotEmpty();
-        RuleFor(x => x.Language).NotEmpty();
+        RuleFor(x => x.Language).IsInEnum();
+        RuleFor(x => x.ModelId).MaximumLength(250).When(x => x.ModelId != null);
+
     }
 }

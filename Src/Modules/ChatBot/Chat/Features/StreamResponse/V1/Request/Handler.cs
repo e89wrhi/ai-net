@@ -63,8 +63,9 @@ internal class StreamAiResponseHandler : IStreamRequestHandler<StreamAiResponseC
         }
 
         // Get AI client from orchestrator
-        var criteria = new ModelCriteria { ModelId = chat.AiModelId.Value };
+        var criteria = new ModelCriteria { ModelId = request.ModelId ?? chat.AiModelId.Value };
         var chatClient = await _orchestrator.GetClientAsync(criteria, cancellationToken);
+
 
         // Get model metadata
         var clientMetadata = chatClient.GetService(typeof(ChatClientMetadata)) as ChatClientMetadata;

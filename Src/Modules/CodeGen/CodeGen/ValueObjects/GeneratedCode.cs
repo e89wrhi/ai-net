@@ -21,7 +21,7 @@ public record GeneratedCode
         return new GeneratedCode(value);
     }
 
-    public static implicit operator DateTime(GeneratedCode @value)
+    public static implicit operator string(GeneratedCode @value)
     {
         return @value.Value;
     }

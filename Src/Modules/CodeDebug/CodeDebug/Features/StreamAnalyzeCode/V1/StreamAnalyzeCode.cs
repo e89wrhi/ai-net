@@ -23,7 +23,9 @@ public class StreamAnalyzeCodeEndpoint : IMinimalEndpoint
                         return Results.Unauthorized();
                     }
 
-                    var command = new StreamAnalyzeCodeCommand(request.Code, request.Language);
+                    var command = new StreamAnalyzeCodeCommand(userId, request.Code, request.Language, request.ModelId);
+
+
                     return Results.Ok(mediator.CreateStream(command, cancellationToken));
                 })
             .RequireAuthorization(nameof(ApiScope))

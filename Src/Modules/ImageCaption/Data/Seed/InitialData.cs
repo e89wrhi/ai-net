@@ -1,6 +1,7 @@
 ﻿namespace ImageCaption.Data.Seed;
 
 using AI.Common.Core;
+using AiOrchestration.ValueObjects;
 using global::ImageCaption.Models;
 using global::ImageCaption.ValueObjects;
 using System;
@@ -10,16 +11,34 @@ public static class InitialData
 {
     public static List<ImageCaptionSession> Images { get; } = new()
     {
-        ImageModel.Create(ImageCaptionResultId.Of(Guid.Parse("9a8fad5b-d9cb-469f-a165-70867728950c")), "0f8fad5b-d9cb-469f-a165-70867728950e", ValueObjects.CaptionConfidence.Of("uploads/img1.jpg", "filename.jpg"), 1920, 1080, 500000, "jpg"),
-        ImageModel.Create(ImageCaptionResultId.Of(Guid.Parse("aa8fad5b-d9cb-469f-a165-70867728950d")), "0f8fad5b-d9cb-469f-a165-70867728950e", ValueObjects.CaptionConfidence.Of("uploads/img2.png", "filename.png"), 800, 600, 200000, "png")
+        ImageCaptionSession.Create(
+            ImageCaptionId.Of(Guid.Parse("9a8fad5b-d9cb-469f-a165-70867728950c")), 
+            UserId.Of(Guid.Parse("0f8fad5b-d9cb-469f-a165-70867728950e")), 
+            ModelId.Of("gpt-4-vision"),
+            new ImageCaptionConfiguration(global::ImageCaption.Enums.CaptionDetailLevel.Standard, LanguageCode.Of("en"))),
+        ImageCaptionSession.Create(
+            ImageCaptionId.Of(Guid.Parse("aa8fad5b-d9cb-469f-a165-70867728950d")), 
+            UserId.Of(Guid.Parse("0f8fad5b-d9cb-469f-a165-70867728950e")), 
+            ModelId.Of("gpt-4-vision"),
+            new ImageCaptionConfiguration(global::ImageCaption.Enums.CaptionDetailLevel.Detailed, LanguageCode.Of("en")))
     };
 
     static InitialData()
     {
-        var imageId1 = ImageCaptionResultId.Of(Guid.Parse("9a8fad5b-d9cb-469f-a165-70867728950c"));
-        Images[0].AddCaption(CaptionModel.Create(ImageCaptionId.Of(Guid.NewGuid()), imageId1, "A beautiful sunset over the ocean", 0.98, "en"));
+        Images[0].AddResult(ImageCaptionResult.Create(
+            ImageCaptionResultId.Of(Guid.NewGuid()), 
+            ImageSource.Of("https://example.com/sunset.jpg"),
+            CaptionText.Of("A beautiful sunset over the ocean"),
+            CaptionConfidence.Of(0.98f),
+            TokenCount.Of(100),
+            CostEstimate.Of(0.002m)));
 
-        var imageId2 = ImageCaptionResultId.Of(Guid.Parse("aa8fad5b-d9cb-469f-a165-70867728950d"));
-        Images[1].AddCaption(CaptionModel.Create(ImageCaptionId.Of(Guid.NewGuid()), imageId2, "A group of people working in an office", 0.95, "en"));
+        Images[1].AddResult(ImageCaptionResult.Create(
+            ImageCaptionResultId.Of(Guid.NewGuid()), 
+            ImageSource.Of("https://example.com/office.jpg"),
+            CaptionText.Of("A group of people working in an office"),
+            CaptionConfidence.Of(0.95f),
+            TokenCount.Of(120),
+            CostEstimate.Of(0.0024m)));
     }
 }

@@ -23,7 +23,9 @@ public class StreamSummarizeTextEndpoint : IMinimalEndpoint
                         return Results.Unauthorized();
                     }
 
-                    var command = new StreamSummarizeTextCommand(request.Text, request.DetailLevel, request.Language);
+                    var command = new StreamSummarizeTextCommand(userId, request.Text, request.DetailLevel, request.Language, request.ModelId);
+
+
                     return Results.Ok(mediator.CreateStream(command, cancellationToken));
                 })
             .RequireAuthorization(nameof(ApiScope))

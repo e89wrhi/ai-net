@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using AI.Common.Web;
+using AutoComplete.Enums;
 using Duende.IdentityServer.EntityFramework.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
@@ -26,7 +27,7 @@ public class StreamAutoCompleteEndpoint : IMinimalEndpoint
                         return Results.Unauthorized();
                     }
 
-                    var command = new StreamAutoCompleteCommand(userId, request.Prompt);
+                    var command = new StreamAutoCompleteCommand(userId, request.Prompt, request.Mode, request.ModelId);
                     
                     return Results.Ok(mediator.CreateStream(command, cancellationToken));
                 })
@@ -43,3 +44,4 @@ public class StreamAutoCompleteEndpoint : IMinimalEndpoint
         return builder;
     }
 }
+

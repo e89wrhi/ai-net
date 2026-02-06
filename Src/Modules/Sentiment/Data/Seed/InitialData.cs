@@ -1,6 +1,7 @@
 ﻿namespace Sentiment.Data.Seed;
 
 using AI.Common.Core;
+using AiOrchestration.ValueObjects;
 using global::Sentiment.Models;
 using global::Sentiment.ValueObjects;
 using System;
@@ -10,18 +11,34 @@ public static class InitialData
 {
     public static List<TextSentimentSession> Sentiments { get; } = new()
     {
-        SentimentModel.Create(SessionId.Of(Guid.Parse("7a8fad5b-d9cb-469f-a165-70867728950a")), UserId.Of(Guid.Parse("0f8fad5b-d9cb-469f-a165-70867728950e")), "Getting started with AI", "gpt-4"),
-        SentimentModel.Create(SessionId.Of(Guid.Parse("8a8fad5b-d9cb-469f-a165-70867728950b")), UserId.Of(Guid.Parse("0f8fad5b-d9cb-469f-a165-70867728950e")), "Cooking Recipes", "gpt-3.5-turbo")
+        TextSentimentSession.Create(
+            SentimentId.Of(Guid.Parse("7a8fad5b-d9cb-469f-a165-70867728950a")), 
+            UserId.Of(Guid.Parse("0f8fad5b-d9cb-469f-a165-70867728950e")), 
+            ModelId.Of("gpt-4"),
+            new TextSentimentConfiguration(global::Sentiment.Enums.SentimentDetailLevel.Standard, LanguageCode.Of("en"))),
+        TextSentimentSession.Create(
+            SentimentId.Of(Guid.Parse("8a8fad5b-d9cb-469f-a165-70867728950b")), 
+            UserId.Of(Guid.Parse("0f8fad5b-d9cb-469f-a165-70867728950e")), 
+            ModelId.Of("gpt-3.5-turbo"),
+            new TextSentimentConfiguration(global::Sentiment.Enums.SentimentDetailLevel.Detailed, LanguageCode.Of("en")))
     };
 
     static InitialData()
     {
-        var sessionId1 = SessionId.Of(Guid.Parse("7a8fad5b-d9cb-469f-a165-70867728950a"));
-        Sentiments[0].AddSentiment(SentimentModel.Create(SentimentResultId.Of(Guid.NewGuid()), sessionId1, ValueObjects.TextSentimentConfiguration.Of(SentimentText.Enums.SentimentSender.User.ToString()), ValueObjects.SentimentScore.Of("Hello, what is AI?"), TokenUsed.Of(10)));
-        Sentiments[0].AddSentiment(SentimentModel.Create(SentimentResultId.Of(Guid.NewGuid()), sessionId1, ValueObjects.TextSentimentConfiguration.Of(SentimentText.Enums.SentimentSender.System.ToString()), ValueObjects.SentimentScore.Of("AI stands for Artificial Intelligence..."), TokenUsed.Of(50)));
-
-        var sessionId2 = SessionId.Of(Guid.Parse("8a8fad5b-d9cb-469f-a165-70867728950b"));
-        Sentiments[1].AddSentiment(SentimentModel.Create(SentimentResultId.Of(Guid.NewGuid()), sessionId2, ValueObjects.TextSentimentConfiguration.Of(SentimentText.Enums.SentimentSender.User.ToString()), ValueObjects.SentimentScore.Of("How to make a pizza?"), TokenUsed.Of(12)));
-        Sentiments[1].AddSentiment(SentimentModel.Create(SentimentResultId.Of(Guid.NewGuid()), sessionId2, ValueObjects.TextSentimentConfiguration.Of(SentimentText.Enums.SentimentSender.System.ToString()), ValueObjects.SentimentScore.Of("To make a pizza, you need dough, sauce..."), TokenUsed.Of(100)));
+        Sentiments[0].AddResult(TextSentimentResult.Create(
+            SentimentResultId.Of(Guid.NewGuid()), 
+            "I absolutely love this product! It's amazing!",
+            global::Sentiment.ValueObjects.SentimentText.Of("Positive"),
+            SentimentScore.Of(0.95f),
+            TokenCount.Of(50),
+            AiOrchestration.ValueObjects.CostEstimate.Of(0.001m)));
+            
+        Sentiments[1].AddResult(TextSentimentResult.Create(
+            SentimentResultId.Of(Guid.NewGuid()), 
+            "This is terrible. I'm very disappointed.",
+            global::Sentiment.ValueObjects.SentimentText.Of("Negative"),
+            SentimentScore.Of(0.15f),
+            TokenCount.Of(45),
+            AiOrchestration.ValueObjects.CostEstimate.Of(0.0009m)));
     }
 }

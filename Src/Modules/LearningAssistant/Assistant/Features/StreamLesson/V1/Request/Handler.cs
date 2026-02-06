@@ -14,12 +14,14 @@ namespace LearningAssistant.Features.StreamLesson.V1;
 internal class StreamAILessonHandler : IStreamRequestHandler<StreamAILessonCommand, string>
 {
     private readonly LearningDbContext _dbContext;
-    private readonly IAiOrchestrator _chatClient;
+    private readonly IAiOrchestrator _orchestrator;
+    private readonly IAiModelService _modelService;
 
-    public StreamAILessonHandler(LearningDbContext dbContext, IAiOrchestrator chatClient)
+    public StreamAILessonHandler(LearningDbContext dbContext, IAiOrchestrator orchestrator, IAiModelService modelService)
     {
         _dbContext = dbContext;
-        _chatClient = chatClient;
+        _orchestrator = orchestrator;
+        _modelService = modelService;
     }
 
     public async IAsyncEnumerable<string> Handle(StreamAILessonCommand request, [EnumeratorCancellation] CancellationToken cancellationToken)
@@ -36,10 +38,11 @@ internal class StreamAILessonHandler : IStreamRequestHandler<StreamAILessonComma
         var fullContentBuilder = new StringBuilder();
         int tokenEstimate = 0;
 
-        // Use chatClient to get the best client
-        var chatClient = await _chatClient.GetClientAsync(cancellationToken: cancellationToken);
-        var response = await chatClient.GetResponseAsync(messages, cancellationToken: cancellationToken);
-        foreach (var update in response.Messages)
+        // Use orchestrator to get the client based on requested model criteria
+        var criteria = new ModelCriteria { ModelId = request.ModelId };
+        var chatClient = await _orchestrator.GetClientAsync(criteria, cancellationToken);
+        
+        await foreach (var update in chatClient.GetStreamingResponseAsync(messages, cancellationToken: cancellationToken))
         {
             if (!string.IsNullOrEmpty(update.Text))
             {
@@ -50,17 +53,24 @@ internal class StreamAILessonHandler : IStreamRequestHandler<StreamAILessonComma
         }
 
         // Persist interaction
-        await PersistActivityAsync(request, fullContentBuilder.ToString(), tokenEstimate, cancellationToken);
+        await PersistActivityAsync(request, fullContentBuilder.ToString(), tokenEstimate, chatClient, cancellationToken);
     }
 
-    private async Task PersistActivityAsync(StreamAILessonCommand request, string fullContent, int tokenUsage, CancellationToken cancellationToken)
+    private async Task PersistActivityAsync(StreamAILessonCommand request, string fullContent, int tokenUsage, IChatClient chatClient, CancellationToken cancellationToken)
     {
         try
         {
             var sessionId = LearningId.Of(Guid.NewGuid());
-            var userId = UserId.Of(Guid.NewGuid());
-            var modelId = ModelId.Of(_chatClient.Metadata.ModelId ?? "learning-stream-model");
-            var config = LearningConfiguration.Of("streaming");
+            var userId = UserId.Of(request.UserId);
+
+            
+            var clientMetadata = chatClient.GetService(typeof(ChatClientMetadata)) as ChatClientMetadata;
+            var modelIdStr = clientMetadata?.DefaultModelId ?? "learning-stream-model";
+            var modelId = ModelId.Of(modelIdStr);
+            
+            var config = new LearningConfiguration(
+                mode: LearningMode.Lesson,
+                difficulty: request.Level);
 
             var session = LearningSession.Create(sessionId, userId, modelId, config);
 
@@ -69,7 +79,11 @@ internal class StreamAILessonHandler : IStreamRequestHandler<StreamAILessonComma
             var contentVo = LearningContent.Of(fullContent);
             var outcomeVo = LearningOutcome.Of("Streamed Lesson Completed");
             var tokenCountVo = TokenCount.Of(tokenUsage);
-            var costVo = CostEstimate.Of(0);
+            
+            // Get cost from model service
+            var costPerToken = _modelService.GetCostPerToken(modelId);
+            var costValue = (decimal)tokenUsage * costPerToken;
+            var costVo = CostEstimate.Of(costValue);
 
             var activity = LearningActivity.Create(activityId, topicVo, contentVo, outcomeVo, tokenCountVo, costVo);
             session.AddActivity(activity);
@@ -83,4 +97,5 @@ internal class StreamAILessonHandler : IStreamRequestHandler<StreamAILessonComma
         }
     }
 }
+
 

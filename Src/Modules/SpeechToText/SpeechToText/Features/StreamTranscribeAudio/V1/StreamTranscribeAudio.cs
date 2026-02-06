@@ -23,7 +23,9 @@ public class StreamTranscribeAudioEndpoint : IMinimalEndpoint
                         return Results.Unauthorized();
                     }
 
-                    var command = new StreamTranscribeAudioCommand(request.AudioUrl, request.Language);
+                    var command = new StreamTranscribeAudioCommand(userId, request.AudioUrl, request.Language, request.ModelId);
+
+
                     return Results.Ok(mediator.CreateStream(command, cancellationToken));
                 })
             .RequireAuthorization(nameof(ApiScope))

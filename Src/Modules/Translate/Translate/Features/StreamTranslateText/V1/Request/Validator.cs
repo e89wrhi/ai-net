@@ -9,5 +9,7 @@ public class StreamTranslateTextCommandValidator : AbstractValidator<StreamTrans
         RuleFor(x => x.Text).NotEmpty();
         RuleFor(x => x.SourceLanguage).NotEmpty();
         RuleFor(x => x.TargetLanguage).NotEmpty();
+        RuleFor(x => x.ModelId).MaximumLength(250).When(x => x.ModelId != null);
+
     }
 }

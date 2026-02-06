@@ -17,7 +17,7 @@ public record ResumeFile
     {
         if (string.IsNullOrEmpty(resumeUrl) || string.IsNullOrEmpty(fileName))
         {
-            throw new FileException(resumeUrl, fileName);
+            throw new FileException(resumeUrl);
         }
 
         return new ResumeFile(resumeUrl, fileName);

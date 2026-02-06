@@ -7,5 +7,7 @@ public class StreamMeetingAnalysisCommandValidator : AbstractValidator<StreamMee
     public StreamMeetingAnalysisCommandValidator()
     {
         RuleFor(x => x.Transcript).NotEmpty();
+        RuleFor(x => x.ModelId).MaximumLength(250).When(x => x.ModelId != null);
+
     }
 }

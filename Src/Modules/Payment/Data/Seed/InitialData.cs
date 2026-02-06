@@ -21,5 +21,21 @@ public static class InitialData
 
     static InitialData()
     {
+        var subscription = Subscriptions[0];
+        
+        subscription.AddInvoice(Invoice.Create(
+            InvoiceId.Of(Guid.NewGuid()),
+            "INV-001",
+            Money.Of(29.99m, "USD"),
+            CurrencyCode.Of("USD")));
+
+        subscription.AddCharge(UsageCharge.Create(
+            PaymentId.Of(Guid.NewGuid()),
+            subscription.Id,
+            subscription.UserId,
+            "1000",
+            "GPT-4 usage",
+            Money.Of(0.06m, "USD"),
+            "ChatBot"));
     }
 }

@@ -2,4 +2,5 @@
 
 namespace LearningAssistant.Features.StreamLesson.V1;
 
-public record StreamAILessonRequestDto(string Topic, DifficultyLevel Level);
+public record StreamAILessonRequestDto(string Topic, DifficultyLevel Level, string? ModelId = null);
+

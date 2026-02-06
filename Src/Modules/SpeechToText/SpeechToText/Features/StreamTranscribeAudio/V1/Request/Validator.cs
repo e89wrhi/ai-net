@@ -8,5 +8,7 @@ public class StreamTranscribeAudioCommandValidator : AbstractValidator<StreamTra
     {
         RuleFor(x => x.AudioUrl).NotEmpty();
         RuleFor(x => x.Language).NotEmpty();
+        RuleFor(x => x.ModelId).MaximumLength(250).When(x => x.ModelId != null);
+
     }
 }

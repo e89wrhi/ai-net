@@ -15,12 +15,14 @@ namespace Meeting.Features.StreamMeetingAnalysis.V1;
 internal class StreamMeetingAnalysisHandler : IStreamRequestHandler<StreamMeetingAnalysisCommand, string>
 {
     private readonly MeetingDbContext _dbContext;
-    private readonly IAiOrchestrator _chatClient;
+    private readonly IAiOrchestrator _orchestrator;
+    private readonly IAiModelService _modelService;
 
-    public StreamMeetingAnalysisHandler(MeetingDbContext dbContext, IAiOrchestrator chatClient)
+    public StreamMeetingAnalysisHandler(MeetingDbContext dbContext, IAiOrchestrator orchestrator, IAiModelService modelService)
     {
         _dbContext = dbContext;
-        _chatClient = chatClient;
+        _orchestrator = orchestrator;
+        _modelService = modelService;
     }
 
     public async IAsyncEnumerable<string> Handle(StreamMeetingAnalysisCommand request, [EnumeratorCancellation] CancellationToken cancellationToken)
@@ -37,10 +39,11 @@ internal class StreamMeetingAnalysisHandler : IStreamRequestHandler<StreamMeetin
         var fullAnalysisBuilder = new StringBuilder();
         int tokenEstimate = 0;
 
-        // Use chatClient to get the best client
-        var chatClient = await _chatClient.GetClientAsync(cancellationToken: cancellationToken);
-        var response = await chatClient.GetResponseAsync(messages, cancellationToken: cancellationToken);
-        foreach (var update in response.Messages)
+        // Use orchestrator to get the client based on requested model criteria
+        var criteria = new ModelCriteria { ModelId = request.ModelId };
+        var chatClient = await _orchestrator.GetClientAsync(criteria, cancellationToken);
+        
+        await foreach (var update in chatClient.GetStreamingResponseAsync(messages, cancellationToken: cancellationToken))
         {
             if (!string.IsNullOrEmpty(update.Text))
             {
@@ -51,16 +54,21 @@ internal class StreamMeetingAnalysisHandler : IStreamRequestHandler<StreamMeetin
         }
 
         // Persist interaction after stream
-        await PersistAnalysisAsync(request, fullAnalysisBuilder.ToString(), tokenEstimate, cancellationToken);
+        await PersistAnalysisAsync(request, fullAnalysisBuilder.ToString(), tokenEstimate, chatClient, cancellationToken);
     }
 
-    private async Task PersistAnalysisAsync(StreamMeetingAnalysisCommand request, string fullAnalysis, int tokenUsage, CancellationToken cancellationToken)
+    private async Task PersistAnalysisAsync(StreamMeetingAnalysisCommand request, string fullAnalysis, int tokenUsage, IChatClient chatClient, CancellationToken cancellationToken)
     {
         try
         {
             var meetingId = MeetingId.Of(Guid.NewGuid());
-            var userId = UserId.Of(Guid.NewGuid());
-            var modelId = ModelId.Of(_chatClient.Metadata.ModelId ?? "meeting-stream-model");
+            var userId = UserId.Of(request.UserId);
+
+            
+            var clientMetadata = chatClient.GetService(typeof(ChatClientMetadata)) as ChatClientMetadata;
+            var modelIdStr = clientMetadata?.DefaultModelId ?? "meeting-stream-model";
+            var modelId = ModelId.Of(modelIdStr);
+            
             var langCode = LanguageCode.Of("en");
             var config = new MeetingAnalysisConfiguration(true, true, langCode);
 
@@ -69,7 +77,11 @@ internal class StreamMeetingAnalysisHandler : IStreamRequestHandler<StreamMeetin
             var transcriptId = TranscriptId.Of(Guid.NewGuid());
             var summaryVo = TranscriptSummary.Of(fullAnalysis);
             var tokenCountVo = TokenCount.Of(tokenUsage);
-            var costVo = CostEstimate.Of(0);
+            
+            // Get cost from model service
+            var costPerToken = _modelService.GetCostPerToken(modelId);
+            var costValue = (decimal)tokenUsage * costPerToken;
+            var costVo = CostEstimate.Of(costValue);
 
             var transcript = MeetingTranscript.Create(transcriptId, request.Transcript, summaryVo, tokenCountVo, costVo);
             session.AddTranscript(transcript);
@@ -83,3 +95,4 @@ internal class StreamMeetingAnalysisHandler : IStreamRequestHandler<StreamMeetin
         }
     }
 }
+

@@ -15,12 +15,14 @@ namespace Translate.Features.StreamTranslateText.V1;
 internal class StreamTranslateTextHandler : IStreamRequestHandler<StreamTranslateTextCommand, string>
 {
     private readonly TranslateDbContext _dbContext;
-    private readonly IAiOrchestrator _chatClient;
+    private readonly IAiOrchestrator _orchestrator;
+    private readonly IAiModelService _modelService;
 
-    public StreamTranslateTextHandler(TranslateDbContext dbContext, IAiOrchestrator chatClient)
+    public StreamTranslateTextHandler(TranslateDbContext dbContext, IAiOrchestrator orchestrator, IAiModelService modelService)
     {
         _dbContext = dbContext;
-        _chatClient = chatClient;
+        _orchestrator = orchestrator;
+        _modelService = modelService;
     }
 
     public async IAsyncEnumerable<string> Handle(StreamTranslateTextCommand request, [EnumeratorCancellation] CancellationToken cancellationToken)
@@ -37,10 +39,11 @@ internal class StreamTranslateTextHandler : IStreamRequestHandler<StreamTranslat
         var fullTranslationBuilder = new StringBuilder();
         int tokenEstimate = 0;
 
-        // Use chatClient to get the best client
-        var chatClient = await _chatClient.GetClientAsync(cancellationToken: cancellationToken);
-        var response = await chatClient.GetResponseAsync(messages, cancellationToken: cancellationToken);
-        foreach (var update in response.Messages)
+        // Use orchestrator to get the client based on requested model criteria
+        var criteria = new ModelCriteria { ModelId = request.ModelId };
+        var chatClient = await _orchestrator.GetClientAsync(criteria, cancellationToken);
+        
+        await foreach (var update in chatClient.GetStreamingResponseAsync(messages, cancellationToken: cancellationToken))
         {
             if (!string.IsNullOrEmpty(update.Text))
             {
@@ -51,18 +54,21 @@ internal class StreamTranslateTextHandler : IStreamRequestHandler<StreamTranslat
         }
 
         // Persist session after stream completion
-        await PersistTranslationAsync(request, fullTranslationBuilder.ToString(), tokenEstimate, cancellationToken);
+        await PersistTranslationAsync(request, fullTranslationBuilder.ToString(), tokenEstimate, chatClient, cancellationToken);
     }
 
-    private async Task PersistTranslationAsync(StreamTranslateTextCommand request, string fullText, int tokenUsage, CancellationToken cancellationToken)
+    private async Task PersistTranslationAsync(StreamTranslateTextCommand request, string fullText, int tokenUsage, IChatClient chatClient, CancellationToken cancellationToken)
     {
         try
         {
             var sessionId = TranslateId.Of(Guid.NewGuid());
-            var userId = UserId.Of(Guid.NewGuid());
-            var chatClient = await _chatClient.GetClientAsync(cancellationToken: cancellationToken);
+            var userId = UserId.Of(request.UserId);
+
+            
             var clientMetadata = chatClient.GetService(typeof(ChatClientMetadata)) as ChatClientMetadata;
-            var modelId = ModelId.Of(clientMetadata?.ModelId ?? "translate-stream-model");
+            var modelIdStr = clientMetadata?.DefaultModelId ?? "translate-stream-model";
+            var modelId = ModelId.Of(modelIdStr);
+            
             var config = new TranslationConfiguration(
                 LanguageCode.Of(request.SourceLanguage),
                 LanguageCode.Of(request.TargetLanguage),
@@ -73,7 +79,11 @@ internal class StreamTranslateTextHandler : IStreamRequestHandler<StreamTranslat
             var resultId = TranslateResultId.Of(Guid.NewGuid());
             var translatedTextVo = TranslatedText.Of(fullText);
             var tokenCountVo = TokenCount.Of(tokenUsage);
-            var costVo = CostEstimate.Of(0);
+            
+            // Get cost from model service
+            var costPerToken = _modelService.GetCostPerToken(modelId);
+            var costValue = (decimal)tokenUsage * costPerToken;
+            var costVo = CostEstimate.Of(costValue);
 
             var result = TranslationResult.Create(resultId, request.Text, translatedTextVo, tokenCountVo, costVo);
             session.AddResult(result);
@@ -87,3 +97,4 @@ internal class StreamTranslateTextHandler : IStreamRequestHandler<StreamTranslat
         }
     }
 }
+

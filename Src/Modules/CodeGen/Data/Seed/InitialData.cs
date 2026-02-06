@@ -1,6 +1,7 @@
 ﻿namespace CodeGen.Data.Seed;
 
 using AI.Common.Core;
+using AiOrchestration.ValueObjects;
 using global::CodeGen.Models;
 using global::CodeGen.ValueObjects;
 using System;
@@ -10,18 +11,36 @@ public static class InitialData
 {
     public static List<CodeGenerationSession> CodeGens { get; } = new()
     {
-        CodeGenModel.Create(SessionId.Of(Guid.Parse("7a8fad5b-d9cb-469f-a165-70867728950a")), UserId.Of(Guid.Parse("0f8fad5b-d9cb-469f-a165-70867728950e")), "Getting started with AI", "gpt-4"),
-        CodeGenModel.Create(SessionId.Of(Guid.Parse("8a8fad5b-d9cb-469f-a165-70867728950b")), UserId.Of(Guid.Parse("0f8fad5b-d9cb-469f-a165-70867728950e")), "Cooking Recipes", "gpt-3.5-turbo")
+        CodeGenerationSession.Create(
+            CodeGenId.Of(Guid.Parse("7a8fad5b-d9cb-469f-a165-70867728950a")), 
+            UserId.Of(Guid.Parse("0f8fad5b-d9cb-469f-a165-70867728950e")), 
+            ModelId.Of("gpt-4"),
+            new CodeGenerationConfiguration(Temperature.Of(0.7f), TokenCount.Of(2000), global::CodeGen.Enums.CodeStyle.Enterprise, true)),
+        CodeGenerationSession.Create(
+            CodeGenId.Of(Guid.Parse("8a8fad5b-d9cb-469f-a165-70867728950b")), 
+            UserId.Of(Guid.Parse("0f8fad5b-d9cb-469f-a165-70867728950e")), 
+            ModelId.Of("gpt-3.5-turbo"),
+            new CodeGenerationConfiguration(Temperature.Of(0.7f), TokenCount.Of(2000), global::CodeGen.Enums.CodeStyle.Enterprise, true))
     };
 
     static InitialData()
     {
-        var sessionId1 = SessionId.Of(Guid.Parse("7a8fad5b-d9cb-469f-a165-70867728950a"));
-        CodeGens[0].AddCodeGen(CodeGenModel.Create(CodeGenId.Of(Guid.NewGuid()), sessionId1, ValueObjects.CodeGenerationPrompt.Of(CodeGen.Enums.CodeGenerationStatus.User.ToString()), IssueCount.Of("Hello, what is AI?"), ValueObjects.CodeGenerationConfiguration.Of(10)));
-        CodeGens[0].AddCodeGen(CodeGenModel.Create(CodeGenId.Of(Guid.NewGuid()), sessionId1, ValueObjects.CodeGenerationPrompt.Of(CodeGen.Enums.CodeGenerationStatus.System.ToString()), IssueCount.Of("AI stands for Artificial Intelligence..."), ValueObjects.CodeGenerationConfiguration.Of(50)));
-
-        var sessionId2 = SessionId.Of(Guid.Parse("8a8fad5b-d9cb-469f-a165-70867728950b"));
-        CodeGens[1].AddCodeGen(CodeGenModel.Create(CodeGenId.Of(Guid.NewGuid()), sessionId2, ValueObjects.CodeGenerationPrompt.Of(CodeGen.Enums.CodeGenerationStatus.User.ToString()), IssueCount.Of("How to make a pizza?"), ValueObjects.CodeGenerationConfiguration.Of(12)));
-        CodeGens[1].AddCodeGen(CodeGenModel.Create(CodeGenId.Of(Guid.NewGuid()), sessionId2, ValueObjects.CodeGenerationPrompt.Of(CodeGen.Enums.CodeGenerationStatus.System.ToString()), IssueCount.Of("To make a pizza, you need dough, sauce..."), ValueObjects.CodeGenerationConfiguration.Of(100)));
+        CodeGens[0].AddResult(CodeGenerationResult.Create(
+            CodeGenResultId.Of(Guid.NewGuid()), 
+            CodeGenerationPrompt.Of("Write a C# class for a User"),
+            GeneratedCode.Of("public class User { public string Name { get; set; } }"),
+            global::CodeGen.ValueObjects.ProgrammingLanguage.Of("CSharp"),
+            global::CodeGen.Enums.CodeQualityLevel.Optimized,
+            TokenCount.Of(150),
+            CostEstimate.Of(0.003m)));
+            
+        CodeGens[1].AddResult(CodeGenerationResult.Create(
+            CodeGenResultId.Of(Guid.NewGuid()), 
+            CodeGenerationPrompt.Of("Write a Python function to add two numbers"),
+            GeneratedCode.Of("def add(a, b): return a + b"),
+            global::CodeGen.ValueObjects.ProgrammingLanguage.Of("Python"),
+            global::CodeGen.Enums.CodeQualityLevel.ProductionReady,
+            TokenCount.Of(80),
+            CostEstimate.Of(0.001m)));
     }
 }

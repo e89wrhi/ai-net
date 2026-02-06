@@ -1,9 +1,11 @@
 ﻿using AiOrchestration.ValueObjects;
+using AiOrchestration.Models;
 using MediatR;
 using Microsoft.Extensions.AI;
 using SpeechToText.Data;
 using SpeechToText.Models;
 using SpeechToText.ValueObjects;
+using SpeechToText.Enums;
 using System.Runtime.CompilerServices;
 using Ardalis.GuardClauses;
 using AiOrchestration.Services;
@@ -15,12 +17,14 @@ namespace SpeechToText.Features.StreamTranscribeAudio.V1;
 internal class StreamTranscribeAudioHandler : IStreamRequestHandler<StreamTranscribeAudioCommand, string>
 {
     private readonly SpeechToTextDbContext _dbContext;
-    private readonly IAiOrchestrator _chatClient;
+    private readonly IAiOrchestrator _orchestrator;
+    private readonly IAiModelService _modelService;
 
-    public StreamTranscribeAudioHandler(SpeechToTextDbContext dbContext, IAiOrchestrator chatClient)
+    public StreamTranscribeAudioHandler(SpeechToTextDbContext dbContext, IAiOrchestrator orchestrator, IAiModelService modelService)
     {
         _dbContext = dbContext;
-        _chatClient = chatClient;
+        _orchestrator = orchestrator;
+        _modelService = modelService;
     }
 
     public async IAsyncEnumerable<string> Handle(StreamTranscribeAudioCommand request, [EnumeratorCancellation] CancellationToken cancellationToken)
@@ -36,10 +40,11 @@ internal class StreamTranscribeAudioHandler : IStreamRequestHandler<StreamTransc
         var fullTranscriptBuilder = new StringBuilder();
         int tokenEstimate = 0;
 
-        // Use chatClient to get the best client
-        var chatClient = await _chatClient.GetClientAsync(cancellationToken: cancellationToken);
-        var response = await chatClient.GetResponseAsync(messages, cancellationToken: cancellationToken);
-        foreach (var update in response.Messages)
+        // Use orchestrator to get the client based on requested model criteria
+        var criteria = new ModelCriteria { ModelId = request.ModelId };
+        var chatClient = await _orchestrator.GetClientAsync(criteria, cancellationToken);
+        
+        await foreach (var update in chatClient.GetStreamingResponseAsync(messages, cancellationToken: cancellationToken))
         {
             if (!string.IsNullOrEmpty(update.Text))
             {
@@ -50,17 +55,25 @@ internal class StreamTranscribeAudioHandler : IStreamRequestHandler<StreamTransc
         }
 
         // Persist session after stream
-        await PersistTranscriptionAsync(request, fullTranscriptBuilder.ToString(), tokenEstimate, cancellationToken);
+        await PersistTranscriptionAsync(request, fullTranscriptBuilder.ToString(), tokenEstimate, chatClient, cancellationToken);
     }
 
-    private async Task PersistTranscriptionAsync(StreamTranscribeAudioCommand request, string fullText, int tokenUsage, CancellationToken cancellationToken)
+    private async Task PersistTranscriptionAsync(StreamTranscribeAudioCommand request, string fullText, int tokenUsage, IChatClient chatClient, CancellationToken cancellationToken)
     {
         try
         {
             var sessionId = SpeechToTextId.Of(Guid.NewGuid());
-            var userId = UserId.Of(Guid.NewGuid());
-            var modelId = ModelId.Of(_chatClient.Metadata.ModelId ?? "whisper-stream");
-            var config = SpeechToTextConfiguration.Of(LanguageCode.Of(request.Language));
+            var userId = UserId.Of(request.UserId);
+
+            
+            var clientMetadata = chatClient.GetService(typeof(ChatClientMetadata)) as ChatClientMetadata;
+            var modelIdStr = clientMetadata?.DefaultModelId ?? "whisper-stream";
+            var modelId = ModelId.Of(modelIdStr);
+            
+            var config = new SpeechToTextConfiguration(
+                LanguageCode.Of(request.Language),
+                includePunctuation: true,
+                detailLevel: SpeechToTextDetailLevel.Detailed);
 
             var session = SpeechToTextSession.Create(sessionId, userId, modelId, config);
 
@@ -68,7 +81,11 @@ internal class StreamTranscribeAudioHandler : IStreamRequestHandler<StreamTransc
             var audioVo = AudioSource.Of(request.AudioUrl);
             var transcriptVo = Transcript.Of(fullText);
             var tokenCountVo = TokenCount.Of(tokenUsage);
-            var costVo = CostEstimate.Of(0);
+            
+            // Get cost from model service
+            var costPerToken = _modelService.GetCostPerToken(modelId);
+            var costValue = (decimal)tokenUsage * costPerToken;
+            var costVo = CostEstimate.Of(costValue);
 
             var result = SpeechToTextResult.Create(resultId, audioVo, transcriptVo, tokenCountVo, costVo);
             session.AddResult(result);
@@ -82,3 +99,4 @@ internal class StreamTranscribeAudioHandler : IStreamRequestHandler<StreamTransc
         }
     }
 }
+

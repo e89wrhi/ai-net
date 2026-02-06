@@ -1,3 +1,6 @@
-﻿namespace AutoComplete.Features.StreamAutoComplete.V1;
+﻿using AutoComplete.Enums;
 
-public record StreamAutoCompleteRequestDto(string Prompt);
+namespace AutoComplete.Features.StreamAutoComplete.V1;
+
+public record StreamAutoCompleteRequestDto(string Prompt, CompletionMode Mode, string? ModelId = null);
+

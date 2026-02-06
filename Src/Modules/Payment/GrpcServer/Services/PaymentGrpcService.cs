@@ -28,7 +28,7 @@ public class PaymentGrpcService : Protos.PaymentGrpcService.PaymentGrpcServiceBa
         _mediator = mediator;
     }
 
-    public override async Task<CreateSubscriptionResponse> CreateSubscription(CreateSubscriptionRequest request, ServerCallContext context)
+    public override async Task<CreateSubscriptionResponse> CreateSubscription(Protos.CreateSubscriptionRequest request, ServerCallContext context)
     {
         var plan = new SubscriptionPlan(
             request.PlanName,
@@ -47,7 +47,7 @@ public class PaymentGrpcService : Protos.PaymentGrpcService.PaymentGrpcServiceBa
         return new CreateSubscriptionResponse { Id = result.Id.ToString() };
     }
 
-    public override async Task<CancelSubscriptionResponse> CancelSubscription(CancelSubscriptionRequest request, ServerCallContext context)
+    public override async Task<CancelSubscriptionResponse> CancelSubscription(Protos.CancelSubscriptionRequest request, ServerCallContext context)
     {
         var cmd = new CancelSubscriptionCommand(Guid.Parse(request.SubscriptionId));
         var result = await _mediator.Send(cmd, context.CancellationToken);
@@ -116,7 +116,7 @@ public class PaymentGrpcService : Protos.PaymentGrpcService.PaymentGrpcServiceBa
         return response;
     }
 
-    public override async Task<GenerateInvoiceResponse> GenerateInvoice(GenerateInvoiceRequest request, ServerCallContext context)
+    public override async Task<GenerateInvoiceResponse> GenerateInvoice(Protos.GenerateInvoiceRequest request, ServerCallContext context)
     {
         var cmd = new GenerateInvoiceCommand(
             Guid.Parse(request.SubscriptionId),

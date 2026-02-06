@@ -1,3 +1,4 @@
 ﻿namespace CodeGen.Features.StreamGenerateCode.V1;
 
-public record StreamGenerateCodeRequestDto(string Prompt, string Language);
+public record StreamGenerateCodeRequestDto(string Prompt, string Language, string? ModelId = null);
+

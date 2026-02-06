@@ -1,6 +1,7 @@
 ﻿namespace CodeDebug.Data.Seed;
 
 using AI.Common.Core;
+using AiOrchestration.ValueObjects;
 using global::CodeDebug.Models;
 using global::CodeDebug.ValueObjects;
 using System;
@@ -10,18 +11,36 @@ public static class InitialData
 {
     public static List<CodeDebugSession> CodeDebugs { get; } = new()
     {
-        CodeDebugSession.Create(SessionId.Of(Guid.Parse("7a8fad5b-d9cb-469f-a165-70867728950a")), UserId.Of(Guid.Parse("0f8fad5b-d9cb-469f-a165-70867728950e")), "Getting started with AI", "gpt-4"),
-        CodeDebugSession.Create(SessionId.Of(Guid.Parse("8a8fad5b-d9cb-469f-a165-70867728950b")), UserId.Of(Guid.Parse("0f8fad5b-d9cb-469f-a165-70867728950e")), "Cooking Recipes", "gpt-3.5-turbo")
+        CodeDebugSession.Create(
+            CodeDebugId.Of(Guid.Parse("7a8fad5b-d9cb-469f-a165-70867728950a")), 
+            UserId.Of(Guid.Parse("0f8fad5b-d9cb-469f-a165-70867728950e")), 
+            ModelId.Of("gpt-4"),
+            new global::CodeDebug.ValueObjects.CodeDebugConfiguration(global::CodeDebug.Enums.DebugDepth.Standard, true)),
+        CodeDebugSession.Create(
+            CodeDebugId.Of(Guid.Parse("8a8fad5b-d9cb-469f-a165-70867728950b")), 
+            UserId.Of(Guid.Parse("0f8fad5b-d9cb-469f-a165-70867728950e")), 
+            ModelId.Of("gpt-3.5-turbo"),
+            new global::CodeDebug.ValueObjects.CodeDebugConfiguration(global::CodeDebug.Enums.DebugDepth.Standard, true))
     };
 
     static InitialData()
     {
-        var sessionId1 = SessionId.Of(Guid.Parse("7a8fad5b-d9cb-469f-a165-70867728950a"));
-        CodeDebugs[0].AddCodeDebug(CodeDebugModel.Create(CodeDebugId.Of(Guid.NewGuid()), sessionId1, CodeDebugSender.Of(CodeDebug.Enums.ProgrammingLanguage.User.ToString()), CodeDebugContent.Of("Hello, what is AI?"), TokenUsed.Of(10)));
-        CodeDebugs[0].AddCodeDebug(CodeDebugModel.Create(CodeDebugId.Of(Guid.NewGuid()), sessionId1, CodeDebugSender.Of(CodeDebug.Enums.ProgrammingLanguage.System.ToString()), CodeDebugContent.Of("AI stands for Artificial Intelligence..."), TokenUsed.Of(50)));
-
-        var sessionId2 = SessionId.Of(Guid.Parse("8a8fad5b-d9cb-469f-a165-70867728950b"));
-        CodeDebugs[1].AddCodeDebug(CodeDebugModel.Create(CodeDebugId.Of(Guid.NewGuid()), sessionId2, CodeDebugSender.Of(CodeDebug.Enums.ProgrammingLanguage.User.ToString()), CodeDebugContent.Of("How to make a pizza?"), TokenUsed.Of(12)));
-        CodeDebugs[1].AddCodeDebug(CodeDebugModel.Create(CodeDebugId.Of(Guid.NewGuid()), sessionId2, CodeDebugSender.Of(CodeDebug.Enums.ProgrammingLanguage.System.ToString()), CodeDebugContent.Of("To make a pizza, you need dough, sauce..."), TokenUsed.Of(100)));
+        CodeDebugs[0].AddReport(CodeDebugReport.Create(
+            CodeDebugReportId.Of(Guid.NewGuid()), 
+            SourceCode.Of("public void Foo() { }"),
+            global::CodeDebug.Enums.ProgrammingLanguage.CSharp,
+            DebugSummary.Of("Clean code"),
+            IssueCount.Of(0),
+            TokenCount.Of(120),
+            CostEstimate.Of(0.002m)));
+            
+        CodeDebugs[1].AddReport(CodeDebugReport.Create(
+            CodeDebugReportId.Of(Guid.NewGuid()), 
+            SourceCode.Of("print('Hello World')"),
+            global::CodeDebug.Enums.ProgrammingLanguage.Python,
+            DebugSummary.Of("Good script"),
+            IssueCount.Of(0),
+            TokenCount.Of(80),
+            CostEstimate.Of(0.001m)));
     }
 }

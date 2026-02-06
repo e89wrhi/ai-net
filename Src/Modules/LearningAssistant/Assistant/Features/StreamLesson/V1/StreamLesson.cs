@@ -23,7 +23,9 @@ public class StreamLessonEndpoint : IMinimalEndpoint
                         return Results.Unauthorized();
                     }
 
-                    var command = new StreamAILessonCommand(request.Topic, request.Level);
+                    var command = new StreamAILessonCommand(userId, request.Topic, request.Level, request.ModelId);
+
+
                     return Results.Ok(mediator.CreateStream(command, cancellationToken));
                 })
             .RequireAuthorization(nameof(ApiScope))

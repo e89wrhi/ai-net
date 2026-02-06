@@ -10,18 +10,19 @@ using MediatR;
 using Microsoft.Extensions.AI;
 using System.Runtime.CompilerServices;
 using System.Text;
-using static MassTransit.Monitoring.Performance.BuiltInCounters;
 
 namespace AutoComplete.Features.StreamAutoComplete.V1;
 
 internal class StreamAICompletionHandler : IStreamRequestHandler<StreamAutoCompleteCommand, string>
 {
-    private readonly IAiOrchestrator _chatClient;
+    private readonly IAiOrchestrator _orchestrator;
+    private readonly IAiModelService _modelService;
     private readonly AutocompleteDbContext _dbContext;
 
-    public StreamAICompletionHandler(IAiOrchestrator chatClient, AutocompleteDbContext dbContext)
+    public StreamAICompletionHandler(IAiOrchestrator orchestrator, IAiModelService modelService, AutocompleteDbContext dbContext)
     {
-        _chatClient = chatClient;
+        _orchestrator = orchestrator;
+        _modelService = modelService;
         _dbContext = dbContext;
     }
 
@@ -30,25 +31,27 @@ internal class StreamAICompletionHandler : IStreamRequestHandler<StreamAutoCompl
     {
         Guard.Against.NullOrEmpty(request.Prompt, nameof(request.Prompt));
 
-        // Use chatClient to get the best client for this request
-        // Here we could pass specific criteria like: new ModelCriteria { MaxCostPerToken = 0.00001m }
-        var client = await _chatClient.GetClientAsync(cancellationToken: cancellationToken);
+        // Use orchestrator to get the client based on requested model criteria
+        var criteria = new ModelCriteria { ModelId = request.ModelId };
+        var client = await _orchestrator.GetClientAsync(criteria, cancellationToken);
 
         var fullResponseBuilder = new StringBuilder();
-        int tokenCount = 0;
-        var response = await client.GetResponseAsync(request.Prompt, cancellationToken: cancellationToken);
-        foreach (var update in response.Messages)
+        long tokenCount = 0;
+
+        await foreach (var update in client.GetStreamingResponseAsync(request.Prompt, cancellationToken: cancellationToken))
         {
             if (!string.IsNullOrEmpty(update.Text))
             {
                 fullResponseBuilder.Append(update.Text);
-                tokenCount++; // Crude estimation, ideally usage comes from update or is calculated later
                 yield return update.Text;
             }
         }
 
+        // Crude estimation if usage wasn't provided
+        tokenCount = (request.Prompt.Length + fullResponseBuilder.Length) / 4;
+
         // Persist after streaming finishes
-        await PersistInteractionAsync(request, fullResponseBuilder.ToString(), tokenCount, client, cancellationToken);
+        await PersistInteractionAsync(request, fullResponseBuilder.ToString(), (int)tokenCount, client, cancellationToken);
     }
 
     private async Task PersistInteractionAsync(StreamAutoCompleteCommand request, string fullResponse, int tokenCount, IChatClient client, CancellationToken cancellationToken)
@@ -58,13 +61,15 @@ internal class StreamAICompletionHandler : IStreamRequestHandler<StreamAutoCompl
             var sessionId = AutoCompleteId.Of(Guid.NewGuid());
             var userId = UserId.Of(request.UserId);
             
-            // Use metadata from the client (following the example's GetService pattern)
+            // Use metadata from the client
             var clientMetadata = client.GetService(typeof(ChatClientMetadata)) as ChatClientMetadata;
-            var modelIdStr = clientMetadata?.ModelId ?? "stream-model";
+            var modelIdStr = clientMetadata?.DefaultModelId ?? "stream-model";
             var modelId = ModelId.Of(modelIdStr);
 
-
-            var config = AutoCompleteConfiguration.Of("streaming");
+            var config = new AutoCompleteConfiguration(
+                Temperature.Of(0.7f),
+                TokenCount.Of(tokenCount),
+                mode: request.Mode);
 
             var session = AutoCompleteSession.Create(sessionId, userId, modelId, config);
 
@@ -73,8 +78,9 @@ internal class StreamAICompletionHandler : IStreamRequestHandler<StreamAutoCompl
             var suggestionVo = AutoCompleteSuggestion.Of(fullResponse);
             var tokenCountVo = TokenCount.Of(tokenCount);
 
-            // Estimate cost
-            var costValue = (decimal)(tokenCount * 0.000002);
+            // Get cost from model service
+            var costPerToken = _modelService.GetCostPerToken(modelId);
+            var costValue = (decimal)tokenCount * costPerToken;
             var costVo = CostEstimate.Of(costValue);
 
             var autoCompleteRequest = AutoCompleteRequest.Create(
@@ -86,16 +92,14 @@ internal class StreamAICompletionHandler : IStreamRequestHandler<StreamAutoCompl
 
             session.AddRequest(autoCompleteRequest);
 
-            // We need a new scope or use the existing DbContext if it's not disposed.
-            // Since this is inside IAsyncEnumerable, the scope should be alive.
             _dbContext.Add(session);
             await _dbContext.SaveChangesAsync(cancellationToken);
         }
         catch
         {
-            // Logging would go here. 
-            // We don't want to crash the stream if saving fails after streaming is done, 
-            // although the client might have already disconnected.
+            // Logging would go here
         }
     }
 }
+
+
