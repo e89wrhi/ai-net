@@ -42,7 +42,8 @@ public class AutoCompleteGrpcService : Protos.AutoCompleteGrpcService.AutoComple
     {
         var cmd = new AutoComplete.Features.StreamAutoComplete.V1.StreamAutoCompleteCommand(
             Guid.Parse(request.UserId),
-            request.Prompt);
+            request.Prompt,
+            Enums.CompletionMode.Text);
 
         var stream = _mediator.CreateStream(cmd, context.CancellationToken);
 

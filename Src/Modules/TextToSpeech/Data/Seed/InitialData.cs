@@ -15,12 +15,12 @@ public static class InitialData
             TextToSpeechId.Of(Guid.Parse("7a8fad5b-d9cb-469f-a165-70867728950a")), 
             UserId.Of(Guid.Parse("0f8fad5b-d9cb-469f-a165-70867728950e")), 
             ModelId.Of("tts-1"),
-            new TextToSpeechConfiguration(global::TextToSpeech.Enums.VoiceType.Alloy, global::TextToSpeech.Enums.SpeechSpeed.Normal, LanguageCode.Of("en"))),
+            new TextToSpeechConfiguration(global::TextToSpeech.Enums.VoiceType.Female, global::TextToSpeech.Enums.SpeechSpeed.Normal, LanguageCode.Of("en"))),
         TextToSpeechSession.Create(
             TextToSpeechId.Of(Guid.Parse("8a8fad5b-d9cb-469f-a165-70867728950b")), 
             UserId.Of(Guid.Parse("0f8fad5b-d9cb-469f-a165-70867728950e")), 
             ModelId.Of("tts-1"),
-            new TextToSpeechConfiguration(global::TextToSpeech.Enums.VoiceType.Nova, global::TextToSpeech.Enums.SpeechSpeed.Fast, LanguageCode.Of("es")))
+            new TextToSpeechConfiguration(global::TextToSpeech.Enums.VoiceType.Neutral, global::TextToSpeech.Enums.SpeechSpeed.Fast, LanguageCode.Of("es")))
     };
 
     static InitialData()

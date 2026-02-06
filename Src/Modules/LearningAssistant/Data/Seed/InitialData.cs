@@ -15,7 +15,7 @@ public static class InitialData
             LearningId.Of(Guid.Parse("ba8fad5b-d9cb-469f-a165-70867728950f")), 
             UserId.Of(Guid.Parse("0f8fad5b-d9cb-469f-a165-70867728950e")), 
             ModelId.Of("gpt-4"),
-            new LearningConfiguration(global::LearningAssistant.Enums.LearningMode.Interactive, global::LearningAssistant.Enums.DifficultyLevel.Beginner))
+            new LearningConfiguration(global::LearningAssistant.Enums.LearningMode.Interactive, global::LearningAssistant.Enums.DifficultyLevel.Medium))
     };
 
     static InitialData()

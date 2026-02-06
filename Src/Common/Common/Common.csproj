@@ -30,7 +30,7 @@
     <PackageReference Include="EasyNetQ.Management.Client" Version="3.0.1" />
     <PackageReference Include="EFCore.NamingConventions" Version="9.0.0" />
     <PackageReference Include="EventStore.Client.Grpc.Streams" Version="23.3.7" />
-    <PackageReference Include="Figgle" Version="0.6.5" />
+    <PackageReference Include="Figgle" Version="0.5.1" />
     <PackageReference Include="FluentAssertions" Version="7.0.0" />
     <PackageReference Include="FluentValidation" Version="12.1.1" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />

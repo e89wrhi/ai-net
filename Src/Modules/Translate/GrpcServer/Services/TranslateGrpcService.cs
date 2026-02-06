@@ -43,6 +43,7 @@ public class TranslateGrpcService : Protos.TranslateGrpcService.TranslateGrpcSer
     public override async Task StreamTranslateText(StreamTranslateTextRequest request, IServerStreamWriter<StreamTranslateTextResponse> responseStream, ServerCallContext context)
     {
         var cmd = new Translate.Features.StreamTranslateText.V1.StreamTranslateTextCommand(
+            UserId: Guid.NewGuid(),
             request.Text,
             request.SourceLanguage,
             request.TargetLanguage,

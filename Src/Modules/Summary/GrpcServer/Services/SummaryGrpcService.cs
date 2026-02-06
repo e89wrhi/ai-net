@@ -42,6 +42,7 @@ public class SummaryGrpcService : Protos.SummaryGrpcService.SummaryGrpcServiceBa
     public override async Task StreamSummarizeText(StreamSummarizeTextRequest request, IServerStreamWriter<StreamSummarizeTextResponse> responseStream, ServerCallContext context)
     {
         var cmd = new Summary.Features.StreamSummarizeText.V1.StreamSummarizeTextCommand(
+            UserId: Guid.NewGuid(),
             request.Text,
             (Summary.Enums.SummaryDetailLevel)(int)request.DetailLevel,
             request.Language);

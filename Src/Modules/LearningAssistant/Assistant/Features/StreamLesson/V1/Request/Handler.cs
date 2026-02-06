@@ -8,6 +8,8 @@ using Ardalis.GuardClauses;
 using AiOrchestration.Services;
 using System.Runtime.CompilerServices;
 using System.Text;
+using AiOrchestration.Models;
+using LearningAssistant.Enums;
 
 namespace LearningAssistant.Features.StreamLesson.V1;
 
@@ -69,7 +71,7 @@ internal class StreamAILessonHandler : IStreamRequestHandler<StreamAILessonComma
             var modelId = ModelId.Of(modelIdStr);
             
             var config = new LearningConfiguration(
-                mode: LearningMode.Lesson,
+                mode: LearningMode.Quiz,
                 difficulty: request.Level);
 
             var session = LearningSession.Create(sessionId, userId, modelId, config);

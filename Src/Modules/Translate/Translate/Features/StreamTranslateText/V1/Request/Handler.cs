@@ -1,4 +1,5 @@
-﻿using AiOrchestration.Services;
+﻿using AiOrchestration.Models;
+using AiOrchestration.Services;
 using AiOrchestration.ValueObjects;
 using Ardalis.GuardClauses;
 using MediatR;

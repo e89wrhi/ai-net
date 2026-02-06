@@ -63,6 +63,7 @@ public class CodeGenGrpcService : Protos.CodeGenGrpcService.CodeGenGrpcServiceBa
     public override async Task StreamGenerateCode(StreamGenerateCodeRequest request, IServerStreamWriter<StreamGenerateCodeResponse> responseStream, ServerCallContext context)
     {
         var cmd = new CodeGen.Features.StreamGenerateCode.V1.StreamGenerateCodeCommand(
+            UserId: Guid.NewGuid(),
             request.Prompt,
             request.Language);
 

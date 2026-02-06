@@ -22,11 +22,14 @@ public class MeetingGrpcService : Protos.MeetingGrpcService.MeetingGrpcServiceBa
         _mediator = mediator;
     }
 
-    public override async Task<UploadMeetingAudioResponse> UploadMeetingAudio(UploadMeetingAudioRequest request, ServerCallContext context)
+    public override async Task<UploadMeetingAudioResponse> UploadMeetingAudio(Protos.UploadMeetingAudioRequest request, ServerCallContext context)
     {
         var cmd = new UploadMeetingAudioCommand(
             request.OrganizerId,
             request.Title,
+            IncludeActionItems: true,
+            IncludeDescisions: true,
+            Language: "en",
             request.AudioUrl);
 
         var result = await _mediator.Send(cmd, context.CancellationToken);
@@ -79,7 +82,7 @@ public class MeetingGrpcService : Protos.MeetingGrpcService.MeetingGrpcServiceBa
 
     public override async Task StreamMeetingAnalysis(StreamMeetingAnalysisRequest request, IServerStreamWriter<StreamMeetingAnalysisResponse> responseStream, ServerCallContext context)
     {
-        var cmd = new StreamMeetingAnalysisCommand(request.Transcript);
+        var cmd = new StreamMeetingAnalysisCommand(UserId: Guid.NewGuid(), request.Transcript);
 
         var stream = _mediator.CreateStream(cmd, context.CancellationToken);
 

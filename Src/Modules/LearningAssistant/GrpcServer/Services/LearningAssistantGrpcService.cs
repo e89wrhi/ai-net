@@ -44,10 +44,10 @@ public class LearningAssistantGrpcService : AssistantGrpcService.AssistantGrpcSe
         // Assuming StreamLessonCommand(string Topic, LearningMode Mode, DifficultyLevel DifficultyLevel)
         
         var cmd = new LearningAssistant.Features.StreamLesson.V1.StreamAILessonCommand(
-            UserId: ,
+            UserId: Guid.NewGuid(),
             request.Topic,
             (LearningAssistant.Enums.DifficultyLevel)(int)request.Difficulty,
-            ModelId: );
+            ModelId: "");
 
         var stream = _mediator.CreateStream(cmd, context.CancellationToken);
 

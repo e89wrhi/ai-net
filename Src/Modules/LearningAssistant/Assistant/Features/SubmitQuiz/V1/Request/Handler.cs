@@ -30,6 +30,7 @@ internal class SubmitQuizHandler : IRequestHandler<SubmitQuizCommand, SubmitQuiz
     public async Task<SubmitQuizCommandResponse> Handle(SubmitQuizCommand request, CancellationToken cancellationToken)
     {
         #region Prompt
+        string submitPrompt = "";
         var messages = new List<ChatMessage>
         {
              new ChatMessage(
@@ -37,14 +38,14 @@ internal class SubmitQuizHandler : IRequestHandler<SubmitQuizCommand, SubmitQuiz
                     content: ""),
              new ChatMessage(
                     role: ChatRole.User,
-                    content: request.Prompt)
+                    content: submitPrompt)
         };
         #endregion
 
         Guard.Against.Null(request, nameof(request));
 
         // Use orchestrator to get the client based on requested model criteria
-        var criteria = new ModelCriteria { ModelId = request.ModelId };
+        var criteria = new ModelCriteria { ModelId = "" };
         var chatClient = await _orchestrator.GetClientAsync(criteria, cancellationToken);
 
         // Get actual model info from client metadata
@@ -81,7 +82,7 @@ internal class SubmitQuizHandler : IRequestHandler<SubmitQuizCommand, SubmitQuiz
             throw new LearningNotFoundException(lesson.Id);
         }
 
-        profile.SubmitQuize(LearningId.Of(request.LessonId), ActivityId.Of(request.QuizId), request.Score);
+        profile.SubmitScore(request.Score);
 
         await _dbContext.SaveChangesAsync(cancellationToken);
 

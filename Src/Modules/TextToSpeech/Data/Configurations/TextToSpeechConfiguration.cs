@@ -33,7 +33,7 @@ public class TextToSpeechConfiguration : IEntityTypeConfiguration<TextToSpeechSe
                 .HasConversion<int>()
                 .HasColumnName("Voice");
              b.Property(c => c.Speed)
-                .HasConversion(v => v.Value, v => SpeechSpeed.Of(v))
+                .HasConversion<SpeechSpeed>()
                 .HasColumnName("Speed");
              b.Property(c => c.Language)
                 .HasConversion(v => v.Value, v => LanguageCode.Of(v))

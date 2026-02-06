@@ -15,18 +15,19 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Meeting.Models;
 using System.Security.Claims;
+using AiOrchestration.ValueObjects;
 
 namespace Meeting.Features.UploadMeetingAudio.V1;
 
 
-public record UploadMeetingAudioCommand(string OrganizerId, string Title, string AudioUrl) : ICommand<UploadMeetingAudioCommandResponse>
+public record UploadMeetingAudioCommand(string OrganizerId, string Title, bool IncludeActionItems, bool IncludeDescisions, string Language, string AudioUrl) : ICommand<UploadMeetingAudioCommandResponse>
 {
     public Guid Id { get; init; } = NewId.NextGuid();
 }
 
 public record UploadMeetingAudioCommandResponse(Guid Id);
 
-public record UploadMeetingAudioRequest(string OrganizerId, string Title, string AudioUrl);
+public record UploadMeetingAudioRequest(string OrganizerId, string Title, bool IncludeActionItems, bool IncludeDescisions, string Language, string AudioUrl);
 
 public record UploadMeetingAudioRequestResponse(Guid Id);
 
@@ -91,10 +92,13 @@ internal class UploadMeetingAudioHandler : IRequestHandler<UploadMeetingAudioCom
         Guard.Against.Null(request, nameof(request));
 
         var meeting = MeetingAnalysisSession.Create(
-            MeetingId.Of(NewId.NextGuid()),
-            request.OrganizerId,
-            ValueObjects.MeetingAnalysisConfiguration.Of(request.Title),
-            AudioSource.Of(request.AudioUrl));
+                MeetingId.Of(NewId.NextGuid()),
+                UserId.Of(Guid.NewGuid()),
+                aiModelId: ModelId.Of(Guid.NewGuid()),
+                new ValueObjects.MeetingAnalysisConfiguration(
+                includeActionItems: request.IncludeActionItems,
+                request.IncludeDescisions,
+                LanguageCode.Of(request.Language)));
 
         await _dbContext.Sessions.AddAsync(meeting, cancellationToken);
         await _dbContext.SaveChangesAsync(cancellationToken);

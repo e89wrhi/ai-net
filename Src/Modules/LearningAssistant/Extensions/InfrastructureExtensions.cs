@@ -22,7 +22,7 @@ public static class InfrastructureExtensions
         builder.AddMinimalEndpoints(assemblies: typeof(AssistantRoot).Assembly);
         builder.Services.AddValidatorsFromAssembly(typeof(AssistantRoot).Assembly);
         builder.Services.AddCustomMapster(typeof(AssistantRoot).Assembly);
-        builder.AddCustomDbContext<LearningDbContext>(nameof(Assistant));
+        builder.AddCustomDbContext<LearningDbContext>(nameof(LearningAssistant));
         builder.Services.AddScoped<IDataSeeder, ProfileDataSeeder>();
 
         builder.Services.AddCustomMediatR();

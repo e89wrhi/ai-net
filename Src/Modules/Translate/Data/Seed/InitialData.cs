@@ -20,7 +20,7 @@ public static class InitialData
             TranslateId.Of(Guid.Parse("8a8fad5b-d9cb-469f-a165-70867728950b")), 
             UserId.Of(Guid.Parse("0f8fad5b-d9cb-469f-a165-70867728950e")), 
             ModelId.Of("gpt-3.5-turbo"),
-            new TranslationConfiguration(LanguageCode.Of("en"), LanguageCode.Of("fr"), global::Translate.Enums.TranslationDetailLevel.Detailed))
+            new TranslationConfiguration(LanguageCode.Of("en"), LanguageCode.Of("fr"), global::Translate.Enums.TranslationDetailLevel.Fluent))
     };
 
     static InitialData()

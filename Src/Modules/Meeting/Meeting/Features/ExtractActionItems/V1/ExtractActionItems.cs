@@ -23,7 +23,8 @@ public class ExtractActionItemsEndpoint : IMinimalEndpoint
                         return Results.Unauthorized();
                     }
 
-                    var command = new ExtractActionItemsCommand(userId, request.Transcript, request.ModelId);
+                    var command = new ExtractActionItemsCommand(userId, request.Transcript,
+                       request.IncludeActionItems, request.IncludeDescisions, request.Language, request.ModelId);
                     var result = await mediator.Send(command, cancellationToken);
                     return Results.Ok(new ExtractActionItemsResponseDto(result.MeetingId, result.ActionItems,
                         result.ModelId, result.ProviderName));

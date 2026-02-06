@@ -15,6 +15,7 @@ public record LearningSession : Aggregate<LearningId>
     public TokenCount TotalTokens { get; private set; } = default!;
     public CostEstimate TotalCost { get; private set; } = default!;
     public DateTime LastInteractionAt { get; private set; }
+    public double? Score { get; private set; }
 
     private readonly List<LearningActivity> _activities = new();
     public IReadOnlyCollection<LearningActivity> Activities => _activities.AsReadOnly();
@@ -70,5 +71,13 @@ public record LearningSession : Aggregate<LearningId>
     {
         Status = LearningSessionStatus.Failed;
         AddDomainEvent(new Events.LearningSessionFailedDomainEvent(Id, reason));
+    }
+
+    public void SubmitScore(double score)
+    {
+        if (Status != LearningSessionStatus.Active)
+            throw new DomainException("Learning session is not active.");
+        Score = score;
+        AddDomainEvent(new Events.LearningSessionCompletedDomainEvent(Id));
     }
 }

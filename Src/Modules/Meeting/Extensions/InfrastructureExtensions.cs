@@ -5,6 +5,7 @@ using AiOrchestration.Extensions;
 using FluentValidation;
 using Meeting.Data;
 using Meeting.Data.Seed;
+using Meeting.GrpcServer.Services;
 using Meeting.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.AI;

@@ -28,6 +28,11 @@ internal class GenerateFixHandler : ICommandHandler<GenerateFixCommand, Generate
 
     public async Task<GenerateFixCommandResult> Handle(GenerateFixCommand request, CancellationToken cancellationToken)
     {
+        var report = await _dbContext.Reports.FindAsync(new object[] { CodeDebugReportId.Of(request.ReportId) }, cancellationToken);
+
+        if (report == null)
+            throw new CodeDebugReportNotFoundException(request.ReportId);
+
         #region Prompt
         var messages = new List<ChatMessage>
         {
@@ -64,20 +69,6 @@ internal class GenerateFixHandler : ICommandHandler<GenerateFixCommand, Generate
         // Load Session to check existence
         var session = await _dbContext.Sessions.FindAsync(new object[] { CodeDebugId.Of(request.SessionId) }, cancellationToken);
         if (session == null) throw new CodeDebugNotFoundException(request.SessionId);
-
-        // Load Report
-        // NOTE: Aggregate root should manage reports. EF Core explicit loading.
-        // Or if session.Reports is loaded?
-        // Assuming we need to fetch via DbContext directly if not loaded.
-        // It's cleaner to query via Report Id directly if accessible or via session.
-        // Let's assume Report is part of Session and check if we can access it.
-        // Since `_reports` is private backing field, we trust EF loaded it if we did Include, which usage of FindAsync won't do for collections usually.
-
-        // Alternative: Query directly (if Report was its own root, but it seems to be Entity inside Aggregate)
-        var report = await _dbContext.Reports.FindAsync(new object[] { CodeDebugReportId.Of(request.ReportId) }, cancellationToken);
-
-        if (report == null)
-            throw new CodeDebugReportNotFoundException(request.ReportId);
 
         // Heuristic split of Code vs Explanation (assuming markdown code blocks)
         var fixedCode = responseText;

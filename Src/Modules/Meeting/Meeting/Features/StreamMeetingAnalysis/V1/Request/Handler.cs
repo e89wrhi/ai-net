@@ -8,6 +8,7 @@ using System.Runtime.CompilerServices;
 using Ardalis.GuardClauses;
 using AiOrchestration.Services;
 using System.Text;
+using AiOrchestration.Models;
 
 namespace Meeting.Features.StreamMeetingAnalysis.V1;
 

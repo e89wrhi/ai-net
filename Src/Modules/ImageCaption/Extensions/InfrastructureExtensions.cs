@@ -22,7 +22,7 @@ public static class InfrastructureExtensions
         builder.AddMinimalEndpoints(assemblies: typeof(ImageRoot).Assembly);
         builder.Services.AddValidatorsFromAssembly(typeof(ImageRoot).Assembly);
         builder.Services.AddCustomMapster(typeof(ImageRoot).Assembly);
-        builder.AddCustomDbContext<ImageCaptionDbContext>(nameof(Image));
+        builder.AddCustomDbContext<ImageCaptionDbContext>(nameof(ImageCaption));
         builder.Services.AddScoped<IDataSeeder, ImageDataSeeder>();
 
         builder.Services.AddCustomMediatR();
