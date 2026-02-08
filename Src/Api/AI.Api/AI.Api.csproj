@@ -22,6 +22,8 @@
     <ProjectReference Include="..\..\Modules\Payment\Payment.csproj" />
     <ProjectReference Include="..\..\Modules\Resume\Resume.csproj" />
     <ProjectReference Include="..\..\Modules\Sentiment\Sentiment.csproj" />
+    <ProjectReference Include="..\..\Modules\SimpleMD\SimpleMD.csproj" />
+    <ProjectReference Include="..\..\Modules\SimplePlugin\SimplePlugin.csproj" />
     <ProjectReference Include="..\..\Modules\SpeechToText\SpeechToText.csproj" />
     <ProjectReference Include="..\..\Modules\Summary\Summary.csproj" />
     <ProjectReference Include="..\..\Modules\TextToSpeech\TextToSpeech.csproj" />
