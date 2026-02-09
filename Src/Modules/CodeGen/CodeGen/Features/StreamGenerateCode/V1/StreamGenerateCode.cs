@@ -23,7 +23,8 @@ public class StreamGenerateCodeEndpoint : IMinimalEndpoint
                         return Results.Unauthorized();
                     }
 
-                    var command = new StreamGenerateCodeCommand(userId, request.Prompt, request.Language, request.ModelId);
+                    var command = new StreamGenerateCodeCommand(userId, request.Prompt, request.Language,
+                        request.Quality, request.Style, request.IncludeComments, request.ModelId);
 
 
                     return Results.Ok(mediator.CreateStream(command, cancellationToken));

@@ -7,7 +7,7 @@ public class StreamAILessonCommandValidator : AbstractValidator<StreamAILessonCo
     public StreamAILessonCommandValidator()
     {
         RuleFor(x => x.Topic).NotEmpty();
-        RuleFor(x => x.Level).IsInEnum();
+        RuleFor(x => x.DifficultyLevel).IsInEnum();
         RuleFor(x => x.ModelId).MaximumLength(250).When(x => x.ModelId != null);
 
     }

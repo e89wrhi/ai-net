@@ -33,8 +33,12 @@ message TranscribeAudioResponse {
 }
 
 message StreamTranscribeAudioRequest {
-  string audio_url = 1;
-  string language = 2;
+  string user_id = 1;
+  string audio_url = 2;
+  string language = 3;
+  bool include_punctuation = 4;
+  SpeechToTextDetailLevel detail_level = 5;
+  string model_id = 6;
 }
 
 message StreamTranscribeAudioResponse {

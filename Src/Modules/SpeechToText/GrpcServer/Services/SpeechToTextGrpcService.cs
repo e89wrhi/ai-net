@@ -43,9 +43,12 @@ public class SpeechToTextGrpcService : Protos.SpeechToTextGrpcService.SpeechToTe
     public override async Task StreamTranscribeAudio(StreamTranscribeAudioRequest request, IServerStreamWriter<StreamTranscribeAudioResponse> responseStream, ServerCallContext context)
     {
         var cmd = new SpeechToText.Features.StreamTranscribeAudio.V1.StreamTranscribeAudioCommand(
-            UserId: Guid.NewGuid(),
+            Guid.Parse(request.UserId),
             request.AudioUrl,
-            request.Language);
+            request.Language,
+            request.IncludePunctuation,
+            (SpeechToText.Enums.SpeechToTextDetailLevel)(int)request.DetailLevel,
+            request.ModelId);
 
         var stream = _mediator.CreateStream(cmd, context.CancellationToken);
 

@@ -34,6 +34,8 @@ message GenerateAutoCompleteResponse {
 message StreamAutoCompleteRequest {
   string user_id = 1;
   string prompt = 2;
+  CompletionMode mode = 3;
+  string model_id = 4;
 }
 
 message StreamAutoCompleteResponse {

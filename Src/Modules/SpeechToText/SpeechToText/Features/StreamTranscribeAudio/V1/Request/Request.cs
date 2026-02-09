@@ -1,4 +1,6 @@
-﻿namespace SpeechToText.Features.StreamTranscribeAudio.V1;
+﻿using SpeechToText.Enums;
 
-public record StreamTranscribeAudioRequestDto(string AudioUrl, string Language, string? ModelId = null);
+namespace SpeechToText.Features.StreamTranscribeAudio.V1;
+
+public record StreamTranscribeAudioRequestDto(Guid UserId, string AudioUrl, string Language, bool IncludePunctuation, SpeechToTextDetailLevel DetailLevel, string? ModelId = null);
 

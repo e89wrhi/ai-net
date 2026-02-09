@@ -23,7 +23,8 @@ public class StreamLessonEndpoint : IMinimalEndpoint
                         return Results.Unauthorized();
                     }
 
-                    var command = new StreamAILessonCommand(userId, request.Topic, request.Level, request.ModelId);
+                    var command = new StreamAILessonCommand(userId, request.Topic,
+                        request.Mode, request.DifficultyLevel, request.ModelId);
 
 
                     return Results.Ok(mediator.CreateStream(command, cancellationToken));

@@ -1,4 +1,6 @@
-﻿namespace CodeGen.Features.StreamGenerateCode.V1;
+﻿using CodeGen.Enums;
 
-public record StreamGenerateCodeRequestDto(string Prompt, string Language, string? ModelId = null);
+namespace CodeGen.Features.StreamGenerateCode.V1;
+
+public record StreamGenerateCodeRequestDto(Guid UserId, string Prompt, string Language, CodeQualityLevel Quality, CodeStyle Style, bool IncludeComments, string? ModelId = null);
 

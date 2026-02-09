@@ -39,15 +39,12 @@ public class LearningAssistantGrpcService : AssistantGrpcService.AssistantGrpcSe
 
     public override async Task StreamLesson(StreamLessonRequest request, IServerStreamWriter<StreamLessonResponse> responseStream, ServerCallContext context)
     {
-        // Check if StreamLesson command exists, assuming it follows the pattern
-        // The previous error didn't show StreamLesson issues, but I should verify if the command exists.
-        // Assuming StreamLessonCommand(string Topic, LearningMode Mode, DifficultyLevel DifficultyLevel)
-        
         var cmd = new LearningAssistant.Features.StreamLesson.V1.StreamAILessonCommand(
-            UserId: Guid.NewGuid(),
+            Guid.Parse(request.UserId),
             request.Topic,
+            (LearningAssistant.Enums.LearningMode)(int)request.Mode,
             (LearningAssistant.Enums.DifficultyLevel)(int)request.Difficulty,
-            ModelId: "");
+            request.ModelId);
 
         var stream = _mediator.CreateStream(cmd, context.CancellationToken);
 

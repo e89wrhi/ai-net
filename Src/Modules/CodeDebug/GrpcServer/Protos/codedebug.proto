@@ -46,8 +46,12 @@ message AnalyzeCodeResponse {
 }
 
 message StreamAnalyzeCodeRequest {
-  string code = 1;
-  ProgrammingLanguage language = 2;
+  string user_id = 1;
+  string code = 2;
+  ProgrammingLanguage language = 3;
+  DebugDepth depth = 4;
+  bool include_suggestion = 5;
+  string model_id = 6;
 }
 
 message StreamAnalyzeCodeResponse {

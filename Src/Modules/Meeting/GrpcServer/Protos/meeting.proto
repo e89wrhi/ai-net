@@ -55,7 +55,12 @@ message ExtractActionItemsResponse {
 }
 
 message StreamMeetingAnalysisRequest {
-  string transcript = 1;
+  string user_id = 1;
+  string transcript = 2;
+  bool include_action_items = 3;
+  bool include_descisions = 4;
+  string language = 5;
+  string model_id = 6;
 }
 
 message StreamMeetingAnalysisResponse {

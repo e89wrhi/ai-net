@@ -82,7 +82,13 @@ public class MeetingGrpcService : Protos.MeetingGrpcService.MeetingGrpcServiceBa
 
     public override async Task StreamMeetingAnalysis(StreamMeetingAnalysisRequest request, IServerStreamWriter<StreamMeetingAnalysisResponse> responseStream, ServerCallContext context)
     {
-        var cmd = new StreamMeetingAnalysisCommand(UserId: Guid.NewGuid(), request.Transcript);
+        var cmd = new StreamMeetingAnalysisCommand(
+            Guid.Parse(request.UserId),
+            request.Transcript,
+            request.IncludeActionItems,
+            request.IncludeDescisions,
+            request.Language,
+            request.ModelId);
 
         var stream = _mediator.CreateStream(cmd, context.CancellationToken);
 

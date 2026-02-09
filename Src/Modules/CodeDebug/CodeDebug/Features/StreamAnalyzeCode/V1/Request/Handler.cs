@@ -70,8 +70,8 @@ internal class StreamAnalyzeCodeHandler : IStreamRequestHandler<StreamAnalyzeCod
             var modelId = ModelId.Of(modelIdStr);
             
             var config = new CodeDebugConfiguration(
-                depth: Enums.DebugDepth.Deep,
-                includeSuggestions: true);
+                depth: request.Depth,
+                includeSuggestions: request.IncludeSuggestion);
 
             var session = CodeDebugSession.Create(sessionId, userId, modelId, config);
 

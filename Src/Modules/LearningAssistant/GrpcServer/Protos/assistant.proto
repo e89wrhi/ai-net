@@ -41,9 +41,11 @@ message GenerateLessonResponse {
 }
 
 message StreamLessonRequest {
-  string topic = 1;
-  LearningMode mode = 2;
-  DifficultyLevel difficulty = 3;
+  string user_id = 1;
+  string topic = 2;
+  LearningMode mode = 3;
+  DifficultyLevel difficulty = 4;
+  string model_id = 5;
 }
 
 message StreamLessonResponse {

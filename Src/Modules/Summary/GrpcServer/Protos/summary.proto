@@ -32,9 +32,11 @@ message SummarizeTextResponse {
 }
 
 message StreamSummarizeTextRequest {
-  string text = 1;
-  SummaryDetailLevel detail_level = 2;
-  string language = 3;
+  string user_id = 1;
+  string text = 2;
+  SummaryDetailLevel detail_level = 3;
+  string language = 4;
+  string model_id = 5;
 }
 
 message StreamSummarizeTextResponse {

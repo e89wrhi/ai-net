@@ -35,10 +35,12 @@ message TranslateTextResponse {
 }
 
 message StreamTranslateTextRequest {
-  string text = 1;
-  string source_language = 2;
-  string target_language = 3;
-  TranslationDetailLevel detail_level = 4;
+  string user_id = 1;
+  string text = 2;
+  string source_language = 3;
+  string target_language = 4;
+  TranslationDetailLevel detail_level = 5;
+  string model_id = 6;
 }
 
 message StreamTranslateTextResponse {

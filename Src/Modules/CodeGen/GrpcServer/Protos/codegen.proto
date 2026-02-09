@@ -56,8 +56,13 @@ message ReGenerateCodeResponse {
 }
 
 message StreamGenerateCodeRequest {
-  string prompt = 1;
-  string language = 2;
+  string user_id = 1;
+  string prompt = 2;
+  string language = 3;
+  CodeQualityLevel quality = 4;
+  CodeStyle style = 5;
+  bool include_comments = 6;
+  string model_id = 7;
 }
 
 message StreamGenerateCodeResponse {

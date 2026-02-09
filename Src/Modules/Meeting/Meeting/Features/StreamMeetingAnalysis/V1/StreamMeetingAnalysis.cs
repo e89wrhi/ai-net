@@ -23,7 +23,8 @@ public class StreamMeetingAnalysisEndpoint : IMinimalEndpoint
                         return Results.Unauthorized();
                     }
 
-                    var command = new StreamMeetingAnalysisCommand(userId, request.Transcript, request.ModelId);
+                    var command = new StreamMeetingAnalysisCommand(userId, request.Transcript,
+                        request.IncludeActionItems, request.IncludeDescisions, request.Language, request.ModelId);
 
 
                     return Results.Ok(mediator.CreateStream(command, cancellationToken));

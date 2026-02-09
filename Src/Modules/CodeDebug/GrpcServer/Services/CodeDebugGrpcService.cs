@@ -44,9 +44,12 @@ public class CodeDebugGrpcService : Protos.CodeDebugGrpcService.CodeDebugGrpcSer
     public override async Task StreamAnalyzeCode(StreamAnalyzeCodeRequest request, IServerStreamWriter<StreamAnalyzeCodeResponse> responseStream, ServerCallContext context)
     {
         var cmd = new CodeDebug.Features.StreamAnalyzeCode.V1.StreamAnalyzeCodeCommand(
-            UserId: Guid.NewGuid(),
+            Guid.Parse(request.UserId),
             request.Code,
-            (CodeDebug.Enums.ProgrammingLanguage)(int)request.Language);
+            (CodeDebug.Enums.ProgrammingLanguage)(int)request.Language,
+            (CodeDebug.Enums.DebugDepth)(int)request.Depth,
+            request.IncludeSuggestion,
+            request.ModelId);
 
         var stream = _mediator.CreateStream(cmd, context.CancellationToken);
 
