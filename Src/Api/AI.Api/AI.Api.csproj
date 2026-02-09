@@ -9,6 +9,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Aspire\ServiceDefaults\ServiceDefaults.csproj" />
     <ProjectReference Include="..\..\Common\Common\Common.csproj" />
+    <ProjectReference Include="..\..\Modules\Analytics\Analytics.csproj" />
     <ProjectReference Include="..\..\Modules\AutoComplete\AutoComplete.csproj" />
     <ProjectReference Include="..\..\Modules\ChatBot\ChatBot.csproj" />
     <ProjectReference Include="..\..\Modules\CodeDebug\CodeDebug.csproj" />

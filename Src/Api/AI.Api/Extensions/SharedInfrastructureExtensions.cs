@@ -18,6 +18,16 @@ using Resume;
 using User;
 using AI.Common.BaseExceptions;
 using AI.Common.Problems;
+using AutoComplete;
+using CodeDebug;
+using CodeGen;
+using ImageEdit;
+using ImageGen;
+using Sentiment;
+using SpeechToText;
+using TextToSpeech;
+using Summary;
+using Translate;
 
 namespace Api.Extensions;
 
@@ -62,6 +72,17 @@ public static class SharedInfrastructureExtensions
         builder.Services.AddScoped<IEventMapper>(sp =>
         {
             var mappers = new IEventMapper[] {
+                                                 sp.GetRequiredService<AutoCompleteEventMapper>(),
+                                                 sp.GetRequiredService<CodeDebugEventMapper>(),
+                                                 sp.GetRequiredService<CodeGenEventMapper>(),
+                                                 sp.GetRequiredService<ImageEditEventMapper>(),
+                                                 sp.GetRequiredService<ImageGenEventMapper>(),
+                                                 sp.GetRequiredService<SentimentEventMapper>(),
+                                                 sp.GetRequiredService<SpeechToTextEventMapper>(),
+                                                 sp.GetRequiredService<TextToSpeechEventMapper>(),
+                                                 sp.GetRequiredService<SummaryEventMapper>(),
+                                                 sp.GetRequiredService<TranslateEventMapper>(),
+
                                                  sp.GetRequiredService<ChatEventMapper>(),
                                                  sp.GetRequiredService<IdentityEventMapper>(),
                                                  sp.GetRequiredService<ResumeEventMapper>(),
