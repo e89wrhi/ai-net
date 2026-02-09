@@ -113,6 +113,111 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimplePlugin", "Src\Modules
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleMD", "Src\Modules\SimpleMD\SimpleMD.csproj", "{FA2DD7EB-DF69-47B4-B9E3-A9998C45067D}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "architecture", "architecture", "{7C3B229F-AB91-4BA9-9C57-9C124C7F127C}"
+	ProjectSection(SolutionItems) = preProject
+		Docs\architecture\001-arch-db.md = Docs\architecture\001-arch-db.md
+		Docs\architecture\002-arch-image.md = Docs\architecture\002-arch-image.md
+		Docs\architecture\003-arch-search.md = Docs\architecture\003-arch-search.md
+		Docs\architecture\004-arch-feed.md = Docs\architecture\004-arch-feed.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{AE66F89D-ADEA-4711-892B-95D048066C97}"
+	ProjectSection(SolutionItems) = preProject
+		Docs\build\build-project.md = Docs\build\build-project.md
+		Docs\build\run-project.md = Docs\build\run-project.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "development", "development", "{CF57B9D2-60FF-4D51-92FB-5B960D85B19D}"
+	ProjectSection(SolutionItems) = preProject
+		Docs\development\new-feature.md = Docs\development\new-feature.md
+		Docs\development\new-module.md = Docs\development\new-module.md
+		Docs\development\new-system.md = Docs\development\new-system.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "features", "features", "{AAFF4EE8-A428-481E-A8D3-25773A039278}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "guide", "guide", "{85031523-56CB-4B68-B982-16FA83A1E5C8}"
+	ProjectSection(SolutionItems) = preProject
+		Docs\guide\admin-api-guide.md = Docs\guide\admin-api-guide.md
+		Docs\guide\api-guide.md = Docs\guide\api-guide.md
+		Docs\guide\public-api-guide.md = Docs\guide\public-api-guide.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "modules", "modules", "{8B092587-631F-4567-9368-C07C27252734}"
+	ProjectSection(SolutionItems) = preProject
+		Docs\modules\ai-orchestration.md = Docs\modules\ai-orchestration.md
+		Docs\modules\analytics-module.md = Docs\modules\analytics-module.md
+		Docs\modules\autocomplete-module.md = Docs\modules\autocomplete-module.md
+		Docs\modules\chat-module.md = Docs\modules\chat-module.md
+		Docs\modules\code-debug-module.md = Docs\modules\code-debug-module.md
+		Docs\modules\code-gen-module.md = Docs\modules\code-gen-module.md
+		Docs\modules\identity-module.md = Docs\modules\identity-module.md
+		Docs\modules\image-caption-module.md = Docs\modules\image-caption-module.md
+		Docs\modules\image-edit-module.md = Docs\modules\image-edit-module.md
+		Docs\modules\image-gen-module.md = Docs\modules\image-gen-module.md
+		Docs\modules\learning-assistant-module.md = Docs\modules\learning-assistant-module.md
+		Docs\modules\meeting-module.md = Docs\modules\meeting-module.md
+		Docs\modules\payment-module.md = Docs\modules\payment-module.md
+		Docs\modules\resume-module.md = Docs\modules\resume-module.md
+		Docs\modules\sentiment-module.md = Docs\modules\sentiment-module.md
+		Docs\modules\simple-md-module.md = Docs\modules\simple-md-module.md
+		Docs\modules\simple-plugin-module.md = Docs\modules\simple-plugin-module.md
+		Docs\modules\speech-to-text-module.md = Docs\modules\speech-to-text-module.md
+		Docs\modules\summary-module.md = Docs\modules\summary-module.md
+		Docs\modules\text-to-speech-module.md = Docs\modules\text-to-speech-module.md
+		Docs\modules\translate-module.md = Docs\modules\translate-module.md
+		Docs\modules\user-module.md = Docs\modules\user-module.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "coming", "coming", "{EBB458FA-06E0-4787-9424-23D88B448817}"
+	ProjectSection(SolutionItems) = preProject
+		Docs\features\coming\001-coming-new.md = Docs\features\coming\001-coming-new.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "depreciate", "depreciate", "{DBDEDE58-6724-43B4-AFE1-6DB717F7C03C}"
+	ProjectSection(SolutionItems) = preProject
+		Docs\features\depreciate\001-depreciate-new.md = Docs\features\depreciate\001-depreciate-new.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "improve", "improve", "{12AF2937-F673-4A30-BA9A-1F703D88A4C9}"
+	ProjectSection(SolutionItems) = preProject
+		Docs\features\improve\001-improve-new.md = Docs\features\improve\001-improve-new.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "objects", "objects", "{C5339C8D-9B26-46B8-A1A9-B11BB3BC8D98}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "routes", "routes", "{F52BFD66-4BEA-4F36-AD14-C9C97B7229C2}"
+	ProjectSection(SolutionItems) = preProject
+		Docs\guide\routes\api-admin-routes.ts = Docs\guide\routes\api-admin-routes.ts
+		Docs\guide\routes\api-public-routes.ts = Docs\guide\routes\api-public-routes.ts
+		Docs\guide\routes\api-routes.ts = Docs\guide\routes\api-routes.ts
+		Docs\guide\routes\api-shared-routes.ts = Docs\guide\routes\api-shared-routes.ts
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "api", "api", "{9CE1BAC0-C1E9-4A86-9C1E-ACD974F65484}"
+	ProjectSection(SolutionItems) = preProject
+		Docs\modules\api\api-layer.md = Docs\modules\api\api-layer.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "buildingblocks", "buildingblocks", "{84ECC890-811C-4D4F-AF82-93C670653543}"
+	ProjectSection(SolutionItems) = preProject
+		Docs\modules\buildingblocks\common.md = Docs\modules\buildingblocks\common.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{C59FA3F8-34C8-4F30-BA60-2AB4F264BB9D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{873F8300-07D9-4FAC-81EE-050873A366C4}"
+	ProjectSection(SolutionItems) = preProject
+		Docs\test\new-unit-test.md = Docs\test\new-unit-test.md
+		Docs\test\unit-testing.md = Docs\test\unit-testing.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "admin", "admin", "{8AF39F7F-5D3F-4E49-8A1D-05EB342DD41A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "public", "public", "{49B29695-F151-4672-9961-1D703AEB8DCF}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "shared", "shared", "{A9943AA6-3541-4C91-BA02-FEC71BD2595F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -281,6 +386,24 @@ Global
 		{8AD8859D-E910-4AF8-A29D-A113BF896DAA} = {066F303E-0DF5-41AB-BAA4-C81BD42D1074}
 		{9567CE12-5D01-42BD-9540-3E3778E87E6C} = {8AD8859D-E910-4AF8-A29D-A113BF896DAA}
 		{FA2DD7EB-DF69-47B4-B9E3-A9998C45067D} = {80CCA63C-1079-46BA-ADA7-19BD3BE0ABC3}
+		{7C3B229F-AB91-4BA9-9C57-9C124C7F127C} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{AE66F89D-ADEA-4711-892B-95D048066C97} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{CF57B9D2-60FF-4D51-92FB-5B960D85B19D} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{AAFF4EE8-A428-481E-A8D3-25773A039278} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{85031523-56CB-4B68-B982-16FA83A1E5C8} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{8B092587-631F-4567-9368-C07C27252734} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{EBB458FA-06E0-4787-9424-23D88B448817} = {AAFF4EE8-A428-481E-A8D3-25773A039278}
+		{DBDEDE58-6724-43B4-AFE1-6DB717F7C03C} = {AAFF4EE8-A428-481E-A8D3-25773A039278}
+		{12AF2937-F673-4A30-BA9A-1F703D88A4C9} = {AAFF4EE8-A428-481E-A8D3-25773A039278}
+		{C5339C8D-9B26-46B8-A1A9-B11BB3BC8D98} = {85031523-56CB-4B68-B982-16FA83A1E5C8}
+		{F52BFD66-4BEA-4F36-AD14-C9C97B7229C2} = {85031523-56CB-4B68-B982-16FA83A1E5C8}
+		{9CE1BAC0-C1E9-4A86-9C1E-ACD974F65484} = {8B092587-631F-4567-9368-C07C27252734}
+		{84ECC890-811C-4D4F-AF82-93C670653543} = {8B092587-631F-4567-9368-C07C27252734}
+		{C59FA3F8-34C8-4F30-BA60-2AB4F264BB9D} = {8B092587-631F-4567-9368-C07C27252734}
+		{873F8300-07D9-4FAC-81EE-050873A366C4} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{8AF39F7F-5D3F-4E49-8A1D-05EB342DD41A} = {C5339C8D-9B26-46B8-A1A9-B11BB3BC8D98}
+		{49B29695-F151-4672-9961-1D703AEB8DCF} = {C5339C8D-9B26-46B8-A1A9-B11BB3BC8D98}
+		{A9943AA6-3541-4C91-BA02-FEC71BD2595F} = {C5339C8D-9B26-46B8-A1A9-B11BB3BC8D98}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E751B8D5-C897-4B4F-8769-C7564DFC135F}
