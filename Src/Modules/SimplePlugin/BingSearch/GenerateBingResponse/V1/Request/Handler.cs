@@ -23,6 +23,9 @@ internal class GenerateBingResponseWithAIHandler : ICommandHandler<GenerateBingR
 
     public async Task<GenerateBingResponseCommandResult> Handle(GenerateBingResponseCommand request, CancellationToken cancellationToken)
     {
+        //kernel.ImportPluginFromObject(new WebSearchEnginePlugin(
+        //    new BingConnector(Environment.GetEnvironmentVariable("BING_API_KEY"))));
+
         #region Prompt
         var messages = new List<ChatMessage>
         {

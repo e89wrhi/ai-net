@@ -23,6 +23,10 @@ internal class GenerateResponseWithAIHandler : ICommandHandler<GenerateResponseC
 
     public async Task<GenerateResponseCommandResult> Handle(GenerateResponseCommand request, CancellationToken cancellationToken)
     {
+        // Import the DemographicInfo class to the kernel, so it can be used in the chat completion service.
+        // this plugin could be from other options such as functions, prompts directory, etc.
+        // kernel.ImportPluginFromType<ContextInfo>();
+        
         #region Prompt
         var messages = new List<ChatMessage>
         {

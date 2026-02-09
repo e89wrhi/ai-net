@@ -23,53 +23,46 @@ internal class GenerateResponseWithAIHandler : ICommandHandler<GenerateResponseC
 
     public async Task<GenerateResponseCommandResult> Handle(GenerateResponseCommand request, CancellationToken cancellationToken)
     {
-        // read markdown file
-        string markdown = System.IO.File.ReadAllText("table.md");
-
-        #region Prompt
-        var messages = new List<ChatMessage>
-        {
-            new ChatMessage(
-                    role: ChatRole.System, 
-                    content : "You're a polite assistant. start with greeting and use this" + markdown + "data as a context to answer the messages"),
-            new ChatMessage(
-                    role: ChatRole.User, 
-                    content : request.Text)
-        };
-        #endregion
-
         Guard.Against.NullOrEmpty(request.Text, nameof(request.Text));
 
-        // Use orchestrator to get the client based on requested model criteria
-        var criteria = new ModelCriteria { ModelId = request.ModelId };
-        var chatClient = await _orchestrator.GetClientAsync(criteria, cancellationToken);
+        var mdPath = Path.Combine(AppContext.BaseDirectory, "table.md");
+        if (!File.Exists(mdPath))
+            throw new FileNotFoundException("Context markdown file not found.", mdPath);
 
-        // Get actual model info from client metadata
-        var clientMetadata = chatClient.GetService(typeof(ChatClientMetadata)) as ChatClientMetadata;
-        var modelIdStr = clientMetadata?.DefaultModelId ?? "default-model";
-        var providerName = clientMetadata?.ProviderName ?? "Unknown";
-        var modelId = ModelId.Of(modelIdStr);
+        var markdown = await File.ReadAllTextAsync(mdPath, cancellationToken);
 
-        // Call AI Model
-        var chatCompletion = await chatClient.GetResponseAsync(messages, cancellationToken: cancellationToken);
-        var responseText = chatCompletion.Messages[0].Text ?? "Neutral, 0.0";
-
-        // Calculate Metadata & Usage
-        var tokenUsage = chatCompletion.Usage?.TotalTokenCount ?? (messages.Sum(i => i.Text.Length) + responseText.Length) / 4;
-
-        // Get cost per token from model service
-        var costPerToken = _modelService.GetCostPerToken(modelId);
-        var costValue = (decimal)tokenUsage * costPerToken;
-
-        // Parse "Sentiment, Score"
-        var parts = responseText.Split(',');
-        var sentimentStr = parts[0].Trim();
-        double score = 0.0;
-        if (parts.Length > 1 && double.TryParse(parts[1].Trim(), out var parsedScore))
+        var messages = new[]
         {
-            score = parsedScore;
-        }
+            new ChatMessage(
+                ChatRole.System,
+                """
+                You are a polite, professional assistant.
 
-        return new GenerateResponseCommandResult(sentimentStr, modelIdStr, providerName);
+                RULES:
+                - Start with a brief polite greeting (one sentence).
+                - Answer clearly and concisely.
+                - Do NOT mention the markdown.
+                - Use the markdown strictly as background context.
+
+                ---
+                """ + markdown + """
+                ---
+                """
+            ),
+            new ChatMessage(ChatRole.User, request.Text)
+        };
+
+        var criteria = new ModelCriteria { ModelId = request.ModelId };
+        var client = await _orchestrator.GetClientAsync(criteria, cancellationToken);
+
+        var metadata = client.GetService(typeof(ChatClientMetadata)) as ChatClientMetadata;
+
+        var response = await client.GetResponseAsync(messages, cancellationToken: cancellationToken);
+        var responseText = response.Messages.FirstOrDefault()?.Text ?? string.Empty;
+
+        return new GenerateResponseCommandResult(
+            responseText,
+            metadata?.DefaultModelId ?? "unknown",
+            metadata?.ProviderName ?? "unknown");
     }
 }

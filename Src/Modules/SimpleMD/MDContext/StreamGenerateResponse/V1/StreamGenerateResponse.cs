@@ -30,12 +30,12 @@ public class StreamGenerateResponseEndpoint : IMinimalEndpoint
                         result.ModelId, result.ProviderName));
                 })
             .RequireAuthorization(nameof(ApiScope))
-            .WithName("StreamGenerateResponse")
-            .WithApiVersionSet(builder.NewApiVersionSet("Sentiment").Build())
-            .Produces<StreamGenerateResponseResponseDto>()
+            .WithName("StreamGenerateMDContextResponse")
+            .WithApiVersionSet(builder.NewApiVersionSet("SimpleMD").Build())
+            .Produces<StreamGenerateResponseCommandResult>()
             .ProducesProblem(StatusCodes.Status400BadRequest).ProducesProblem(StatusCodes.Status401Unauthorized)
-            .WithSummary("Analyze Sentiment with AI")
-            .WithDescription("Uses AI to analyze the sentiment of the provided text, returning sentiment type and confidence score.")
+            .WithSummary("Stream Generate Md Context")
+            .WithDescription("Uses AI to add an md file as a context for a chat.")
             .WithOpenApi()
             .HasApiVersion(1.0);
 

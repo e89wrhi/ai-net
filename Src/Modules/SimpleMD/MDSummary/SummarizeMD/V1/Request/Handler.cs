@@ -23,53 +23,47 @@ internal class SummarizeMDWithAIHandler : ICommandHandler<SummarizeMDCommand, Su
 
     public async Task<SummarizeMDCommandResult> Handle(SummarizeMDCommand request, CancellationToken cancellationToken)
     {
-        // read markdown file
-        string markdown = System.IO.File.ReadAllText("context.md");
+        Guard.Against.NullOrEmpty(request.Text, nameof(request.Text));
+        var mdPath = Path.Combine(AppContext.BaseDirectory, "context.md");
+        if (!File.Exists(mdPath))
+            throw new FileNotFoundException("Markdown context file not found.", mdPath);
 
-        #region Prompt
+        var markdown = await File.ReadAllTextAsync(mdPath, cancellationToken);
+
         var messages = new List<ChatMessage>
         {
-            new ChatMessage(
-                    role: ChatRole.System, 
-                    content : "summarize this text " + markdown),
-            new ChatMessage(
-                    role: ChatRole.User, 
-                    content : request.Text)
+            new(
+                ChatRole.System,
+                """
+                You are a technical documentation assistant.
+
+                Summarize the following markdown content.
+                Preserve meaning, structure, and key points.
+                Do NOT invent information.
+
+                Markdown:
+                ---
+                """ + markdown + """
+                ---
+                """
+            ),
+            new(
+                ChatRole.User,
+                request.Text // e.g. "short summary", "bullet points", "one paragraph"
+            )
         };
-        #endregion
 
-        Guard.Against.NullOrEmpty(request.Text, nameof(request.Text));
-
-        // Use orchestrator to get the client based on requested model criteria
         var criteria = new ModelCriteria { ModelId = request.ModelId };
         var chatClient = await _orchestrator.GetClientAsync(criteria, cancellationToken);
 
-        // Get actual model info from client metadata
-        var clientMetadata = chatClient.GetService(typeof(ChatClientMetadata)) as ChatClientMetadata;
-        var modelIdStr = clientMetadata?.DefaultModelId ?? "default-model";
-        var providerName = clientMetadata?.ProviderName ?? "Unknown";
-        var modelId = ModelId.Of(modelIdStr);
+        var metadata = chatClient.GetService(typeof(ChatClientMetadata)) as ChatClientMetadata;
 
-        // Call AI Model
-        var chatCompletion = await chatClient.GetResponseAsync(messages, cancellationToken: cancellationToken);
-        var responseText = chatCompletion.Messages[0].Text ?? "Neutral, 0.0";
+        var response = await chatClient.GetResponseAsync(messages, cancellationToken: cancellationToken);
+        var summary = response.Messages.FirstOrDefault()?.Text ?? string.Empty;
 
-        // Calculate Metadata & Usage
-        var tokenUsage = chatCompletion.Usage?.TotalTokenCount ?? (messages.Sum(i => i.Text.Length) + responseText.Length) / 4;
-
-        // Get cost per token from model service
-        var costPerToken = _modelService.GetCostPerToken(modelId);
-        var costValue = (decimal)tokenUsage * costPerToken;
-
-        // Parse "Sentiment, Score"
-        var parts = responseText.Split(',');
-        var sentimentStr = parts[0].Trim();
-        double score = 0.0;
-        if (parts.Length > 1 && double.TryParse(parts[1].Trim(), out var parsedScore))
-        {
-            score = parsedScore;
-        }
-
-        return new SummarizeMDCommandResult(sentimentStr, modelIdStr, providerName);
+        return new SummarizeMDCommandResult(
+            summary,
+            metadata?.DefaultModelId ?? "unknown",
+            metadata?.ProviderName ?? "unknown");
     }
 }

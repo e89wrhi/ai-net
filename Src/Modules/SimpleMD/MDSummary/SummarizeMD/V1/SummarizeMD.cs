@@ -31,11 +31,11 @@ public class SummarizeMDEndpoint : IMinimalEndpoint
                 })
             .RequireAuthorization(nameof(ApiScope))
             .WithName("SummarizeMD")
-            .WithApiVersionSet(builder.NewApiVersionSet("Sentiment").Build())
+            .WithApiVersionSet(builder.NewApiVersionSet("SimpleMD").Build())
             .Produces<SummarizeMDResponseDto>()
             .ProducesProblem(StatusCodes.Status400BadRequest).ProducesProblem(StatusCodes.Status401Unauthorized)
-            .WithSummary("Analyze Sentiment with AI")
-            .WithDescription("Uses AI to analyze the sentiment of the provided text, returning sentiment type and confidence score.")
+            .WithSummary("Summarize Md File")
+            .WithDescription("Uses AI to summarize an md file.")
             .WithOpenApi()
             .HasApiVersion(1.0);
 
