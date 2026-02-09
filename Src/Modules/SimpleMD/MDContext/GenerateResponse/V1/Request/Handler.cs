@@ -23,12 +23,15 @@ internal class GenerateResponseWithAIHandler : ICommandHandler<GenerateResponseC
 
     public async Task<GenerateResponseCommandResult> Handle(GenerateResponseCommand request, CancellationToken cancellationToken)
     {
+        // read markdown file
+        string markdown = System.IO.File.ReadAllText("table.md");
+
         #region Prompt
         var messages = new List<ChatMessage>
         {
             new ChatMessage(
                     role: ChatRole.System, 
-                    content : "You are a sentiment analysis expert. Analyze the sentiment of the following text. Return ONLY a single word (Positive, Negative, or Neutral) followed by a comma and a confidence score between 0 and 1. Example: Positive, 0.95"),
+                    content : "You're a polite assistant. start with greeting and use this" + markdown + "data as a context to answer the messages"),
             new ChatMessage(
                     role: ChatRole.User, 
                     content : request.Text)
