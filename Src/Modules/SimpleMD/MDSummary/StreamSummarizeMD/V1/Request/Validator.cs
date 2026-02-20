@@ -6,6 +6,8 @@ public class StreamSummarizeMDWithAICommandValidator : AbstractValidator<StreamS
 {
     public StreamSummarizeMDWithAICommandValidator()
     {
-        RuleFor(x => x.Text).NotEmpty();
+        RuleFor(x => x.Instruction)
+            .NotEmpty()
+            .MaximumLength(500).WithMessage("Instruction must not exceed 500 characters.");
     }
 }

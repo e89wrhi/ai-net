@@ -6,6 +6,8 @@ public class StreamGenerateResponseWithAICommandValidator : AbstractValidator<St
 {
     public StreamGenerateResponseWithAICommandValidator()
     {
-        RuleFor(x => x.Text).NotEmpty();
+        RuleFor(x => x.Text)
+            .NotEmpty()
+            .MaximumLength(4000).WithMessage("Message must not exceed 4 000 characters.");
     }
 }

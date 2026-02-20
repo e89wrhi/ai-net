@@ -4,52 +4,46 @@ using AiOrchestration.Services;
 using AiOrchestration.ValueObjects;
 using Ardalis.GuardClauses;
 using Microsoft.Extensions.AI;
+using SimpleMD.Services;
 
 namespace SimpleMD.Features.StreamSummarizeMD.V1;
-
 
 internal class StreamSummarizeMDWithAIHandler : ICommandHandler<StreamSummarizeMDCommand, StreamSummarizeMDCommandResult>
 {
     private readonly IAiOrchestrator _orchestrator;
-    private readonly IChatClient _chatClient;
-    private readonly IAiModelService _modelService;
+    private readonly IMarkdownFileProvider _markdownProvider;
 
-    public StreamSummarizeMDWithAIHandler(IAiModelService modelService, IAiOrchestrator orchestrator, IChatClient chatClient)
+    public StreamSummarizeMDWithAIHandler(IAiOrchestrator orchestrator, IMarkdownFileProvider markdownProvider)
     {
-        _chatClient = chatClient;
-        _modelService = modelService;
         _orchestrator = orchestrator;
+        _markdownProvider = markdownProvider;
     }
 
     public async Task<StreamSummarizeMDCommandResult> Handle(StreamSummarizeMDCommand request, CancellationToken cancellationToken)
     {
-        Guard.Against.NullOrEmpty(request.Text, nameof(request.Text));
-        var mdPath = Path.Combine(AppContext.BaseDirectory, "context.md");
-        if (!File.Exists(mdPath))
-            throw new FileNotFoundException("Markdown context file not found.", mdPath);
+        Guard.Against.NullOrEmpty(request.Instruction, nameof(request.Instruction));
 
-        var markdown = await File.ReadAllTextAsync(mdPath, cancellationToken);
+        var markdown = await _markdownProvider.GetMarkdownAsync(cancellationToken);
 
         var messages = new List<ChatMessage>
         {
             new(
                 ChatRole.System,
-                """
+                $"""
                 You are a technical documentation assistant.
 
-                Summarize the following markdown content.
+                Summarize the following markdown document.
                 Preserve meaning, structure, and key points.
                 Do NOT invent information.
 
                 Markdown:
                 ---
-                """ + markdown + """
+                {markdown}
                 ---
-                """
-            ),
+                """),
             new(
                 ChatRole.User,
-                request.Text // e.g. "short summary", "bullet points", "one paragraph"
+                request.Instruction // e.g. "short summary", "bullet points", "one paragraph"
             )
         };
 
@@ -58,12 +52,23 @@ internal class StreamSummarizeMDWithAIHandler : ICommandHandler<StreamSummarizeM
 
         var metadata = chatClient.GetService(typeof(ChatClientMetadata)) as ChatClientMetadata;
 
-        var response = await chatClient.GetResponseAsync(messages, cancellationToken: cancellationToken);
-        var summary = response.Messages.FirstOrDefault()?.Text ?? string.Empty;
+        var textStream = StreamChunksAsync(chatClient, messages, cancellationToken);
 
         return new StreamSummarizeMDCommandResult(
-            summary,
+            textStream,
             metadata?.DefaultModelId ?? "unknown",
             metadata?.ProviderName ?? "unknown");
+    }
+
+    private static async IAsyncEnumerable<string> StreamChunksAsync(
+        IChatClient client,
+        IEnumerable<ChatMessage> messages,
+        [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        await foreach (var update in client.GetStreamingResponseAsync(messages, cancellationToken: cancellationToken))
+        {
+            if (!string.IsNullOrEmpty(update.Text))
+                yield return update.Text;
+        }
     }
 }

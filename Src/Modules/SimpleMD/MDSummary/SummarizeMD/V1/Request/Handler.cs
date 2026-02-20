@@ -4,52 +4,46 @@ using AiOrchestration.Services;
 using AiOrchestration.ValueObjects;
 using Ardalis.GuardClauses;
 using Microsoft.Extensions.AI;
+using SimpleMD.Services;
 
 namespace SimpleMD.Features.SummarizeMD.V1;
-
 
 internal class SummarizeMDWithAIHandler : ICommandHandler<SummarizeMDCommand, SummarizeMDCommandResult>
 {
     private readonly IAiOrchestrator _orchestrator;
-    private readonly IChatClient _chatClient;
-    private readonly IAiModelService _modelService;
+    private readonly IMarkdownFileProvider _markdownProvider;
 
-    public SummarizeMDWithAIHandler(IAiModelService modelService, IAiOrchestrator orchestrator, IChatClient chatClient)
+    public SummarizeMDWithAIHandler(IAiOrchestrator orchestrator, IMarkdownFileProvider markdownProvider)
     {
-        _chatClient = chatClient;
-        _modelService = modelService;
         _orchestrator = orchestrator;
+        _markdownProvider = markdownProvider;
     }
 
     public async Task<SummarizeMDCommandResult> Handle(SummarizeMDCommand request, CancellationToken cancellationToken)
     {
-        Guard.Against.NullOrEmpty(request.Text, nameof(request.Text));
-        var mdPath = Path.Combine(AppContext.BaseDirectory, "context.md");
-        if (!File.Exists(mdPath))
-            throw new FileNotFoundException("Markdown context file not found.", mdPath);
+        Guard.Against.NullOrEmpty(request.Instruction, nameof(request.Instruction));
 
-        var markdown = await File.ReadAllTextAsync(mdPath, cancellationToken);
+        var markdown = await _markdownProvider.GetMarkdownAsync(cancellationToken);
 
         var messages = new List<ChatMessage>
         {
             new(
                 ChatRole.System,
-                """
+                $"""
                 You are a technical documentation assistant.
 
-                Summarize the following markdown content.
+                Summarize the following markdown document.
                 Preserve meaning, structure, and key points.
                 Do NOT invent information.
 
                 Markdown:
                 ---
-                """ + markdown + """
+                {markdown}
                 ---
-                """
-            ),
+                """),
             new(
                 ChatRole.User,
-                request.Text // e.g. "short summary", "bullet points", "one paragraph"
+                request.Instruction // e.g. "short summary", "bullet points", "one paragraph"
             )
         };
 
