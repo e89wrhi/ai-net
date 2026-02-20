@@ -1,5 +1,4 @@
-﻿using AI.Common.EFCore;
-using AI.Common.Mapster;
+﻿using AI.Common.Mapster;
 using AI.Common.Web;
 using AiOrchestration.Extensions;
 using FluentValidation;
@@ -9,7 +8,6 @@ using Microsoft.Extensions.DependencyInjection;
 using SimplePlugin.Services;
 
 namespace SimplePlugin.Extensions;
-
 
 public static class InfrastructureExtensions
 {
@@ -30,7 +28,6 @@ public static class InfrastructureExtensions
 
         return builder;
     }
-
 
     public static WebApplication UseSimplePluginModules(this WebApplication app)
     { 

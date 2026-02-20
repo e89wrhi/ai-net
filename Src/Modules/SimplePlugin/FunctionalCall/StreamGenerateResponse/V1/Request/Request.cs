@@ -1,4 +1,8 @@
 ﻿namespace SimplePlugin.Features.StreamGenerateResponse.V1;
 
 public record StreamGenerateResponseRequestDto(string Text, string? ModelId = null);
-public record StreamGenerateResponseResponseDto(string Response, string ModelId, string? ProviderName);
+
+/// <summary>
+/// Sent as the first SSE 'meta' event.
+/// </summary>
+public record StreamGenerateResponseResponseDto(string ModelId, string? ProviderName);

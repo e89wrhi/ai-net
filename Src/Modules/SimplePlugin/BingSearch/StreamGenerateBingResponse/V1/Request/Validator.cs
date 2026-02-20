@@ -6,6 +6,8 @@ public class StreamGenerateBingResponseWithAICommandValidator : AbstractValidato
 {
     public StreamGenerateBingResponseWithAICommandValidator()
     {
-        RuleFor(x => x.Text).NotEmpty();
+        RuleFor(x => x.Text)
+            .NotEmpty()
+            .MaximumLength(4000).WithMessage("Text must not exceed 4 000 characters.");
     }
 }

@@ -7,70 +7,49 @@ using Microsoft.Extensions.AI;
 
 namespace SimplePlugin.Features.GenerateResponse.V1;
 
-
 internal class GenerateResponseWithAIHandler : ICommandHandler<GenerateResponseCommand, GenerateResponseCommandResult>
 {
     private readonly IAiOrchestrator _orchestrator;
-    private readonly IChatClient _chatClient;
-    private readonly IAiModelService _modelService;
 
-    public GenerateResponseWithAIHandler(IAiModelService modelService, IAiOrchestrator orchestrator, IChatClient chatClient)
+    public GenerateResponseWithAIHandler(IAiOrchestrator orchestrator)
     {
-        _chatClient = chatClient;
-        _modelService = modelService;
         _orchestrator = orchestrator;
     }
 
     public async Task<GenerateResponseCommandResult> Handle(GenerateResponseCommand request, CancellationToken cancellationToken)
     {
-        // Import the DemographicInfo class to the kernel, so it can be used in the chat completion service.
-        // this plugin could be from other options such as functions, prompts directory, etc.
-        // kernel.ImportPluginFromType<ContextInfo>();
-        
-        #region Prompt
-        var messages = new List<ChatMessage>
-        {
-            new ChatMessage(
-                    role: ChatRole.System, 
-                    content : "You are a sentiment analysis expert. Analyze the sentiment of the following text. Return ONLY a single word (Positive, Negative, or Neutral) followed by a comma and a confidence score between 0 and 1. Example: Positive, 0.95"),
-            new ChatMessage(
-                    role: ChatRole.User, 
-                    content : request.Text)
-        };
-        #endregion
-
         Guard.Against.NullOrEmpty(request.Text, nameof(request.Text));
 
-        // Use orchestrator to get the client based on requested model criteria
+        var messages = new List<ChatMessage>
+        {
+            new ChatMessage(ChatRole.System, "You are a helpful assistant that can use tools to look up information about people, such as their age."),
+            new ChatMessage(ChatRole.User, request.Text)
+        };
+
+        // Create tools from ContextInfo
+        var contextInfo = new ContextInfo();
+        var tools = new List<AITool>
+        {
+            AIFunctionFactory.Create(contextInfo.GetAge, "GetAge")
+        };
+
         var criteria = new ModelCriteria { ModelId = request.ModelId };
         var chatClient = await _orchestrator.GetClientAsync(criteria, cancellationToken);
-
-        // Get actual model info from client metadata
         var clientMetadata = chatClient.GetService(typeof(ChatClientMetadata)) as ChatClientMetadata;
-        var modelIdStr = clientMetadata?.DefaultModelId ?? "default-model";
-        var providerName = clientMetadata?.ProviderName ?? "Unknown";
-        var modelId = ModelId.Of(modelIdStr);
 
-        // Call AI Model
-        var chatCompletion = await chatClient.GetResponseAsync(messages, cancellationToken: cancellationToken);
-        var responseText = chatCompletion.Messages[0].Text ?? "Neutral, 0.0";
-
-        // Calculate Metadata & Usage
-        var tokenUsage = chatCompletion.Usage?.TotalTokenCount ?? (messages.Sum(i => i.Text.Length) + responseText.Length) / 4;
-
-        // Get cost per token from model service
-        var costPerToken = _modelService.GetCostPerToken(modelId);
-        var costValue = (decimal)tokenUsage * costPerToken;
-
-        // Parse "Sentiment, Score"
-        var parts = responseText.Split(',');
-        var sentimentStr = parts[0].Trim();
-        double score = 0.0;
-        if (parts.Length > 1 && double.TryParse(parts[1].Trim(), out var parsedScore))
+        var options = new ChatOptions
         {
-            score = parsedScore;
-        }
+            Tools = tools
+        };
 
-        return new GenerateResponseCommandResult(sentimentStr, modelIdStr, providerName);
+        // Call AI Model with tool calling enabled
+        // Note: Real model would decide to call GetAge if needed.
+        var chatCompletion = await chatClient.GetResponseAsync(messages, options, cancellationToken);
+        var responseText = chatCompletion.Messages.FirstOrDefault()?.Text ?? string.Empty;
+
+        return new GenerateResponseCommandResult(
+            responseText, 
+            clientMetadata?.DefaultModelId ?? "unknown", 
+            clientMetadata?.ProviderName ?? "unknown");
     }
 }

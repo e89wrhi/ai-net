@@ -15,13 +15,10 @@ public class GenerateResponseEndpoint : IMinimalEndpoint
         builder.MapPost($"{EndpointConfig.BaseApiPath}/plugin/functional",
                 async (GenerateResponseRequestDto request, IMediator mediator, IHttpContextAccessor httpContextAccessor, CancellationToken cancellationToken) =>
                 {
-                    // current user id
                     var userIdClaim = httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
 
                     if (!Guid.TryParse(userIdClaim, out var userId))
-                    {
                         return Results.Unauthorized();
-                    }
 
                     var command = new GenerateResponseCommand(userId, request.Text, request.ModelId);
                     var result = await mediator.Send(command, cancellationToken);
@@ -29,13 +26,13 @@ public class GenerateResponseEndpoint : IMinimalEndpoint
                         result.Response,
                         result.ModelId, result.ProviderName));
                 })
-            .RequireAuthorization(nameof(ApiScope))
-            .WithName("GenerateResponse")
-            .WithApiVersionSet(builder.NewApiVersionSet("Sentiment").Build())
+            .RequireAuthorization(nameof(Duende.IdentityServer.EntityFramework.Entities.ApiScope))
+            .WithName("GenerateFunctionalResponse")
+            .WithApiVersionSet(builder.NewApiVersionSet("FunctionalCall").Build())
             .Produces<GenerateResponseResponseDto>()
             .ProducesProblem(StatusCodes.Status400BadRequest).ProducesProblem(StatusCodes.Status401Unauthorized)
-            .WithSummary("Analyze Sentiment with AI")
-            .WithDescription("Uses AI to analyze the sentiment of the provided text, returning sentiment type and confidence score.")
+            .WithSummary("Call AI Functions")
+            .WithDescription("Uses AI to answer questions by calling local software tools (plugins).")
             .WithOpenApi()
             .HasApiVersion(1.0);
 

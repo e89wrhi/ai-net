@@ -1,10 +1,12 @@
-﻿
+﻿using System.ComponentModel;
+
 namespace SimplePlugin;
 
+[Description("Provides contextual information about users.")]
 public class ContextInfo
 {
-    [KernelFunction]
-    public int GetAge(string name)
+    [Description("Gets the age of a person by their name.")]
+    public int GetAge([Description("The name of the person.")] string name)
     {
         return name switch
         {
