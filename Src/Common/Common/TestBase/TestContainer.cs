@@ -1,7 +1,6 @@
 
 using AI.Common.Web;
 using Testcontainers.EventStoreDb;
-using Testcontainers.MongoDb;
 using Testcontainers.PostgreSql;
 using Testcontainers.RabbitMq;
 
@@ -9,7 +8,7 @@ namespace AI.Common.TestBase;
 
 /// <summary>
 /// A helper class for managing Docker containers during integration testing.
-/// It uses Testcontainers.NET to spin up real instances of Postgres, MongoDB, RabbitMQ, and EventStoreDB 
+/// It uses Testcontainers.NET to spin up real instances of Postgres, RabbitMQ, and EventStoreDB 
 /// so our tests run against actual infrastructure instead of mocks.
 /// </summary>
 public static class TestContainers
@@ -17,7 +16,6 @@ public static class TestContainers
     public static RabbitMqContainerOptions RabbitMqContainerConfiguration { get; }
     public static PostgresContainerOptions PostgresContainerConfiguration { get; }
     public static PostgresPersistContainerOptions PostgresPersistContainerConfiguration { get; }
-    public static MongoContainerOptions MongoContainerConfiguration { get; }
     public static EventStoreContainerOptions EventStoreContainerConfiguration { get; }
 
     static TestContainers()
@@ -30,7 +28,6 @@ public static class TestContainers
             configuration.GetOptions<PostgresContainerOptions>(nameof(PostgresContainerOptions));
         PostgresPersistContainerConfiguration =
             configuration.GetOptions<PostgresPersistContainerOptions>(nameof(PostgresPersistContainerOptions));
-        MongoContainerConfiguration = configuration.GetOptions<MongoContainerOptions>(nameof(MongoContainerOptions));
         EventStoreContainerConfiguration =
             configuration.GetOptions<EventStoreContainerOptions>(nameof(EventStoreContainerOptions));
     }
@@ -64,22 +61,6 @@ public static class TestContainers
             .WithName(PostgresPersistContainerConfiguration.Name)
             .WithCommand(new string[2] { "-c", "max_prepared_transactions=10" })
             .WithPortBinding(PostgresPersistContainerConfiguration.Port, true)
-            .Build();
-
-        return builder;
-    }
-
-    public static MongoDbContainer MongoTestContainer()
-    {
-        var baseBuilder = new MongoDbBuilder()
-            .WithUsername(MongoContainerConfiguration.UserName)
-            .WithPassword(MongoContainerConfiguration.Password)
-            .WithLabel("Key", "Value");
-
-        var builder = baseBuilder
-            .WithImage(MongoContainerConfiguration.ImageName)
-            .WithName(MongoContainerConfiguration.Name)
-            .WithPortBinding(MongoContainerConfiguration.Port, true)
             .Build();
 
         return builder;
@@ -139,15 +120,6 @@ public static class TestContainers
         public string Name { get; set; } = "postgreSql_" + Guid.NewGuid().ToString("D");
         public int Port { get; set; } = 5432;
         public string ImageName { get; set; } = "postgres:latest";
-        public string UserName { get; set; } = Guid.NewGuid().ToString("D");
-        public string Password { get; set; } = Guid.NewGuid().ToString("D");
-    }
-
-    public sealed class MongoContainerOptions
-    {
-        public string Name { get; set; } = "mongo_" + Guid.NewGuid().ToString("D");
-        public int Port { get; set; } = 27017;
-        public string ImageName { get; set; } = "mongo:latest";
         public string UserName { get; set; } = Guid.NewGuid().ToString("D");
         public string Password { get; set; } = Guid.NewGuid().ToString("D");
     }

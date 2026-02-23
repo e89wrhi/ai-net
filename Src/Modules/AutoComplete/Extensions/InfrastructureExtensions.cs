@@ -29,8 +29,7 @@ public static class InfrastructureExtensions
         builder.Services.AddCustomMapster(typeof(AutoCompleteRoot).Assembly);
         builder.AddCustomDbContext<AutocompleteDbContext>(nameof(AutoComplete));
         builder.Services.AddScoped<IDataSeeder, AutocompleteDataSeeder>();
-        // MongoDB removed - was redundant with SQL storage
-
+        
         builder.Services.AddCustomMediatR();
 
         // Register AI Orchestration

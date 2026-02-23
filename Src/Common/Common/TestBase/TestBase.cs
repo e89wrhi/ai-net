@@ -2,7 +2,6 @@ using System.Net;
 using System.Security.Claims;
 using Ardalis.GuardClauses;
 using AI.Common.EFCore;
-using AI.Common.Mongo;
 using AI.Common.PersistMessageProcessor;
 using AI.Common.Web;
 using Duende.IdentityServer.EntityFramework.Entities;
@@ -19,7 +18,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using MongoDB.Driver;
 using NSubstitute;
 using Respawn;
 using WebMotions.Fake.Authentication.JwtBearer;
@@ -27,7 +25,6 @@ using Xunit;
 using Xunit.Abstractions;
 using Testcontainers.PostgreSql;
 using Testcontainers.RabbitMq;
-using Testcontainers.MongoDb;
 using Testcontainers.EventStoreDb;
 using AI.Common.Core;
 using System.Globalization;
@@ -50,7 +47,6 @@ where TEntryPoint : class
     private PostgreSqlContainer PostgresTestcontainer;
     private PostgreSqlContainer PostgresPersistTestContainer;
     public RabbitMqContainer RabbitMqTestContainer;
-    public MongoDbContainer MongoDbTestContainer;
     public EventStoreDbContainer EventStoreDbTestContainer;
     public CancellationTokenSource CancellationTokenSource;
 
@@ -315,10 +311,8 @@ where TEntryPoint : class
         PostgresTestcontainer = TestContainers.PostgresTestContainer();
         PostgresPersistTestContainer = TestContainers.PostgresPersistTestContainer();
         RabbitMqTestContainer = TestContainers.RabbitMqTestContainer();
-        MongoDbTestContainer = TestContainers.MongoTestContainer();
         EventStoreDbTestContainer = TestContainers.EventStoreTestContainer();
 
-        await MongoDbTestContainer.StartAsync();
         await PostgresTestcontainer.StartAsync();
         await PostgresPersistTestContainer.StartAsync();
         await RabbitMqTestContainer.StartAsync();
@@ -330,7 +324,6 @@ where TEntryPoint : class
         await PostgresTestcontainer.StopAsync();
         await PostgresPersistTestContainer.StopAsync();
         await RabbitMqTestContainer.StopAsync();
-        await MongoDbTestContainer.StopAsync();
         await EventStoreDbTestContainer.StopAsync();
     }
 
@@ -382,8 +375,6 @@ where TEntryPoint : class
                     RabbitMqTestContainer.GetMappedPublicPort(
                             TestContainers.RabbitMqContainerConfiguration.Port)
                         .ToString(NumberFormatInfo.InvariantInfo)),
-                new("MongoOptions:ConnectionString", MongoDbTestContainer.GetConnectionString()),
-                new("MongoOptions:DatabaseName", TestContainers.MongoContainerConfiguration.Name),
                 new(
                     "EventStoreOptions:ConnectionString",
                     EventStoreDbTestContainer.GetConnectionString())
@@ -540,7 +531,6 @@ where TWContext : DbContext
 
 public class TestReadFixture<TEntryPoint, TRContext> : TestFixture<TEntryPoint>
 where TEntryPoint : class
-where TRContext : MongoDbContext
 {
     public Task ExecuteReadContextAsync(Func<TRContext, Task> action)
     {
@@ -550,16 +540,6 @@ where TRContext : MongoDbContext
     public Task<T> ExecuteReadContextAsync<T>(Func<TRContext, Task<T>> action)
     {
         return ExecuteScopeAsync(sp => action(sp.GetRequiredService<TRContext>()));
-    }
-
-    public async Task InsertMongoDbContextAsync<T>(string collectionName, params T[] entities)
-    where T : class
-    {
-        await ExecuteReadContextAsync(
-            async db =>
-            {
-                await db.GetCollection<T>(collectionName).InsertManyAsync(entities.ToList());
-            });
     }
 }
 
@@ -567,7 +547,6 @@ public class TestFixture<TEntryPoint, TWContext, TRContext>
     : TestWriteFixture<TEntryPoint, TWContext>
 where TEntryPoint : class
 where TWContext : DbContext
-where TRContext : MongoDbContext
 {
     public Task ExecuteReadContextAsync(Func<TRContext, Task> action)
     {
@@ -577,16 +556,6 @@ where TRContext : MongoDbContext
     public Task<T> ExecuteReadContextAsync<T>(Func<TRContext, Task<T>> action)
     {
         return ExecuteScopeAsync(sp => action(sp.GetRequiredService<TRContext>()));
-    }
-
-    public async Task InsertMongoDbContextAsync<T>(string collectionName, params T[] entities)
-    where T : class
-    {
-        await ExecuteReadContextAsync(
-            async db =>
-            {
-                await db.GetCollection<T>(collectionName).InsertManyAsync(entities.ToList());
-            });
     }
 }
 
@@ -620,7 +589,6 @@ where TEntryPoint : class
     public async Task DisposeAsync()
     {
         await ResetPostgresAsync();
-        await ResetMongoAsync();
         await ResetRabbitMqAsync();
     }
 
@@ -671,21 +639,6 @@ where TEntryPoint : class
         }
     }
 
-    private async Task ResetMongoAsync(CancellationToken cancellationToken = default)
-    {
-        //https://stackoverflow.com/questions/3366397/delete-everything-in-a-mongodb-database
-        var dbClient = new MongoClient(Fixture.MongoDbTestContainer?.GetConnectionString());
-
-        var collections = await dbClient
-                              .GetDatabase(TestContainers.MongoContainerConfiguration.Name)
-                              .ListCollectionsAsync(cancellationToken: cancellationToken);
-
-        foreach (var collection in collections.ToList())
-        {
-            await dbClient.GetDatabase(TestContainers.MongoContainerConfiguration.Name)
-                .DropCollectionAsync(collection["name"].AsString, cancellationToken);
-        }
-    }
 
     private async Task ResetRabbitMqAsync(CancellationToken cancellationToken = default)
     {
@@ -732,7 +685,6 @@ where TEntryPoint : class
 public abstract class TestReadBase<TEntryPoint, TRContext> : TestFixtureCore<TEntryPoint>
 // ,IClassFixture<IntegrationTestFactory<TEntryPoint, TWContext>>
 where TEntryPoint : class
-where TRContext : MongoDbContext
 {
     protected TestReadBase(
         TestReadFixture<TEntryPoint, TRContext> integrationTestFixture,
@@ -765,7 +717,6 @@ public abstract class TestBase<TEntryPoint, TWContext, TRContext> : TestFixtureC
 //,IClassFixture<IntegrationTestFactory<TEntryPoint, TWContext, TRContext>>
 where TEntryPoint : class
 where TWContext : DbContext
-where TRContext : MongoDbContext
 {
     protected TestBase(
         TestFixture<TEntryPoint, TWContext, TRContext> integrationTestFixture,

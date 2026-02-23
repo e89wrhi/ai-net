@@ -40,29 +40,6 @@ var passengerDb = postgres.AddDatabase("passenger");
 var identityDb = postgres.AddDatabase("identity");
 var persistMessageDb = postgres.AddDatabase("persist-message");
 
-var mongoUsername = builder.AddParameter("mongo-username", "root", secret: true);
-var mongoPassword = builder.AddParameter("mongo-password", "secret", secret: true);
-
-var mongo = builder.AddMongoDB("mongo", userName: mongoUsername, password: mongoPassword)
-    .WithImage("mongo")
-    .WithImageTag("latest")
-    .WithEndpoint(
-        "tcp",
-        e =>
-        {
-            e.Port = 27017;
-            e.TargetPort = 27017;
-            e.IsProxied = true;
-            e.IsExternal = false;
-        });
-
-if (builder.ExecutionContext.IsPublishMode)
-{
-    mongo.WithDataVolume("mongo-data")
-        .WithLifetime(ContainerLifetime.Persistent);
-}
-
-
 var redis = builder.AddRedis("redis")
     .WithImage("redis:latest")
     .WithEndpoint(
@@ -314,8 +291,6 @@ var api = builder.AddProject<Api>("api")
     .WaitFor(passengerDb)
     .WithReference(identityDb)
     .WaitFor(identityDb)
-    .WithReference(mongo)
-    .WaitFor(mongo)
     .WithReference(eventstore)
     .WaitFor(eventstore)
     .WithReference(rabbitmq)

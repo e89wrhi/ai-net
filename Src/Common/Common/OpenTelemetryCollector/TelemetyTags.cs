@@ -158,7 +158,6 @@ public static class TelemetryTags
             public const string Url = "db.url";
             public const string CassandraKeyspace = "db.cassandra.keyspace";
             public const string RedisDatabaseIndex = "db.redis.database_index";
-            public const string MongoDbCollection = "db.mongodb.collection";
         }
 
         // https://opentelemetry.io/docs/specs/semconv/exceptions/exceptions-spans/#exception-event
