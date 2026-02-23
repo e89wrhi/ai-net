@@ -1,5 +1,10 @@
 namespace AI.Common.Core;
 
+/// <summary>
+/// A composite implementation of IEventMapper that aggregates multiple event mappers.
+/// It iterates through a collection of mappers to find the first one that can map a domain event to an integration event or internal command.
+/// Used in the event dispatching process to provide a unified way to map events across different modules.
+/// </summary>
 public class CompositeEventMapper : IEventMapper
 {
     private readonly IEnumerable<IEventMapper> _mappers;

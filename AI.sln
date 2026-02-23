@@ -10,6 +10,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Api", "Api", "{92A9B5DC-66B8-4DDE-8C96-118775CA7D24}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common", "Common", "{282FBCCF-2433-4094-AB22-C0D64272E857}"
+	ProjectSection(SolutionItems) = preProject
+		Src\Common\Common\README.md = Src\Common\Common\README.md
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Modules", "Modules", "{066F303E-0DF5-41AB-BAA4-C81BD42D1074}"
 EndProject
@@ -100,6 +103,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Analytics", "Src\Modules\Analytics\Analytics.csproj", "{07181663-A04F-44AA-A0E6-8AE0019496E8}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Aspire", "Aspire", "{E7846763-B495-470C-A6D8-42434C025934}"
+	ProjectSection(SolutionItems) = preProject
+		Src\Aspire\README.md = Src\Aspire\README.md
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceDefaults", "Src\Aspire\ServiceDefaults\ServiceDefaults.csproj", "{BA3EEEED-828F-425A-BCB5-F38C2C889D46}"
 EndProject
