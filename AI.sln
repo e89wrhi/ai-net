@@ -184,6 +184,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "coming", "coming", "{EBB458
 		Docs\features\coming\005-coming-tips.md = Docs\features\coming\005-coming-tips.md
 		Docs\features\coming\006-coming-export.md = Docs\features\coming\006-coming-export.md
 		Docs\features\coming\007-coming-share.md = Docs\features\coming\007-coming-share.md
+		Docs\features\coming\008-coming-speechtotext.md = Docs\features\coming\008-coming-speechtotext.md
+		Docs\features\coming\009-coming-codededebug.md = Docs\features\coming\009-coming-codededebug.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "depreciate", "depreciate", "{DBDEDE58-6724-43B4-AFE1-6DB717F7C03C}"
