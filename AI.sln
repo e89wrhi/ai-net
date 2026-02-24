@@ -232,6 +232,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "public", "public", "{49B296
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "shared", "shared", "{A9943AA6-3541-4C91-BA02-FEC71BD2595F}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{AC75FE88-1BC7-4991-B702-0B10153F11B4}"
+	ProjectSection(SolutionItems) = preProject
+		scripts\add-migration.sh = scripts\add-migration.sh
+		scripts\Add-Migrations.ps1 = scripts\Add-Migrations.ps1
+		scripts\Update-Databases.ps1 = scripts\Update-Databases.ps1
+		scripts\update-db.sh = scripts\update-db.sh
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
