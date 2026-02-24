@@ -24,53 +24,16 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddSharedInfrastructure();
 
-builder.AddIdentityModules();
-builder.AddAutoCompleteModules();
-builder.AddChatModules();
-builder.AddCodeDebugModules();
-builder.AddCodeGenModules();
-builder.AddImageModules();
-builder.AddImageEditModules();
-builder.AddImageGenModules();
-builder.AddMeetingModules();
-builder.AddAssistantModules();
-builder.AddPaymentModules();
-builder.AddResumeModules();
-builder.AddSimpleMDModules();
-builder.AddSimplePluginModules();
-builder.AddSpeechToTextModules();
-builder.AddTextToSpeechModules();
-builder.AddSummaryModules();
-builder.AddTranslateModules();
-builder.AddUserModules();
+// Automated discovery for IModule implementations (Identity and ChatBot)
+builder.AddModules(); 
 
 var app = builder.Build();
 
-// ref: https://learn.microsoft.com/en-us/aspnet/core/fundamentals/routing?view=aspnetcore-7.0#routing-basics
 app.UseAuthentication();
 app.UseAuthorization();
 
-
-app.UseIdentityModules();
-app.UseAutoCompleteModules();
-app.UseChatModules();
-app.UseCodeDebugModules();
-app.UseCodeGenModules();
-app.UseImageModules();
-app.UseImageEditModules();
-app.UseImageGenModules();
-app.UseMeetingModules();
-app.UseAssistantModules();
-app.UsePaymentModules();
-app.UseResumeModules();
-app.UseSimpleMDModules();
-app.UseSimplePluginModules();
-app.UseSpeechToTextModules();
-app.UseTextToSpeechModules();
-app.UseSummaryModules();
-app.UseTranslateModules();
-app.UseUserModules();
-
+// Automatically configures middleware for discovered modules (Identity and ChatBot)
+app.UseModules(); 
 
 app.UserSharedInfrastructure();
 app.MapMinimalEndpoints();
