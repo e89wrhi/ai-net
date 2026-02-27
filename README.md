@@ -10,7 +10,9 @@ A high-performance, **Modular Monolith** ecosystem for AI-driven applications. B
 
 ## 🏗️ Technical Architecture
 
-This project follows a **Modular Monolith** approach, balancing the simplicity of a single deployment unit with the scalability and isolation of microservices.
+This project follows a **Modular Monolith** approach, balancing the simplicity of a single deployment unit with the scalability and isolation of microservices. 
+
+For a deep dive into the system's internal design and boundaries, view the **[System Structure Architecture Guide](./Docs/architecture/000-system-structure.md)**.
 
 - **Orchestration**: [.NET Aspire](./Src/Aspire) binds everything together for a seamless local development experience.
 - **Communication**: Asynchronous messaging via **MassTransit** over **RabbitMQ**.
@@ -57,6 +59,8 @@ dotnet run
 ```
 
 Once running, navigate to the **Aspire Dashboard** (URL provided in terminal output) to view logs, traces, and metrics.
+
+For detailed instructions on building and scaling for real environments, see the **[Build Setup](./Docs/build/build-project.md)** and **[Production Deployment](./Docs/build/production.md)** guidelines.
 
 ### 🛠️ Utility Scripts
 Manage 20+ modules with ease using our automated utility scripts:

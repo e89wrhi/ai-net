@@ -6,6 +6,7 @@ Welcome to the central documentation repository for the **AI Platform**. This pr
 
 ## 🏛️ [Architecture](./architecture)
 Understand the "why" and "how" behind our technical decisions.
+- **[System Structure](./architecture/000-system-structure.md)**: High-level overview of the Modular Monolith logic and components.
 - **[Database Strategy](./architecture/001-arch-db.md)**: Handling multi-tenant and multi-module persistence.
 - **[Image Processing](./architecture/002-arch-image.md)**: Scalable pipelines for AI-generated assets.
 - **[Search Engine](./architecture/003-arch-search.md)**: Integration of vector search and traditional indexing.
@@ -30,6 +31,8 @@ How we ensure excellence and prevent regressions.
 - **[Integration Testing](./test/new-unit-test.md)**: Using TestContainers for real infra validation.
 
 ## 🚀 [Deployment & Build](./build)
+- **[Build Guide](./build/build-project.md)**: Local, container, and CI building instructions.
+- **[Production Deployment](./build/production.md)**: Best practices and infrastructure scaling requirements.
 - **CI/CD Pipelines**: GitHub Actions workflow details.
 - **Dockerization**: Containerization strategy and registry management.
 

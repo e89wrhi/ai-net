@@ -29,7 +29,9 @@
     <ProjectReference Include="..\..\Modules\Summary\Summary.csproj" />
     <ProjectReference Include="..\..\Modules\TextToSpeech\TextToSpeech.csproj" />
     <ProjectReference Include="..\..\Modules\Translate\Translate.csproj" />
+    <ProjectReference Include="..\..\Modules\AiOrchestration\AiOrchestration.csproj" />
     <ProjectReference Include="..\..\Modules\User\User.csproj" />
   </ItemGroup>
+
 
 </Project>

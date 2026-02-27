@@ -16,11 +16,12 @@ public class AiModelService : IAiModelService
     // Mock data for models. In a real system, these would be in a database.
     private static readonly List<AiModel> _models = new()
     {
-        AiModel.Create(ModelId.Of("gpt-4o"), "GPT-4o", "Omni model", "v1", Provider.Of("OpenAI")),
-        AiModel.Create(ModelId.Of("gpt-4o-mini"), "GPT-4o Mini", "Small & Fast", "v1", Provider.Of("OpenAI")),
-        AiModel.Create(ModelId.Of("ollama-llama3"), "Llama 3", "Local Llama 3", "v1", Provider.Of("Ollama")),
-        AiModel.Create(ModelId.Of("Simulated"), "Simulated Model", "For testing", "v1", Provider.Of("Generic"))
+        AiModel.Create(ModelId.Of("gpt-4o"), "GPT-4o", "Omni model", "v1", Provider.Of("OpenAI"), "Chat"),
+        AiModel.Create(ModelId.Of("gpt-4o-mini"), "GPT-4o Mini", "Small & Fast", "v1", Provider.Of("OpenAI"), "Chat"),
+        AiModel.Create(ModelId.Of("ollama-llama3"), "Llama 3", "Local Llama 3", "v1", Provider.Of("Ollama"), "Local"),
+        AiModel.Create(ModelId.Of("Simulated"), "Simulated Model", "For testing", "v1", Provider.Of("Generic"), "Test")
     };
+
 
     private static readonly Dictionary<string, decimal> _costs = new()
     {

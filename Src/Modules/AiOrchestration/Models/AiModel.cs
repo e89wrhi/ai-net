@@ -6,6 +6,7 @@ public record AiModel : Aggregate<ModelId>
     public string Name { get; private set; } = default!;
     public string Description { get; private set; } = default!;
     public string AiVersion { get; private set; } = default!;
+    public string ModelType { get; private set; } = "General";
     public bool IsActive { get; private set; } = true;
     public Provider Provider { get; private set; } = default!;
     public string Capabilities { get; private set; } = default!;
@@ -17,7 +18,7 @@ public record AiModel : Aggregate<ModelId>
 
     private AiModel() { }
 
-    public static AiModel Create(ModelId id, string name, string description, string version, Provider provider)
+    public static AiModel Create(ModelId id, string name, string description, string version, Provider provider, string modelType = "General")
     {
         var model = new AiModel
         {
@@ -26,6 +27,7 @@ public record AiModel : Aggregate<ModelId>
             Description = description,
             AiVersion = version,
             Provider = provider,
+            ModelType = modelType,
             CreatedAt = DateTime.UtcNow,
             IsActive = true
         };
