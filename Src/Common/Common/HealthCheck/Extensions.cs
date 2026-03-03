@@ -8,6 +8,7 @@ using AI.Common.EFCore;
 using AI.Common.EventStoreDB;
 using AI.Common.MassTransit;
 using AI.Common.Web;
+using Microsoft.Extensions.Hosting;
 
 namespace AI.Common.HealthCheck;
 

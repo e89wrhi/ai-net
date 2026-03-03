@@ -171,7 +171,7 @@ public abstract class AppDbContextBase : DbContext, IDbContext
             foreach (var entry in ChangeTracker.Entries<IAggregate>())
             {
                 var isAuditable = entry.Entity.GetType().IsAssignableTo(typeof(IAggregate));
-                var userId = _currentUserProvider?.GetCurrentUserId() ?? 0;
+                var userId = _currentUserProvider?.GetCurrentUserId() ?? Guid.Empty;
 
                 if (isAuditable)
                 {

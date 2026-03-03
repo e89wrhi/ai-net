@@ -21,8 +21,15 @@ internal class GetUsageHandler : IQueryHandler<GetUsageQuery, GetUsageQueryResul
         Guard.Against.Null(request, nameof(request));
         
         var userId = _currentUserProvider.GetCurrentUserId();
-        var usage = await _usageService.GetUsageAsync(userId, request.From, request.To, cancellationToken);
+        if (userId is not null)
+        {
+            var usage = await _usageService.GetUsageAsync(userId.Value, request.From, request.To, cancellationToken);
 
-        return new GetUsageQueryResult(usage);
+            return new GetUsageQueryResult(usage);
+        }
+        else
+        {
+            return new GetUsageQueryResult(null);
+        }
     }
 }

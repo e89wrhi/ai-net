@@ -1,5 +1,3 @@
-using AI.Common.Core.Model;
-
 namespace AiOrchestration.ValueObjects;
 
 public record ApiKeyId

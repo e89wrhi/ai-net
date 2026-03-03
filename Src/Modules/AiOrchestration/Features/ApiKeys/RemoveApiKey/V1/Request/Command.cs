@@ -2,4 +2,6 @@ using AI.Common.Core;
 
 namespace AiOrchestration.Features.ApiKeys.RemoveApiKey.V1.Request;
 
-public record RemoveApiKeyCommand(Guid Id) : ICommand;
+public record RemoveApiKeyCommand(Guid Id) : ICommand<RemoveApiKeyCommandResponse>;
+
+public record RemoveApiKeyCommandResponse(Guid Id);

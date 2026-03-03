@@ -59,14 +59,6 @@ public static class JwtExtensions
 
                 // Role-based policies
                 options.AddPolicy(
-                    IdentityConstant.Role.Admin,
-                    x =>
-                    {
-                        x.AuthenticationSchemes.Add(JwtBearerDefaults.AuthenticationScheme);
-                        x.RequireRole(IdentityConstant.Role.Admin);
-                    }
-                );
-                options.AddPolicy(
                     IdentityConstant.Role.User,
                     x =>
                     {

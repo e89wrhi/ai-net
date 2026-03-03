@@ -2,10 +2,11 @@ using AI.Common.Core;
 using AiOrchestration.Services;
 using AiOrchestration.ValueObjects;
 using Ardalis.GuardClauses;
+using MediatR;
 
 namespace AiOrchestration.Features.ApiKeys.RemoveApiKey.V1.Request;
 
-internal class RemoveApiKeyHandler : ICommandHandler<RemoveApiKeyCommand>
+internal class RemoveApiKeyHandler : ICommandHandler<RemoveApiKeyCommand, RemoveApiKeyCommandResponse>
 {
     private readonly IApiKeyService _apiKeyService;
 
@@ -14,10 +15,11 @@ internal class RemoveApiKeyHandler : ICommandHandler<RemoveApiKeyCommand>
         _apiKeyService = apiKeyService;
     }
 
-    public async Task Handle(RemoveApiKeyCommand request, CancellationToken cancellationToken)
+    public async Task<RemoveApiKeyCommandResponse> Handle(RemoveApiKeyCommand request, CancellationToken cancellationToken)
     {
         Guard.Against.Null(request, nameof(request));
         
         await _apiKeyService.DeleteKeyAsync(ApiKeyId.Of(request.Id), cancellationToken);
+        return new RemoveApiKeyCommandResponse(request.Id);
     }
 }

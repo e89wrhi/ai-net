@@ -3,6 +3,7 @@ using AiOrchestration.Services;
 using AI.Common.EFCore;
 using AI.Common.Web;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace AiOrchestration;
 

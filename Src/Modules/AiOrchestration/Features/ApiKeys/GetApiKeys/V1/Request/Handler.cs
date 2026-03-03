@@ -22,7 +22,7 @@ internal class GetApiKeysHandler : IQueryHandler<GetApiKeysQuery, GetApiKeysQuer
         Guard.Against.Null(request, nameof(request));
         
         var userId = _currentUserProvider.GetCurrentUserId();
-        var keys = await _apiKeyService.GetKeysAsync(userId, cancellationToken);
+        var keys = await _apiKeyService.GetKeysAsync(userId.Value, cancellationToken);
 
         var dtos = keys.Select(k => new ApiKeyDto(
             k.Id.Value, 

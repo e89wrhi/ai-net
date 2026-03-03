@@ -49,11 +49,6 @@ public class IdentityDataSeeder : IDataSeeder
     {
         if (!await _identityContext.Roles.AnyAsync())
         {
-            if (await _roleManager.RoleExistsAsync(IdentityConstant.Role.Admin) == false)
-            {
-                await _roleManager.CreateAsync(new Role { Name = IdentityConstant.Role.Admin });
-            }
-
             if (await _roleManager.RoleExistsAsync(IdentityConstant.Role.User) == false)
             {
                 await _roleManager.CreateAsync(new Role { Name = IdentityConstant.Role.User });
@@ -65,24 +60,6 @@ public class IdentityDataSeeder : IDataSeeder
     {
         if (!await _identityContext.Users.AnyAsync())
         {
-            if (await _userManager.FindByNameAsync("samh") == null)
-            {
-                var result = await _userManager.CreateAsync(InitialData.Users.First(), "Admin@123456");
-
-                if (result.Succeeded)
-                {
-                    await _userManager.AddToRoleAsync(InitialData.Users.First(), IdentityConstant.Role.Admin);
-
-                    await _eventDispatcher.SendAsync(
-                        new UserCreated(
-                            InitialData.Users.First().Id,
-                            InitialData.Users.First().FirstName +
-                            " " +
-                            InitialData.Users.First().LastName,
-                            InitialData.Users.First().PassPortNumber));
-                }
-            }
-
             if (await _userManager.FindByNameAsync("meysamh2") == null)
             {
                 var result = await _userManager.CreateAsync(InitialData.Users.Last(), "User@123456");

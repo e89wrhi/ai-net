@@ -38,7 +38,7 @@ public class AiOrchestrator : IAiOrchestrator
         if (userId != Guid.Empty)
         {
             var provider = _modelService.GetProviderName(model.Id);
-            userKey = await _apiKeyService.GetActiveKeyForProviderAsync(userId, provider, cancellationToken);
+            userKey = await _apiKeyService.GetActiveKeyForProviderAsync(userId.Value, provider, cancellationToken);
         }
 
         // In a real system, if userKey is not null, we would instantiate a client with that key.
@@ -48,7 +48,7 @@ public class AiOrchestrator : IAiOrchestrator
             : new ChatClientMetadataWrapper(_defaultChatClient, model.Id.Value);
 
         // Wrap with Usage Logging
-        return new UsageLoggingChatClient(client, _usageService, userId, model.Id, userKey?.Id.Value);
+        return new UsageLoggingChatClient(client, _usageService, userId.Value, model.Id, userKey?.Id.Value);
     }
 
     public async Task<AiModel> SelectModelAsync(ModelCriteria? criteria = null, CancellationToken cancellationToken = default)
@@ -83,7 +83,7 @@ internal class ChatClientMetadataWrapper : IChatClient
         var innerMetadata = innerClient.GetService(typeof(ChatClientMetadata)) as ChatClientMetadata;
         _metadata = new ChatClientMetadata(
             providerName ?? innerMetadata?.ProviderName ?? "UnknownProvider",
-            innerMetadata?.BaseUri,
+            null, // Metadata doesn't have BaseUri
             modelId);
     }
 
@@ -121,8 +121,6 @@ internal class UsageLoggingChatClient : IChatClient
         _apiKeyId = apiKeyId;
     }
 
-    public ChatClientMetadata Metadata => _innerClient.Metadata;
-
     public async Task<ChatResponse> GetResponseAsync(IEnumerable<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
         var response = await _innerClient.GetResponseAsync(chatMessages, options, cancellationToken);
@@ -130,7 +128,8 @@ internal class UsageLoggingChatClient : IChatClient
         // Log usage
         if (response.Usage != null)
         {
-            await _usageService.LogUsageAsync(_userId, _modelId, response.Usage.TotalTokenCount, 0, Metadata.ProviderName, _apiKeyId, cancellationToken);
+            var metadata = _innerClient.GetService(typeof(ChatClientMetadata)) as ChatClientMetadata;
+            await _usageService.LogUsageAsync(_userId, _modelId, (int)(response.Usage.TotalTokenCount ?? 0), 0, metadata?.ProviderName, _apiKeyId, cancellationToken);
         }
 
         return response;

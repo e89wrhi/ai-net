@@ -1,4 +1,4 @@
-using AI.Common.Core.Model;
+using AI.Common.Core;
 using AiOrchestration.ValueObjects;
 
 namespace AiOrchestration.Models;

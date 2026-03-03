@@ -21,8 +21,15 @@ internal class AddApiKeyHandler : ICommandHandler<AddApiKeyCommand, AddApiKeyCom
         Guard.Against.Null(request, nameof(request));
         
         var userId = _currentUserProvider.GetCurrentUserId();
-        var apiKey = await _apiKeyService.AddKeyAsync(userId, request.Provider, request.Key, request.Label, cancellationToken);
+        if (userId is not null)
+        {
+            var apiKey = await _apiKeyService.AddKeyAsync(userId.Value, request.Provider, request.Key, request.Label, cancellationToken);
 
-        return new AddApiKeyCommandResult(apiKey.Id.Value, apiKey.ProviderName, apiKey.Label);
+            return new AddApiKeyCommandResult(apiKey.Id.Value, apiKey.ProviderName, apiKey.Label);
+        }
+        else
+        {
+            return new AddApiKeyCommandResult(Guid.Empty, "", "");
+        }
     }
 }

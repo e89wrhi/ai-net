@@ -1,11 +1,10 @@
-﻿/*
-using Aspire.Hosting;
+﻿using Aspire.Hosting;
 using Projects;
 using System.Net.Sockets;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
-builder.AddDockerComposeEnvironment("docker-compose");
+// builder.AddDockerComposeEnvironment("docker-compose");
 
 // 1. Database Services
 var pgUsername = builder.AddParameter("pg-username", "postgres", secret: true);
@@ -35,10 +34,29 @@ if (builder.ExecutionContext.IsPublishMode)
 }
 
 
-var flightDb = postgres.AddDatabase("flight");
-var passengerDb = postgres.AddDatabase("passenger");
 var identityDb = postgres.AddDatabase("identity");
+var aiOrchestrationDb = postgres.AddDatabase("ai-orchestration");
+var analyticsDb = postgres.AddDatabase("analytics");
 var persistMessageDb = postgres.AddDatabase("persist-message");
+var userDb = postgres.AddDatabase("user");
+var chatBotDb = postgres.AddDatabase("chat-bot");
+var autoCompleteDb = postgres.AddDatabase("auto-complete");
+var codeDebugDb = postgres.AddDatabase("code-debug");
+var codeGenDb = postgres.AddDatabase("code-gen");
+var imageCaptionDb = postgres.AddDatabase("image-caption");
+var imageEditDb = postgres.AddDatabase("image-edit");
+var imageGenDb = postgres.AddDatabase("image-gen");
+var learningAssistantDb = postgres.AddDatabase("learning-assistant");
+var meetingDb = postgres.AddDatabase("meeting");
+var paymentDb = postgres.AddDatabase("payment");
+var resumeDb = postgres.AddDatabase("resume");
+var sentimentDb = postgres.AddDatabase("sentiment");
+var simpleMdDb = postgres.AddDatabase("simple-md");
+var simplePluginDb = postgres.AddDatabase("simple-plugin");
+var speechToTextDb = postgres.AddDatabase("speech-to-text");
+var summaryDb = postgres.AddDatabase("summary");
+var textToSpeechDb = postgres.AddDatabase("text-to-speech");
+var translateDb = postgres.AddDatabase("translate");
 
 var redis = builder.AddRedis("redis")
     .WithImage("redis:latest")
@@ -282,15 +300,34 @@ if (builder.ExecutionContext.IsPublishMode)
     kibana.WithLifetime(ContainerLifetime.Persistent);
 }
 
-var api = builder.AddProject<Api>("api")
-    .WithReference(persistMessageDb)
-    .WaitFor(persistMessageDb)
-    .WithReference(flightDb)
-    .WaitFor(flightDb)
-    .WithReference(passengerDb)
-    .WaitFor(passengerDb)
+var api = builder.AddProject<AI_Api>("api")
     .WithReference(identityDb)
+    .WithReference(aiOrchestrationDb)
+    .WithReference(analyticsDb)
+    .WithReference(persistMessageDb)
+    .WithReference(userDb)
+    .WithReference(chatBotDb)
+    .WithReference(autoCompleteDb)
+    .WithReference(codeDebugDb)
+    .WithReference(codeGenDb)
+    .WithReference(imageCaptionDb)
+    .WithReference(imageEditDb)
+    .WithReference(imageGenDb)
+    .WithReference(learningAssistantDb)
+    .WithReference(meetingDb)
+    .WithReference(paymentDb)
+    .WithReference(resumeDb)
+    .WithReference(sentimentDb)
+    .WithReference(simpleMdDb)
+    .WithReference(simplePluginDb)
+    .WithReference(speechToTextDb)
+    .WithReference(summaryDb)
+    .WithReference(textToSpeechDb)
+    .WithReference(translateDb)
     .WaitFor(identityDb)
+    .WaitFor(aiOrchestrationDb)
+    .WaitFor(analyticsDb)
+    .WaitFor(persistMessageDb)
     .WithReference(eventstore)
     .WaitFor(eventstore)
     .WithReference(rabbitmq)
@@ -299,4 +336,3 @@ var api = builder.AddProject<Api>("api")
     .WithHttpsEndpoint(port: 3000, name: "api-https");
 
 builder.Build().Run();
-*/

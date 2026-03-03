@@ -4,6 +4,7 @@ using System.Reflection;
 using AI.Common.EFCore;
 using AI.Common.Web;
 using Microsoft.Extensions.Logging;
+using AiOrchestration.ValueObjects;
 
 namespace AiOrchestration.Data;
 
