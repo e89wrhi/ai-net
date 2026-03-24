@@ -1,4 +1,12 @@
-# 🤖 AI Platform
+<p align="center">
+  <img src="assets/ai_logo.png" alt="Ai-Logo" width="120">
+</p>
+
+# AI-Net
+
+<p align="center">
+  <img src="assets/ai_banner.png" alt="Ai Banner" width="100%">
+</p>
 
 [![.NET 9](https://img.shields.io/badge/.NET-9.0-blue.svg)](https://dotnet.microsoft.com/download/dotnet/9.0)
 [![Aspire](https://img.shields.io/badge/Aspire-Integrated-green.svg)](https://learn.microsoft.com/en-us/dotnet/aspire/)

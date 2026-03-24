@@ -1,4 +1,4 @@
-﻿using Aspire.Hosting;
+using Aspire.Hosting;
 using Projects;
 using System.Net.Sockets;
 
@@ -133,7 +133,8 @@ var rabbitmq = builder.AddRabbitMQ("rabbitmq", rabbitmqUsername, rabbitmqPasswor
 
 if (builder.ExecutionContext.IsPublishMode)
 {
-    rabbitmq.WithLifetime(ContainerLifetime.Persistent);
+    rabbitmq.WithDataVolume("rabbitmq-data")
+        .WithLifetime(ContainerLifetime.Persistent);
 }
 
 // // 3. Observability Services
@@ -328,6 +329,25 @@ var api = builder.AddProject<AI_Api>("api")
     .WaitFor(aiOrchestrationDb)
     .WaitFor(analyticsDb)
     .WaitFor(persistMessageDb)
+    .WaitFor(userDb)
+    .WaitFor(chatBotDb)
+    .WaitFor(autoCompleteDb)
+    .WaitFor(codeDebugDb)
+    .WaitFor(codeGenDb)
+    .WaitFor(imageCaptionDb)
+    .WaitFor(imageEditDb)
+    .WaitFor(imageGenDb)
+    .WaitFor(learningAssistantDb)
+    .WaitFor(meetingDb)
+    .WaitFor(paymentDb)
+    .WaitFor(resumeDb)
+    .WaitFor(sentimentDb)
+    .WaitFor(simpleMdDb)
+    .WaitFor(simplePluginDb)
+    .WaitFor(speechToTextDb)
+    .WaitFor(summaryDb)
+    .WaitFor(textToSpeechDb)
+    .WaitFor(translateDb)
     .WithReference(eventstore)
     .WaitFor(eventstore)
     .WithReference(rabbitmq)
