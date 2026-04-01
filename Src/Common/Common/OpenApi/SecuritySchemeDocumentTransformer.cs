@@ -1,11 +1,13 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.OpenApi;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 
 namespace AI.Common.OpenApi;
 
 /// <summary>
-/// A transformer that adds security definitions (like Bearer Token and API Key) 
-/// to the generated OpenAPI document, allowing developers to test protected endpoints through the UI.
+/// What it is: A document transformer for OpenAPI documentation.
+/// How it is used: Automatically adds security schemes (Bearer token and API Key) to the generated OpenAPI document.
+/// Where it is used: Registered in the OpenAPI configuration to ensure documentation includes authentication requirements.
 /// </summary>
 public class SecuritySchemeDocumentTransformer : IOpenApiDocumentTransformer
 {

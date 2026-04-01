@@ -4,23 +4,26 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsAspireHost>true</IsAspireHost>
     <AppDesignerFolder>Properties</AppDesignerFolder>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Aspire.Hosting.AppHost" Version="9.0.0" />
-    <PackageReference Include="Aspire.Hosting.PostgreSQL" Version="9.0.0" />
-    <PackageReference Include="Aspire.Hosting.RabbitMQ" Version="9.0.0" />
-    <PackageReference Include="Aspire.Hosting.Redis" Version="9.0.0" />
-    <PackageReference Include="CommunityToolkit.Aspire.Hosting.EventStore" Version="9.2.0" />
-    <PackageReference Include="Aspire.Hosting.Elasticsearch" Version="9.0.0" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Aspire.Hosting.AppHost" Version="13.2.1" />
+		<PackageReference Include="Aspire.Hosting.PostgreSQL" Version="13.2.1" />
+		<PackageReference Include="Aspire.Hosting.RabbitMQ" Version="13.2.1" />
+		<PackageReference Include="Aspire.Hosting.Redis" Version="13.2.1" />
+		<PackageReference Include="CommunityToolkit.Aspire.Hosting.EventStore" Version="9.8.0" />
+		<PackageReference Include="Aspire.Hosting.Elasticsearch" Version="13.2.0" />
+		<PackageReference Include="Aspire.Hosting.Docker" Version="13.2.1" />
+		<PackageReference Include="CommunityToolkit.Aspire.Hosting.EventStore" Version="9.2.0" />
+		<PackageReference Include="CommunityToolkit.Aspire.Hosting.KurrentDB" Version="13.1.1" />
+	</ItemGroup>
 
-  <ItemGroup>
+	<ItemGroup>
     <ProjectReference Include="..\..\Api\AI.Api\AI.Api.csproj" />
   </ItemGroup>
 

@@ -28,7 +28,12 @@ public class EventStoreDBSubscriptionCheckpointRepository : ISubscriptionCheckpo
             return null;
         }
 
-        ResolvedEvent? @event = await result.FirstOrDefaultAsync(ct);
+        ResolvedEvent? @event = null;
+        await foreach (var e in result.WithCancellation(ct))
+        {
+            @event = e;
+            break;
+        }
 
         return @event?.Deserialize<CheckpointStored>()?.Position;
     }
