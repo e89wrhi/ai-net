@@ -8,9 +8,23 @@
   <img src="assets/ai_banner.png" alt="Ai Banner" width="100%">
 </p>
 
-[![.NET 9](https://img.shields.io/badge/.NET-9.0-blue.svg)](https://dotnet.microsoft.com/download/dotnet/9.0)
-[![Aspire](https://img.shields.io/badge/Aspire-Integrated-green.svg)](https://learn.microsoft.com/en-us/dotnet/aspire/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+<p align="center">
+
+<a href="https://github.com/e89wrhi/ai-net-web">
+  <img src="https://img.shields.io/badge/Frontend-GitHub-blue?style=for-the-badge&logo=github" alt="Frontend Repo">
+</a>
+
+<br/>
+
+![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
+![Local Build](https://img.shields.io/badge/local_build-passing-blue)
+![Deployment](https://img.shields.io/badge/deployment-pending-yellow)
+
+![Dev](https://img.shields.io/badge/Dev-Not_Deployed-grey)
+![Staging](https://img.shields.io/badge/Staging-Not_Deployed-grey)
+![Production](https://img.shields.io/badge/Production-Awaiting-yellow)
+
+</p>
 
 A high-performance, **Modular Monolith** ecosystem for AI-driven applications. Built with **.NET 9**, **Aspire**, and enterprise-grade patterns, this platform serves as a robust skeleton for building, scaling, and orchestrating 20+ specialized AI services.
 
@@ -51,7 +65,7 @@ The platform features 20+ functional modules, each isolated to its own domain lo
 ## 🚀 Getting Started
 
 ### Prerequisites
-- [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
+- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
 - [Docker Desktop](https://www.docker.com/products/docker-desktop)
 - [.NET Aspire Workload](https://learn.microsoft.com/en-us/dotnet/aspire/fundamentals/setup)
 
