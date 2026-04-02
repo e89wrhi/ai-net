@@ -116,12 +116,4 @@ Detailed technical guides and architecture decisions are located in the [**Docs 
 
 ---
 
-## 🛠️ Roadmap
-- [ ] Implement production AI providers (OpenAI/Anthropic).
-- [ ] Expand integration test coverage using TestContainers.
-- [ ] Finalize the automated migration discovery engine.
-- [ ] Complete the UI frontend (Web & Admin).
-
----
-
 Developed with ❤️ for the AI Developer Ecosystem.
