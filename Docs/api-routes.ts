@@ -14,31 +14,11 @@ export const api_paths = {
         stream_translate: (): string => `${base_url}/v1/translate/translate-stream`,
         detect: (): string => `${base_url}/v1/translate/detect`,
     },
-    speech: {
-        synthesize: (): string => `${base_url}/v1/speech/synthesize`,
-        generate_ai: (): string => `${base_url}/v1/speech/generate-ai`,
-        transcribe: (): string => `${base_url}/v1/speech/transcribe`,
-        stream_transcribe: (): string => `${base_url}/v1/speech/transcribe-stream`,
-    },
-    summary: {
-        summarize: (): string => `${base_url}/v1/summary/summarize`,
-        stream_summarize: (): string => `${base_url}/v1/summary/summarize-stream`,
-    },
-    simple_plugin: {
-        bing: (): string => `${base_url}/v1/plugin/bing`,
-        stream_bing: (): string => `${base_url}/v1/plugin/stream_bing`,
-        functional: (): string => `${base_url}/v1/plugin/functional`,
-        stream_functional: (): string => `${base_url}/v1/plugin/stream_functional`,
-    },
     simple_md: {
         summarize: (): string => `${base_url}/v1/md/summarize`,
         stream_summarize: (): string => `${base_url}/v1/md/stream_summarize`,
         chat: (): string => `${base_url}/v1/md/chat`,
         stream_chat: (): string => `${base_url}/v1/md/stream_chat`,
-    },
-    sentiment: {
-        analyze: (): string => `${base_url}/v1/sentiment/analyze`,
-        analyze_detailed: (): string => `${base_url}/v1/sentiment/analyze-detailed`,
     },
     payment: {
         record_charge: (): string => `${base_url}/v1/subscription/charge/record`,
@@ -50,22 +30,6 @@ export const api_paths = {
         analyze_invoice: (): string => `${base_url}/v1/payment/analyze-invoice`,
         create_subscription: (): string => `${base_url}/v1/subscription/create`,
     },
-    resume: {
-        analyze_ai: (): string => `${base_url}/v1/resume/analyze-ai`,
-        optimize: (): string => `${base_url}/v1/resume/optimize`,
-    },
-    meeting: {
-        analyze_stream: (): string => `${base_url}/v1/meeting/analyze-stream`,
-        upload: (): string => `${base_url}/v1/meeting/upload`,
-        analyze_transcript: (): string => `${base_url}/v1/meeting/analyze-transcript`,
-        action_items: (): string => `${base_url}/v1/meeting/action-items`,
-    },
-    assistant: {
-        submit_quiz: (): string => `${base_url}/v1/assistant/quiz/submit`,
-        stream_lesson: (): string => `${base_url}/v1/assistant/lesson-stream`,
-        generate_quiz: (): string => `${base_url}/v1/assistant/generate-quiz`,
-        generate_lesson: (): string => `${base_url}/v1/assistant/generate-lesson`,
-    },
     image_gen: {
         generate: (): string => `${base_url}/v1/imagegen/generate`,
         regenerate: (): string => `${base_url}/v1/imagegen/regenerate`,
@@ -76,14 +40,6 @@ export const api_paths = {
     image_edit: {
         remove_background: (): string => `${base_url}/v1/imageedit/remove-background`,
         enhance: (): string => `${base_url}/v1/imageedit/enhance`,
-    },
-    image_caption: {
-        caption: (): string => `${base_url}/v1/image/ai-caption`,
-        analyze: (): string => `${base_url}/v1/image/analyze`,
-    },
-    autocomplete: {
-        stream: (): string => `${base_url}/v1/autocomplete/stream`,
-        generate: (): string => `${base_url}/v1/autocomplete/generate`,
     },
     chat: {
         update: (sessionId: string): string => `${base_url}/v1/chat/${sessionId}`,

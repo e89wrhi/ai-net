@@ -1,4 +1,4 @@
-﻿using CodeDebug.Exceptions;
+using CodeDebug.Exceptions;
 
 namespace CodeDebug.ValueObjects;
 
@@ -21,8 +21,8 @@ public record IssueCount
         return new IssueCount(value);
     }
 
-    public static implicit operator int(IssueCount @value)
+    public static implicit operator int(IssueCount? issueCount)
     {
-        return @value.Value;
+        return issueCount?.Value ?? 0;
     }
 }

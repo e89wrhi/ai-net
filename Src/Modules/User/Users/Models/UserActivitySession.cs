@@ -14,7 +14,10 @@ public record UserActivitySession : Aggregate<UserActivityId>
     private readonly List<UserAction> _actions = new();
     public IReadOnlyCollection<UserAction> Actions => _actions.AsReadOnly();
 
-    private UserActivitySession() { }
+    private UserActivitySession() 
+    { 
+        _actions = new();
+    }
 
     public static UserActivitySession Create(UserActivityId id, UserId userId)
     {

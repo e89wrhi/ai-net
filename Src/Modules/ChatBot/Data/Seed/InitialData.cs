@@ -11,20 +11,21 @@ public static class InitialData
 
     static InitialData()
     {
-        // Create default configuration for seed data
         var defaultConfig = new ChatConfiguration(
             Temperature.Of(0.7f),
             TokenCount.Of(4096), 
             SystemPrompt.Of("You are a helpful AI assistant.")
         );
 
-        // Create chat sessions
         var chat1 = ChatSession.Create(
             SessionId.Of(Guid.Parse("7a8fad5b-d9cb-469f-a165-70867728950a")), 
             UserId.Of(Guid.Parse("0f8fad5b-d9cb-469f-a165-70867728950e")), 
             "Getting started with AI", 
             ModelId.Of("gpt-4"),
             defaultConfig);
+        
+        // Use the UpdateSummary method or direct assignment if the setter allows
+        chat1.UpdateSummary("A conversation exploring the basics of Artificial Intelligence.");
 
         var chat2 = ChatSession.Create(
             SessionId.Of(Guid.Parse("8a8fad5b-d9cb-469f-a165-70867728950b")), 
@@ -32,8 +33,9 @@ public static class InitialData
             "Cooking Recipes", 
             ModelId.Of("gpt-3.5-turbo"),
             defaultConfig);
+        
+        chat2.UpdateSummary("A guide to making homemade pizza from scratch.");
 
-        // Add messages to chat 1
         chat1.AddMessage(ChatMessage.Create(
             MessageId.Of(Guid.NewGuid()), 
             chat1.Id,
@@ -52,7 +54,6 @@ public static class InitialData
             CostEstimate.Of(0.001m),
             2));
 
-        // Add messages to chat 2
         chat2.AddMessage(ChatMessage.Create(
             MessageId.Of(Guid.NewGuid()), 
             chat2.Id,

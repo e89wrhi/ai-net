@@ -1,4 +1,4 @@
-﻿using AI.Common.BaseExceptions;
+using AI.Common.BaseExceptions;
 using AI.Common.Core;
 using AiOrchestration.ValueObjects;
 using CodeGen.Enums;
@@ -19,7 +19,10 @@ public record CodeGenerationSession : Aggregate<CodeGenId>
     private readonly List<CodeGenerationResult> _results = new();
     public IReadOnlyCollection<CodeGenerationResult> Results => _results.AsReadOnly();
 
-    private CodeGenerationSession() { }
+    private CodeGenerationSession() 
+    {
+        _results = new();
+    }
 
     public static CodeGenerationSession Create(
         CodeGenId id,
@@ -34,6 +37,8 @@ public record CodeGenerationSession : Aggregate<CodeGenId>
             AiModelId = aiModelId,
             Configuration = configuration,
             Status = CodeGenerationStatus.Active,
+            TotalTokens = TokenCount.Of(0),
+            TotalCost = CostEstimate.Of(0),
             CreatedAt = DateTime.UtcNow,
             LastGeneratedAt = DateTime.UtcNow
         };

@@ -1,4 +1,4 @@
-﻿using AI.Common.BaseExceptions;
+using AI.Common.BaseExceptions;
 using AI.Common.Core;
 using AiOrchestration.ValueObjects;
 using CodeDebug.Enums;
@@ -19,7 +19,10 @@ public record CodeDebugSession : Aggregate<CodeDebugId>
     private readonly List<CodeDebugReport> _reports = new();
     public IReadOnlyCollection<CodeDebugReport> Reports => _reports.AsReadOnly();
 
-    private CodeDebugSession() { }
+    private CodeDebugSession() 
+    { 
+        _reports = new();
+    }
 
     public static CodeDebugSession Create(
         CodeDebugId id,
@@ -34,6 +37,8 @@ public record CodeDebugSession : Aggregate<CodeDebugId>
             AiModelId = aiModelId,
             Configuration = configuration,
             Status = CodeDebugStatus.Active,
+            TotalTokens = TokenCount.Of(0),
+            TotalCost = CostEstimate.Of(0),
             CreatedAt = DateTime.UtcNow,
             LastAnalyzedAt = DateTime.UtcNow
         };
@@ -51,10 +56,10 @@ public record CodeDebugSession : Aggregate<CodeDebugId>
 
         _reports.Add(report);
         LastAnalyzedAt = DateTime.UtcNow;
-        var totalcount = TotalTokens.Value;
-        TotalTokens = TokenCount.Of(totalcount += report.TokenUsed);
-        var totalcost = TotalCost.Value;
-        TotalCost = CostEstimate.Of(totalcost += report.Cost);
+        
+        TotalTokens = TokenCount.Of((long)TotalTokens + (long)report.TokenUsed);
+        TotalCost = CostEstimate.Of((decimal)TotalCost + (decimal)report.Cost);
+        
         AddDomainEvent(
             new Events.CodeDebugAnalyzedDomainEvent(
                 Id, report.Id, report.IssueCount));

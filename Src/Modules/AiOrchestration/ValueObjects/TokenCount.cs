@@ -1,4 +1,4 @@
-﻿using AiOrchestration.Exceptions;
+using AiOrchestration.Exceptions;
 using MassTransit;
 
 namespace AiOrchestration.ValueObjects;
@@ -22,8 +22,8 @@ public record TokenCount
         return new TokenCount(value);
     }
 
-    public static implicit operator long(TokenCount id)
+    public static implicit operator long(TokenCount? tokenCount)
     {
-        return id.Value;
+        return tokenCount?.Value ?? 0;
     }
 }

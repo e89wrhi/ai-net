@@ -1,4 +1,4 @@
-﻿using AI.Common.BaseExceptions;
+using AI.Common.BaseExceptions;
 using AI.Common.Core;
 using AiOrchestration.ValueObjects;
 using Translate.Enums;
@@ -19,7 +19,10 @@ public record TranslationSession : Aggregate<TranslateId>
     private readonly List<TranslationResult> _results = new();
     public IReadOnlyCollection<TranslationResult> Results => _results.AsReadOnly();
 
-    private TranslationSession() { }
+    private TranslationSession() 
+    { 
+        _results = new();
+    }
 
     public static TranslationSession Create(
         TranslateId id,
@@ -34,6 +37,8 @@ public record TranslationSession : Aggregate<TranslateId>
             AiModelId = aiModelId,
             Configuration = configuration,
             Status = TranslationStatus.Active,
+            TotalTokens = TokenCount.Of(0),
+            TotalCost = CostEstimate.Of(0),
             CreatedAt = DateTime.UtcNow,
             LastTranslatedAt = DateTime.UtcNow
         };

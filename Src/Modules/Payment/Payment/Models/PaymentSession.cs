@@ -16,7 +16,10 @@ public record PaymentSession : Aggregate<PaymentId>
     private readonly List<Invoice> _invoices = new();
     public IReadOnlyCollection<Invoice> Invoices => _invoices.AsReadOnly();
 
-    private PaymentSession() { }
+    private PaymentSession() 
+    {
+        _invoices = new();
+    }
 
     public static PaymentSession Create(
         PaymentId id,

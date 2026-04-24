@@ -1,4 +1,4 @@
-﻿using AI.Common.BaseExceptions;
+using AI.Common.BaseExceptions;
 using AI.Common.Core;
 using AiOrchestration.ValueObjects;
 using ImageEdit.Enums;
@@ -19,7 +19,10 @@ public record ImageEditSession : Aggregate<ImageEditId>
     private readonly List<ImageEditResult> _results = new();
     public IReadOnlyCollection<ImageEditResult> Results => _results.AsReadOnly();
 
-    private ImageEditSession() { }
+    private ImageEditSession() 
+    {
+        _results = new();
+    }
 
     public static ImageEditSession Create(
         ImageEditId id,
@@ -34,6 +37,8 @@ public record ImageEditSession : Aggregate<ImageEditId>
             AiModelId = aiModelId,
             Configuration = configuration,
             Status = ImageEditStatus.Active,
+            TotalTokens = TokenCount.Of(0),
+            TotalCost = CostEstimate.Of(0),
             CreatedAt = DateTime.UtcNow,
             LastEditedAt = DateTime.UtcNow
         };

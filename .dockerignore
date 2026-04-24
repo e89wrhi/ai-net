@@ -1,0 +1,43 @@
+## Git
+.git
+.gitignore
+.gitattributes
+
+## GitHub
+.github
+
+## IDE / Editor
+.vs
+.vscode
+.idea
+*.user
+*.suo
+*.swp
+
+## Docs & Assets
+Docs/
+assets/
+*.md
+LICENSE
+
+## Aspire Host (not needed in the API image)
+Src/Aspire/AppHost/
+
+## Tests
+Src/Tests/
+Src/Modules/*_Tests/
+
+## Build artifacts already on the local machine
+**/bin/
+**/obj/
+**/TestResults/
+!publish/
+
+## Environment
+.env
+.env.*
+!.env.example
+
+## OS
+.DS_Store
+Thumbs.db

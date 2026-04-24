@@ -361,3 +361,26 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# ── Docker ────────────────────────────────────────────────────────────────────
+# Local environment overrides — never commit real secrets
+.env
+.env.local
+.env.*.local
+
+# Docker Compose local dev overrides (personal machine settings)
+docker-compose.override.yml
+
+# ── Test Results ──────────────────────────────────────────────────────────────
+TestResults/
+*.trx
+*.coverage
+*.coveragexml
+
+# ── JetBrains Rider ───────────────────────────────────────────────────────────
+.idea/
+*.sln.iml
+
+# ── OS ────────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
