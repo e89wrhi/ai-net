@@ -1,4 +1,4 @@
-﻿namespace ChatBot.Data.Seed;
+namespace ChatBot.Data.Seed;
 
 using AiOrchestration.ValueObjects;
 using ChatBot.Enums;
@@ -21,20 +21,17 @@ public static class InitialData
             SessionId.Of(Guid.Parse("7a8fad5b-d9cb-469f-a165-70867728950a")), 
             UserId.Of(Guid.Parse("0f8fad5b-d9cb-469f-a165-70867728950e")), 
             "Getting started with AI", 
+            "A conversation exploring the basics of Artificial Intelligence.",
             ModelId.Of("gpt-4"),
             defaultConfig);
-        
-        // Use the UpdateSummary method or direct assignment if the setter allows
-        chat1.UpdateSummary("A conversation exploring the basics of Artificial Intelligence.");
 
         var chat2 = ChatSession.Create(
             SessionId.Of(Guid.Parse("8a8fad5b-d9cb-469f-a165-70867728950b")), 
             UserId.Of(Guid.Parse("0f8fad5b-d9cb-469f-a165-70867728950e")), 
             "Cooking Recipes", 
+            "A guide to making homemade pizza from scratch.",
             ModelId.Of("gpt-3.5-turbo"),
             defaultConfig);
-        
-        chat2.UpdateSummary("A guide to making homemade pizza from scratch.");
 
         chat1.AddMessage(ChatMessage.Create(
             MessageId.Of(Guid.NewGuid()), 

@@ -10,8 +10,8 @@ public record ChatSession : Aggregate<SessionId>
 {
     public UserId UserId { get; private set; } = default!;
     public SessionStatus SessionStatus { get; private set; }
-    public string Title { get; private set; } = default!;
-    public string Summary { get; private set; } = default!;
+    public string Title { get; private set; } = string.Empty;
+    public string Summary { get; private set; } = string.Empty;
     public ModelId AiModelId { get; private set; } = default!;
     public ChatConfiguration Configuration { get; private set; } = default!;
     public TokenCount TotalTokens { get; private set; } = default!;
@@ -24,12 +24,15 @@ public record ChatSession : Aggregate<SessionId>
     private ChatSession() 
     { 
         _messages = new();
+        Title = string.Empty;
+        Summary = string.Empty;
     }
 
     public static ChatSession Create(
         SessionId id,
         UserId userId,
         string title,
+        string summary,
         ModelId aiModelId,
         ChatConfiguration configuration)
     {
@@ -38,14 +41,15 @@ public record ChatSession : Aggregate<SessionId>
             Id = id,
             UserId = userId,
             Title = title,
-            Summary = string.Empty,
+            Summary = summary ?? string.Empty,
             AiModelId = aiModelId,
             Configuration = configuration,
             SessionStatus = SessionStatus.Active,
             TotalTokens = TokenCount.Of(0),
             TotalCost = CostEstimate.Of(0),
             CreatedAt = DateTime.UtcNow,
-            LastSentAt = DateTime.UtcNow
+            LastSentAt = DateTime.UtcNow,
+            LastModified = DateTime.UtcNow
         };
 
         chat.AddDomainEvent(

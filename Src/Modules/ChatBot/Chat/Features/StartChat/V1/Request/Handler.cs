@@ -1,4 +1,4 @@
-﻿using AiOrchestration.ValueObjects;
+using AiOrchestration.ValueObjects;
 using ChatBot.Data;
 using ChatBot.Models;
 using ChatBot.ValueObjects;
@@ -34,6 +34,7 @@ internal class StartChatHandler : IRequestHandler<StartChatCommand, StartChatCom
             SessionId.Of(NewId.NextGuid()),
             UserId.Of(request.UserId),
             request.Title,
+            string.Empty,
             ModelId.Of(request.AiModelId),
             configuration);
 

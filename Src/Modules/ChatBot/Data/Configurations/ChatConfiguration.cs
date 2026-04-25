@@ -1,4 +1,4 @@
-﻿using ChatBot.Models;
+using ChatBot.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using AI.Common.Core;
@@ -27,8 +27,8 @@ public class ChatConfiguration : IEntityTypeConfiguration<ChatSession>
         builder.Property(r => r.SessionStatus)
             .HasConversion<int>();
 
-        builder.Property(r => r.Title).HasMaxLength(500);
-        builder.Property(r => r.Summary);
+        builder.Property(r => r.Title).HasMaxLength(500).IsRequired();
+        builder.Property(r => r.Summary).IsRequired();
 
         builder.ComplexProperty(r => r.Configuration, b => 
         {
