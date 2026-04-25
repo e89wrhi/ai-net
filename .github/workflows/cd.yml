@@ -1,0 +1,136 @@
+name: CD — Build & Push Docker Image
+
+on:
+  push:
+    branches: ["main"]
+    tags: ["v*.*.*"]          # trigger on version tags too
+
+  # Allow manual re-runs from the Actions tab
+  workflow_dispatch:
+    inputs:
+      push_image:
+        description: "Push image to registry?"
+        required: false
+        default: "true"
+        type: boolean
+
+concurrency:
+  group: cd-${{ github.ref }}
+  cancel-in-progress: false   # don't cancel deploys in progress
+
+env:
+  DOTNET_VERSION: "10.0.x"
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  # GitHub Container Registry (GHCR) image name
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}   # e.g. org/ai-net
+
+jobs:
+  # ── Job 1: CI gate ────────────────────────────────────────────────────────
+  # Reuse the CI workflow or repeat a quick build+test here as a gate.
+  verify:
+    name: ✅ Verify (Build + Test)
+    runs-on: ubuntu-latest
+    env:
+      NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET ${{ env.DOTNET_VERSION }}
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.NUGET_PACKAGES }}
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', '**/*.sln') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      - name: Install Aspire workload
+        run: dotnet workload install aspire
+
+      - name: Restore & Build
+        run: |
+          dotnet restore AI.sln
+          dotnet build AI.sln -c Release --no-restore
+
+      - name: Test
+        run: dotnet test AI.sln --no-restore -c Release --logger "console;verbosity=minimal"
+
+  # ── Job 2: Docker build & push ────────────────────────────────────────────
+  docker:
+    name: 🐳 Docker Build & Push
+    runs-on: ubuntu-latest
+    needs: verify
+    permissions:
+      contents: read
+      packages: write    # required to push to GHCR
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ── Compute image metadata (tags + labels) ───────────────────────────
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            # main branch → :latest
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+            # branch name
+            type=ref,event=branch
+            # PR number
+            type=ref,event=pr
+            # semver tags: v1.2.3 → :1.2.3, :1.2, :1
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            # short SHA for traceability
+            type=sha,prefix=sha-,format=short
+
+      # ── Docker layer cache via GitHub Actions cache ──────────────────────
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Cache Docker layers
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: buildx-${{ runner.os }}-${{ github.sha }}
+          restore-keys: buildx-${{ runner.os }}-
+
+      # ── Login to GHCR ─────────────────────────────────────────────────────
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # ── Build & push ──────────────────────────────────────────────────────
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          dockerfile: Dockerfile
+          push: ${{ github.event_name != 'pull_request' && (github.event.inputs.push_image != 'false') }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+
+      # Move cache to avoid unbounded growth
+      - name: Rotate Buildx cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+      - name: Image digest
+        run: echo "📦 Published image digest ${{ steps.build-push.outputs.digest }}"

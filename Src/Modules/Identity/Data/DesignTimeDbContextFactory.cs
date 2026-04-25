@@ -9,7 +9,7 @@ public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<IdentityCo
     {
         var builder = new DbContextOptionsBuilder<IdentityContext>();
 
-        builder.UseNpgsql("Server=localhost;Port=5432;Database=identity;User Id=postgres;Password=postgres;Include Error Detail=true")
+        builder.UseNpgsql("Server=localhost;Port=5431;Database=identity_modular_monolith;User Id=postgres;Password=changeme;Include Error Detail=true")
             .UseSnakeCaseNamingConvention();
         return new IdentityContext(builder.Options);
     }

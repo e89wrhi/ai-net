@@ -1,33 +1,22 @@
-﻿using AI.Common.Core;
+using AI.Common.BaseExceptions;
+using AI.Common.Core;
 using AI.Common.Jwt;
 using AI.Common.MassTransit;
 using AI.Common.OpenApi;
 using AI.Common.PersistMessageProcessor;
-using AI.Common.Web;
-using Figgle;
-using AI;
-using Identity;
-using Microsoft.AspNetCore.Builder.Extensions;
-using Microsoft.AspNetCore.Mvc;
-using ChatBot;
-using ImageCaption;
-using LearningAssistant;
-using Meeting;
-using Payment;
-using Resume;
-using User;
-using AI.Common.BaseExceptions;
 using AI.Common.Problems;
-using AutoComplete;
+using AI.Common.Web;
+using ChatBot;
 using CodeDebug;
 using CodeGen;
+using Identity;
 using ImageEdit;
 using ImageGen;
-using Sentiment;
-using SpeechToText;
-using TextToSpeech;
-using Summary;
+using Microsoft.AspNetCore.Mvc;
+using Payment;
 using Translate;
+using User;
+using Figgle;
 
 namespace Api.Extensions;
 
@@ -72,23 +61,13 @@ public static class SharedInfrastructureExtensions
         builder.Services.AddScoped<IEventMapper>(sp =>
         {
             var mappers = new IEventMapper[] {
-                                                 sp.GetRequiredService<AutoCompleteEventMapper>(),
                                                  sp.GetRequiredService<CodeDebugEventMapper>(),
                                                  sp.GetRequiredService<CodeGenEventMapper>(),
                                                  sp.GetRequiredService<ImageEditEventMapper>(),
                                                  sp.GetRequiredService<ImageGenEventMapper>(),
-                                                 sp.GetRequiredService<SentimentEventMapper>(),
-                                                 sp.GetRequiredService<SpeechToTextEventMapper>(),
-                                                 sp.GetRequiredService<TextToSpeechEventMapper>(),
-                                                 sp.GetRequiredService<SummaryEventMapper>(),
                                                  sp.GetRequiredService<TranslateEventMapper>(),
-
                                                  sp.GetRequiredService<ChatEventMapper>(),
                                                  sp.GetRequiredService<IdentityEventMapper>(),
-                                                 sp.GetRequiredService<ResumeEventMapper>(),
-                                                 sp.GetRequiredService<ImageEventMapper>(),
-                                                 sp.GetRequiredService<AssistantEventMapper>(),
-                                                 sp.GetRequiredService<MeetingEventMapper>(),
                                                  sp.GetRequiredService<PaymentEventMapper>(),
                                                  sp.GetRequiredService<UserEventMapper>(),
                                              };

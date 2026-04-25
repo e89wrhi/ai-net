@@ -30,8 +30,8 @@ public sealed class IdentityContext : IdentityDbContext<User, Role, Guid,
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
-        builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
         base.OnModelCreating(builder);
+        builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
         builder.FilterSoftDeletedProperties();
         builder.ToSnakeCaseTables();
     }

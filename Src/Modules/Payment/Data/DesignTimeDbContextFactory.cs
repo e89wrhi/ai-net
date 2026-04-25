@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 
 namespace Payment.Data;
@@ -9,7 +9,7 @@ public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<PaymentDbC
     {
         var builder = new DbContextOptionsBuilder<PaymentDbContext>();
 
-        builder.UseNpgsql("Server=localhost;Port=5432;Database=payment;User Id=postgres;Password=postgres;Include Error Detail=true")
+        builder.UseNpgsql("Server=localhost;Port=5431;Database=payment_modular_monolith;User Id=postgres;Password=changeme;Include Error Detail=true")
             .UseSnakeCaseNamingConvention();
         return new PaymentDbContext(builder.Options);
     }

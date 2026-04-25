@@ -1,4 +1,4 @@
-﻿using CodeGen.Models;
+using CodeGen.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using CodeGen.ValueObjects;
@@ -23,7 +23,7 @@ public class ResultConfiguration : IEntityTypeConfiguration<CodeGenerationResult
             .HasConversion(p => p.Value, v => GeneratedCode.Of(v));
 
         builder.Property(r => r.Language)
-            .HasConversion<int>();
+            .HasConversion(p => p.Value, v => ProgrammingLanguage.Of(v));
 
         builder.Property(r => r.QualityLevel)
             .HasConversion<int>();

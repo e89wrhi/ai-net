@@ -8,7 +8,7 @@ var builder = DistributedApplication.CreateBuilder(args);
 
 // 1. Database Services
 var pgUsername = builder.AddParameter("pg-username", "postgres", secret: true);
-var pgPassword = builder.AddParameter("pg-password", "postgres", secret: true);
+var pgPassword = builder.AddParameter("pg-password", "changeme", secret: true);
 
 var postgres = builder.AddPostgres("postgres", pgUsername, pgPassword)
     .WithImage("postgres:latest")
@@ -16,7 +16,7 @@ var postgres = builder.AddPostgres("postgres", pgUsername, pgPassword)
         "tcp",
         e =>
         {
-            e.Port = 5432;
+            e.Port = 5431;
             e.TargetPort = 5432;
             e.IsProxied = true;
             e.IsExternal = false;
@@ -40,22 +40,12 @@ var analyticsDb = postgres.AddDatabase("analytics");
 var persistMessageDb = postgres.AddDatabase("persist-message");
 var userDb = postgres.AddDatabase("user");
 var chatBotDb = postgres.AddDatabase("chat-bot");
-var autoCompleteDb = postgres.AddDatabase("auto-complete");
 var codeDebugDb = postgres.AddDatabase("code-debug");
 var codeGenDb = postgres.AddDatabase("code-gen");
-var imageCaptionDb = postgres.AddDatabase("image-caption");
 var imageEditDb = postgres.AddDatabase("image-edit");
 var imageGenDb = postgres.AddDatabase("image-gen");
-var learningAssistantDb = postgres.AddDatabase("learning-assistant");
-var meetingDb = postgres.AddDatabase("meeting");
 var paymentDb = postgres.AddDatabase("payment");
-var resumeDb = postgres.AddDatabase("resume");
-var sentimentDb = postgres.AddDatabase("sentiment");
 var simpleMdDb = postgres.AddDatabase("simple-md");
-var simplePluginDb = postgres.AddDatabase("simple-plugin");
-var speechToTextDb = postgres.AddDatabase("speech-to-text");
-var summaryDb = postgres.AddDatabase("summary");
-var textToSpeechDb = postgres.AddDatabase("text-to-speech");
 var translateDb = postgres.AddDatabase("translate");
 
 var redis = builder.AddRedis("redis")
@@ -308,22 +298,12 @@ var api = builder.AddProject<AI_Api>("api")
     .WithReference(persistMessageDb)
     .WithReference(userDb)
     .WithReference(chatBotDb)
-    .WithReference(autoCompleteDb)
     .WithReference(codeDebugDb)
     .WithReference(codeGenDb)
-    .WithReference(imageCaptionDb)
     .WithReference(imageEditDb)
     .WithReference(imageGenDb)
-    .WithReference(learningAssistantDb)
-    .WithReference(meetingDb)
     .WithReference(paymentDb)
-    .WithReference(resumeDb)
-    .WithReference(sentimentDb)
     .WithReference(simpleMdDb)
-    .WithReference(simplePluginDb)
-    .WithReference(speechToTextDb)
-    .WithReference(summaryDb)
-    .WithReference(textToSpeechDb)
     .WithReference(translateDb)
     .WaitFor(identityDb)
     .WaitFor(aiOrchestrationDb)
@@ -331,22 +311,12 @@ var api = builder.AddProject<AI_Api>("api")
     .WaitFor(persistMessageDb)
     .WaitFor(userDb)
     .WaitFor(chatBotDb)
-    .WaitFor(autoCompleteDb)
     .WaitFor(codeDebugDb)
     .WaitFor(codeGenDb)
-    .WaitFor(imageCaptionDb)
     .WaitFor(imageEditDb)
     .WaitFor(imageGenDb)
-    .WaitFor(learningAssistantDb)
-    .WaitFor(meetingDb)
     .WaitFor(paymentDb)
-    .WaitFor(resumeDb)
-    .WaitFor(sentimentDb)
     .WaitFor(simpleMdDb)
-    .WaitFor(simplePluginDb)
-    .WaitFor(speechToTextDb)
-    .WaitFor(summaryDb)
-    .WaitFor(textToSpeechDb)
     .WaitFor(translateDb)
     .WithReference(eventstore)
     .WaitFor(eventstore)

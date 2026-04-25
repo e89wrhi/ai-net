@@ -1,4 +1,4 @@
-﻿using AI.Common.BaseExceptions;
+using AI.Common.BaseExceptions;
 using AI.Common.Core;
 using AiOrchestration.ValueObjects;
 using ImageGen.Enums;
@@ -19,7 +19,10 @@ public record ImageGenerationSession : Aggregate<ImageGenId>
     private readonly List<ImageGenerationResult> _results = new();
     public IReadOnlyCollection<ImageGenerationResult> Results => _results.AsReadOnly();
 
-    private ImageGenerationSession() { }
+    private ImageGenerationSession() 
+    { 
+        _results = new();
+    }
 
     public static ImageGenerationSession Create(
         ImageGenId id,
@@ -34,6 +37,8 @@ public record ImageGenerationSession : Aggregate<ImageGenId>
             AiModelId = aiModelId,
             Configuration = configuration,
             Status = ImageGenerationStatus.Active,
+            TotalTokens = TokenCount.Of(0),
+            TotalCost = CostEstimate.Of(0),
             CreatedAt = DateTime.UtcNow,
             LastGeneratedAt = DateTime.UtcNow
         };

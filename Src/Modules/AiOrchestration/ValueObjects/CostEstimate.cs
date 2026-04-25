@@ -1,4 +1,4 @@
-﻿using AiOrchestration.Exceptions;
+using AiOrchestration.Exceptions;
 using MassTransit;
 
 namespace AiOrchestration.ValueObjects;
@@ -22,8 +22,8 @@ public record CostEstimate
         return new CostEstimate(value);
     }
 
-    public static implicit operator decimal(CostEstimate id)
+    public static implicit operator decimal(CostEstimate? costEstimate)
     {
-        return id.Value;
+        return costEstimate?.Value ?? 0m;
     }
 }

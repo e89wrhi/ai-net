@@ -1,4 +1,4 @@
-﻿using AI.Common.BaseExceptions;
+using AI.Common.BaseExceptions;
 using AI.Common.Core;
 using AiOrchestration.ValueObjects;
 using ChatBot.Enums;
@@ -10,8 +10,8 @@ public record ChatSession : Aggregate<SessionId>
 {
     public UserId UserId { get; private set; } = default!;
     public SessionStatus SessionStatus { get; private set; }
-    public string Title { get; private set; } = default!;
-    public string Summary { get; private set; } = default!;
+    public string Title { get; private set; } = string.Empty;
+    public string Summary { get; private set; } = string.Empty;
     public ModelId AiModelId { get; private set; } = default!;
     public ChatConfiguration Configuration { get; private set; } = default!;
     public TokenCount TotalTokens { get; private set; } = default!;
@@ -21,12 +21,18 @@ public record ChatSession : Aggregate<SessionId>
     private readonly List<ChatMessage> _messages = new();
     public IReadOnlyCollection<ChatMessage> Messages => _messages.AsReadOnly();
 
-    private ChatSession() { }
+    private ChatSession() 
+    { 
+        _messages = new();
+        Title = string.Empty;
+        Summary = string.Empty;
+    }
 
     public static ChatSession Create(
         SessionId id,
         UserId userId,
         string title,
+        string summary,
         ModelId aiModelId,
         ChatConfiguration configuration)
     {
@@ -35,11 +41,15 @@ public record ChatSession : Aggregate<SessionId>
             Id = id,
             UserId = userId,
             Title = title,
+            Summary = summary ?? string.Empty,
             AiModelId = aiModelId,
             Configuration = configuration,
             SessionStatus = SessionStatus.Active,
+            TotalTokens = TokenCount.Of(0),
+            TotalCost = CostEstimate.Of(0),
             CreatedAt = DateTime.UtcNow,
-            LastSentAt = DateTime.UtcNow
+            LastSentAt = DateTime.UtcNow,
+            LastModified = DateTime.UtcNow
         };
 
         chat.AddDomainEvent(
@@ -55,10 +65,9 @@ public record ChatSession : Aggregate<SessionId>
 
         _messages.Add(message);
         LastSentAt = DateTime.UtcNow;
-        var totalcount = TotalTokens.Value;
-        TotalTokens = TokenCount.Of((int)(totalcount + message.TokenUsed.Value));
-        var totalcost = TotalCost.Value;
-        TotalCost = CostEstimate.Of(totalcost + message.Cost.Value);
+        
+        TotalTokens = TokenCount.Of((long)TotalTokens + (long)message.TokenUsed);
+        TotalCost = CostEstimate.Of((decimal)TotalCost + (decimal)message.Cost);
 
         AddDomainEvent(message.Sender switch
         {
@@ -98,6 +107,9 @@ public record ChatSession : Aggregate<SessionId>
         SessionStatus = SessionStatus.Deleted;
         AddDomainEvent(new Events.ChatSessionDeletedDomainEvent(Id));
     }
-
-
+    public void UpdateSummary(string summary)
+    {
+        Summary = summary ?? string.Empty;
+        LastModified = DateTime.UtcNow;
+    }
 }

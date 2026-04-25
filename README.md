@@ -26,7 +26,7 @@
 
 </p>
 
-A high-performance, **Modular Monolith** ecosystem for AI-driven applications. Built with **.NET 9**, **Aspire**, and enterprise-grade patterns, this platform serves as a robust skeleton for building, scaling, and orchestrating 20+ specialized AI services.
+A high-performance, **Modular Monolith** ecosystem for AI-driven applications. Built with **.NET 10**, **Aspire**, and enterprise-grade patterns, this platform serves as a robust skeleton for building, scaling, and orchestrating 12+ specialized AI services.
 
 ---
 
@@ -48,7 +48,7 @@ For a deep dive into the system's internal design and boundaries, view the **[Sy
 
 ## 🧩 Module Ecosystem
 
-The platform features 20+ functional modules, each isolated to its own domain logic:
+The platform features 12+ functional modules, each isolated to its own domain logic:
 
 | Module | Purpose |
 | :--- | :--- |
@@ -58,7 +58,7 @@ The platform features 20+ functional modules, each isolated to its own domain lo
 | **[Identity](./Src/Modules/Identity)** | Security foundation using Duende IdentityServer. |
 | **[ImageGen](./Src/Modules/ImageGen)** | Multi-provider image generation pipelines. |
 | **[Payment](./Src/Modules/Payment)** | Subscription and usage-based billing logic. |
-| ... and 15+ others. | [See full module list in Docs.](./Docs/README.md#🧩-modules) |
+| ... and 5+ others. | [See full module list in Docs.](./Docs/README.md#🧩-modules) |
 
 ---
 
@@ -85,7 +85,7 @@ Once running, navigate to the **Aspire Dashboard** (URL provided in terminal out
 For detailed instructions on building and scaling for real environments, see the **[Build Setup](./Docs/build/build-project.md)** and **[Production Deployment](./Docs/build/production.md)** guidelines.
 
 ### 🛠️ Utility Scripts
-Manage 20+ modules with ease using our automated utility scripts:
+Manage 12+ modules with ease using our automated utility scripts:
 
 | Script | Purpose |
 | :--- | :--- |
@@ -104,7 +104,7 @@ Manage 20+ modules with ease using our automated utility scripts:
 │   ├── Api/            # Entry point Minimal API
 │   ├── Aspire/         # Orchestration (AppHost & ServiceDefaults)
 │   ├── Common/         # "Building Blocks" - Shared Infrastructure
-│   ├── Modules/        # 20+ Independent Business Modules
+│   ├── Modules/        # 12+ Independent Business Modules
 │   └── Tests/          # Integration & Unit Test Suites
 └── AI.sln              # Master Solution
 ```

@@ -1,0 +1,147 @@
+# AI-Net Docker Compose
+# Usage:
+#   docker compose up --build          # build image + start all services
+#   docker compose up --build ai-api   # rebuild & restart only the API
+#   docker compose up -d               # start in background (detached)
+#   docker compose down                # stop (data volumes preserved)
+#   docker compose down -v             # stop + wipe all data volumes
+#   docker compose logs -f ai-api      # stream API logs
+#
+# Setup: copy .env.example to .env and set passwords before first run.
+# Dev mode: set ASPNETCORE_ENVIRONMENT=Development in your .env file.
+
+name: ai-net
+
+services:
+
+  # ── Application ──────────────────────────────────────────────────────────
+  ai-api:
+    profiles: ["docker"]
+    image: ai-net-api:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+      # Pass build-time SDK version so the image tag can be pinned in CI
+      args:
+        DOTNET_VERSION: "10.0"
+    restart: unless-stopped
+    ports:
+      - "${API_HTTP_PORT:-8080}:8080"
+      - "${API_HTTPS_PORT:-8443}:8081"
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
+      ASPNETCORE_URLS: "http://+:8080;https://+:8081"
+      # PostgreSQL — one connection string per module
+      PostgresOptions__ConnectionString__AiOrchestration: "Host=postgres;Database=ai_orchestration;Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-postgres}"
+      PostgresOptions__ConnectionString__Analytics:       "Host=postgres;Database=ai_analytics;Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-postgres}"
+      PostgresOptions__ConnectionString__ChatBot:         "Host=postgres;Database=ai_chatbot;Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-postgres}"
+      PostgresOptions__ConnectionString__CodeDebug:       "Host=postgres;Database=ai_codedebug;Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-postgres}"
+      PostgresOptions__ConnectionString__CodeGen:         "Host=postgres;Database=ai_codegen;Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-postgres}"
+      PostgresOptions__ConnectionString__Identity:        "Host=postgres;Database=ai_identity;Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-postgres}"
+      PostgresOptions__ConnectionString__ImageEdit:       "Host=postgres;Database=ai_imageedit;Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-postgres}"
+      PostgresOptions__ConnectionString__ImageGen:        "Host=postgres;Database=ai_imagegen;Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-postgres}"
+      PostgresOptions__ConnectionString__Payment:         "Host=postgres;Database=ai_payment;Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-postgres}"
+      PostgresOptions__ConnectionString__SimpleMD:        "Host=postgres;Database=ai_simplemd;Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-postgres}"
+      PostgresOptions__ConnectionString__Translate:       "Host=postgres;Database=ai_translate;Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-postgres}"
+      PostgresOptions__ConnectionString__User:            "Host=postgres;Database=ai_user;Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-postgres}"
+      # RabbitMQ
+      RabbitMQ__Host:     rabbitmq
+      RabbitMQ__Port:     "5672"
+      RabbitMQ__Username: ${RABBITMQ_USER:-guest}
+      RabbitMQ__Password: ${RABBITMQ_PASSWORD:-guest}
+      # EventStoreDB
+      EventStoreDB__ConnectionString: "esdb://eventstoredb:2113?tls=false"
+      # JWT
+      Jwt__Authority: ${JWT_AUTHORITY:-}
+      Jwt__Audience:  ${JWT_AUDIENCE:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      eventstoredb:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    networks:
+      - ai-net
+
+  # ── PostgreSQL ───────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: postgres
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+      start_period: 60s
+    networks:
+      - ai-net
+
+  # ── RabbitMQ ─────────────────────────────────────────────────────────────
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-guest}
+    ports:
+      - "${RABBITMQ_AMQP_PORT:-5672}:5672"
+      - "${RABBITMQ_MGMT_PORT:-15672}:15672"
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "check_running"]
+      interval: 10s
+      timeout: 10s
+      retries: 20
+      start_period: 120s
+    networks:
+      - ai-net
+
+  # ── EventStoreDB ─────────────────────────────────────────────────────────
+  eventstoredb:
+    image: eventstore/eventstore:24.10.13-jammy
+    restart: unless-stopped
+    environment:
+      EVENTSTORE_RUN_PROJECTIONS: All
+      EVENTSTORE_START_STANDARD_PROJECTIONS: "true"
+      EVENTSTORE_HTTP_PORT: "2113"
+      EVENTSTORE_INSECURE: "true"
+      EVENTSTORE_ENABLE_ATOM_PUB_OVER_HTTP: "true"
+    ports:
+      - "${ESDB_HTTP_PORT:-2113}:2113"
+    volumes:
+      - esdb-data:/var/lib/eventstore
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:2113/health/live || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 20
+      start_period: 120s
+    networks:
+      - ai-net
+
+# ── Volumes ──────────────────────────────────────────────────────────────────
+volumes:
+  postgres-data:
+  rabbitmq-data:
+  esdb-data:
+
+# ── Networks ─────────────────────────────────────────────────────────────────
+networks:
+  ai-net:
+    driver: bridge

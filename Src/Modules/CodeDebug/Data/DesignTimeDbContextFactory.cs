@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 
 namespace CodeDebug.Data;
@@ -9,7 +9,7 @@ public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<CodeDebugD
     {
         var builder = new DbContextOptionsBuilder<CodeDebugDbContext>();
 
-        builder.UseNpgsql("Server=localhost;Port=5432;Database=codedebug;User Id=postgres;Password=postgres;Include Error Detail=true")
+        builder.UseNpgsql("Server=localhost;Port=5431;Database=codedebug_modular_monolith;User Id=postgres;Password=changeme;Include Error Detail=true")
             .UseSnakeCaseNamingConvention();
         return new CodeDebugDbContext(builder.Options);
     }

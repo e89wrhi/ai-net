@@ -31,7 +31,8 @@ public static class Extensions
         builder.Services.AddDbContext<TContext>(
             (sp, options) =>
             {
-                var aspireConnectionString = builder.Configuration.GetConnectionString(connectionName.Kebaberize());
+                var kebabName = connectionName.Kebaberize();
+                var aspireConnectionString = builder.Configuration.GetConnectionString(kebabName);
                 var connectionString = aspireConnectionString ?? sp.GetRequiredService<PostgresOptions>().ConnectionString;
 
                 ArgumentException.ThrowIfNullOrEmpty(connectionString);

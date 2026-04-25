@@ -19,7 +19,7 @@ Everything you need to get the system running locally.
 - **[Contribution Rules](./guide/contribution.md)**: Coding standards and PR process.
 
 ## 🧩 [Modules](./modules)
-Detailed documentation for each of the 20+ functional modules.
+Detailed documentation for each of the 12+ functional modules.
 - **Identity**: AuthN/AuthZ using Duende IdentityServer.
 - **ChatBot**: LLM orchestration and session management.
 - **CodeGen**: AI-assisted programming pipelines.
@@ -31,7 +31,7 @@ How we ensure excellence and prevent regressions.
 - **[Integration Testing](./test/new-unit-test.md)**: Using TestContainers for real infra validation.
 
 ## 🚀 [Deployment & Build](./build)
-- **[Build Guide](./build/build-project.md)**: Local, container, and CI building instructions.
+- **Build Guides**: [**🚀 Aspire (Dev)**](./build/build-aspire-project.md) \| [**🐳 Docker (Prod-like)**](./build/build-docker-project.md)
 - **[Production Deployment](./build/production.md)**: Best practices and infrastructure scaling requirements.
 - **CI/CD Pipelines**: GitHub Actions workflow details.
 - **Dockerization**: Containerization strategy and registry management.
