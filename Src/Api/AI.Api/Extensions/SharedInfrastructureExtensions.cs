@@ -97,6 +97,11 @@ public static class SharedInfrastructureExtensions
             app.UseAspnetOpenApi();
         }
 
+        app.MapGet("/debug-api", (Microsoft.AspNetCore.Mvc.ApiExplorer.IApiDescriptionGroupCollectionProvider provider) => 
+        {
+            return provider.ApiDescriptionGroups.Items.Select(g => new { g.GroupName, Count = g.Items.Count });
+        });
+
         return app;
     }
 }

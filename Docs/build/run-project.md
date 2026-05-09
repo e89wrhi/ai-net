@@ -23,6 +23,7 @@
 .\scripts\entrypoint.ps1 -RunMigrations
 .\scripts\entrypoint.ps1 -SkipClean -RunMigrations -Environment Staging
 ```
+http://localhost:5031/scalar/v1
 
 ### Inside Docker (container mode)
 
@@ -34,7 +35,9 @@ The same `entrypoint.sh` is used inside the container. It:
 
 ```bash
 # Trigger migrations inside the container
-docker compose run --rm -e RUN_MIGRATIONS=true ai-api
+# Note: RUN_MIGRATIONS=true only works if dotnet-ef is present in the image.
+# Prefer running Update-Databases.ps1 / update-db.sh from the host instead.
+docker compose --profile docker run --rm -e RUN_MIGRATIONS=true ai-api
 ```
 
 ---
@@ -73,10 +76,14 @@ docker compose exec rabbitmq rabbitmqctl list_queues
 | `ASPNETCORE_ENVIRONMENT` | `Production` | App environment |
 | `POSTGRES_USER` | `postgres` | DB user |
 | `POSTGRES_PASSWORD` | `changeme` | DB password |
+| `POSTGRES_PORT` | `5432` | Host port for **Docker** Postgres; local dev scripts default to `5431` |
 | `RABBITMQ_USER` | `guest` | Broker user |
 | `RABBITMQ_PASSWORD` | `changeme` | Broker password |
+| `RABBITMQ_AMQP_PORT` | `5672` | AMQP port |
+| `RABBITMQ_MGMT_PORT` | `15672` | Management UI port |
 | `API_HTTP_PORT` | `8080` | API HTTP port |
-| `API_HTTPS_PORT` | `8443` | API HTTPS port |
+| `API_HTTPS_PORT` | `8443` | API HTTPS port (→ container port `8081`) |
+| `ESDB_HTTP_PORT` | `2113` | EventStoreDB HTTP port |
 | `JWT_AUTHORITY` | — | JWT issuer URL |
 | `JWT_AUDIENCE` | — | JWT audience |
 
@@ -110,12 +117,15 @@ No secrets needed — workflows use the built-in `GITHUB_TOKEN`.
 ASP.NET Core uses `__` as a separator for environment variable overrides:
 
 ```bash
-PostgresOptions__ConnectionString__Identity=Host=db;Database=ai_identity;Username=app;Password=secret
-EventStoreDB__ConnectionString=esdb://esdb-host:2113?tls=true
-RabbitMQ__Host=rabbitmq-prod
+PostgresOptions__ConnectionString__Identity=Host=postgres;Database=ai_identity;Username=app;Password=secret
+EventStoreDB__ConnectionString=esdb://eventstoredb:2113?tls=false
+RabbitMQ__Host=rabbitmq
 Jwt__Authority=https://auth.example.com
 Jwt__Audience=ai-net-api
 ```
+
+> [!NOTE]
+> Use service names (`postgres`, `eventstoredb`, `rabbitmq`) as hostnames when overriding from inside Docker. Use `localhost` when running on the host machine.
 
 ---
 

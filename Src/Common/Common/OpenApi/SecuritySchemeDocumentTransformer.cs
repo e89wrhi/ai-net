@@ -1,51 +1,30 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.OpenApi;
 
 namespace AI.Common.OpenApi;
 
-/// <summary>
-/// What it is: A document transformer for OpenAPI documentation.
-/// How it is used: Automatically adds security schemes (Bearer token and API Key) to the generated OpenAPI document.
-/// Where it is used: Registered in the OpenAPI configuration to ensure documentation includes authentication requirements.
-/// </summary>
-public class SecuritySchemeDocumentTransformer : IOpenApiDocumentTransformer
+public sealed class SecuritySchemeDocumentTransformer : IOpenApiDocumentTransformer
 {
     public Task TransformAsync(
-        OpenApiDocument document,
-        OpenApiDocumentTransformerContext context,
-        CancellationToken cancellationToken
-    )
+       OpenApiDocument document,
+       OpenApiDocumentTransformerContext context,
+       CancellationToken cancellationToken)
     {
-        document.Components ??= new();
+        document.Components ??= new OpenApiComponents();
 
-        // Bearer token scheme
-        document.Components.SecuritySchemes.Add(
-            "Bearer",
+        document.Components.SecuritySchemes ??=
+            new Dictionary<string, IOpenApiSecurityScheme>();
+
+        document.Components.SecuritySchemes["Bearer"] =
             new OpenApiSecurityScheme
             {
-                Name = "Authorization",
                 Type = SecuritySchemeType.Http,
                 Scheme = "bearer",
                 BearerFormat = "JWT",
+                Name = "Authorization",
                 In = ParameterLocation.Header,
-                Description =
-                    "Enter 'Bearer' [space] and your token in the text input below.\n\nExample: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'",
-            }
-        );
-
-        // API Key scheme
-        document.Components.SecuritySchemes.Add(
-            "ApiKey",
-            new OpenApiSecurityScheme
-            {
-                Name = "X-API-KEY",
-                Type = SecuritySchemeType.ApiKey,
-                In = ParameterLocation.Header,
-                Description =
-                    "Enter your API key in the text input below.\n\nExample: '12345-abcdef'",
-            }
-        );
+                Description = "JWT Bearer token"
+            };
 
         return Task.CompletedTask;
     }
