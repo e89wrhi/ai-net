@@ -1,4 +1,4 @@
-﻿namespace Payment.Data.Seed;
+namespace Payment.Data.Seed;
 
 using AI.Common.Core;
 using global::Payment.Models;
@@ -9,20 +9,15 @@ using System.Collections.Generic;
 
 public static class InitialData
 {
-    public static List<SubscriptionModel> Subscriptions { get; } = new()
+    public static List<SubscriptionModel> GetSubscriptions()
     {
-        SubscriptionModel.Create(
+        var subscription = SubscriptionModel.Create(
             SubscriptionId.Of(Guid.Parse("da8fad5b-d9cb-469f-a165-708677289511")), 
             UserId.Of(Guid.Parse("0f8fad5b-d9cb-469f-a165-70867728950e")), 
             "Pro", 
             100, 
-            100000)
-    };
+            100000);
 
-    static InitialData()
-    {
-        var subscription = Subscriptions[0];
-        
         subscription.AddInvoice(Invoice.Create(
             InvoiceId.Of(Guid.NewGuid()),
             "INV-001",
@@ -37,5 +32,7 @@ public static class InitialData
             "GPT-4 usage",
             Money.Of(0.06m, "USD"),
             "ChatBot"));
+
+        return new List<SubscriptionModel> { subscription };
     }
 }

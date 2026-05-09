@@ -23,6 +23,7 @@ public static class Extensions
                 options =>
                 {
                     options.AddDocumentTransformer<SecuritySchemeDocumentTransformer>();
+                    options.AddOperationTransformer<AuthOperationTransformer>();
                 });
         }
 
@@ -33,26 +34,8 @@ public static class Extensions
     {
         app.MapOpenApi();
 
-        app.UseSwaggerUI(
-            options =>
-            {
-                var descriptions = app.DescribeApiVersions();
-
-                // build a swagger endpoint for each discovered API version
-                foreach (var description in descriptions)
-                {
-                    var openApiUrl = $"/openapi/{description.GroupName}.json";
-                    var name = description.GroupName.ToUpperInvariant();
-                    options.SwaggerEndpoint(openApiUrl, name);
-                }
-            });
-
         // Add scalar ui
-        app.MapScalarApiReference(
-            redocOptions =>
-            {
-                redocOptions.WithOpenApiRoutePattern("/openapi/{documentName}.json");
-            });
+        app.MapScalarApiReference();
 
         return app;
     }

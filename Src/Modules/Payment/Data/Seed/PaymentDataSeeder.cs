@@ -1,4 +1,4 @@
-﻿using AI.Common.EFCore;
+using AI.Common.EFCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace Payment.Data.Seed;
@@ -19,9 +19,9 @@ public class PaymentDataSeeder(
 
     private async Task SeedPaymentAsync()
     {
-        if (!await dbContext.Sessions.AnyAsync())
+        if (!await dbContext.Subscriptions.IgnoreQueryFilters().AnyAsync())
         {
-            await dbContext.Subscriptions.AddRangeAsync(InitialData.Subscriptions);
+            await dbContext.Subscriptions.AddRangeAsync(InitialData.GetSubscriptions());
             await dbContext.SaveChangesAsync();
         }
     }
